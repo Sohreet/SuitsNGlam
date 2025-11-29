@@ -1,67 +1,114 @@
-/* ---------------------------------------------------
-   NAVBAR LOGIN / ACCOUNT ICON CONTROLLER
-   Works on all pages
----------------------------------------------------- */
+// =====================================================
+// GLOBAL NAVBAR LOGIN SYSTEM
+// Works on ALL pages automatically
+// =====================================================
 
-document.addEventListener("DOMContentLoaded", () => {
+// Get elements safely
+const loginBtn = document.getElementById("loginButton") || document.getElementById("loginBtn");
+const accountIcon = document.getElementById("accountIcon");
+const cartBadge = document.getElementById("cartCount");
+
+// =====================================================
+// READ USER FROM LOCAL STORAGE
+// Supports both old + new formats
+// =====================================================
+function getUser() {
+  // Prefer full object
+  const obj = localStorage.getItem("sg_user");
+  if (obj) return JSON.parse(obj);
+
+  // Fallback (old localStorage keys)
+  const email = localStorage.getItem("userEmail");
+  if (email) {
+    return {
+      email,
+      name: localStorage.getItem("userName") || "",
+      picture: localStorage.getItem("userPic") || "",
+      token: localStorage.getItem("token") || ""
+    };
+  }
+
+  return null;
+}
+
+// =====================================================
+// UPDATE NAVBAR LOGIN UI
+// =====================================================
+function setupLoginUI() {
+  const user = getUser();
+
+  if (user) {
+    // Hide login button
+    if (loginBtn) loginBtn.style.display = "none";
+
+    // Show profile image
+    if (accountIcon) {
+      accountIcon.src = user.picture || "images/default-user.png";
+      accountIcon.style.display = "inline-block";
+    }
+  } else {
+    // Show login button
+    if (loginBtn) loginBtn.style.display = "inline-block";
+
+    // Hide profile icon
+    if (accountIcon) accountIcon.style.display = "none";
+  }
+}
+
+// =====================================================
+// LOGOUT FUNCTION
+// =====================================================
+function logoutUser() {
+  localStorage.removeItem("sg_user");
+  localStorage.removeItem("userEmail");
+  localStorage.removeItem("userName");
+  localStorage.removeItem("userPic");
+  localStorage.removeItem("isAdmin");
+  localStorage.removeItem("token");
+
   setupLoginUI();
   updateCartBadge();
 
-  // Account icon click → Go to account page
-  const accountIcon = document.getElementById("accountIcon");
-  if (accountIcon) {
-    accountIcon.addEventListener("click", () => {
-      window.location.href = "account.html";
-    });
-  }
+  window.location.href = "index.html";
+}
 
-  // If Login button exists → And user already logged in → Take to account.html
-  const loginBtn = document.getElementById("loginBtn");
-  if (loginBtn) {
-    loginBtn.addEventListener("click", () => {
-      const email = localStorage.getItem("userEmail");
+// Make logout available globally
+window.logoutUser = logoutUser;
 
-      if (email) {
-        // Already logged in → go to account page
-        window.location.href = "account.html";
-      }
-      // If not logged in → google-auth.js will open Google popup
+// =====================================================
+// CART BADGE UPDATE (works after login too)
+// =====================================================
+async function updateCartBadge() {
+  if (!cartBadge) return;
+
+  cartBadge.textContent = "";
+
+  const user = getUser();
+  if (!user || !user.token) return;
+
+  try {
+    const res = await fetch("https://api.suitsnglam.com/api/cart", {
+      headers: { "auth-token": user.token }
     });
+
+    const data = await res.json();
+
+    if (data.items && data.items.length > 0) {
+      cartBadge.textContent = data.items.length;
+    }
+
+  } catch (err) {
+    console.error("Cart badge error:", err);
   }
+}
+
+// Make it available globally
+window.updateCartBadge = updateCartBadge;
+
+// =====================================================
+// RUN ON PAGE LOAD
+// =====================================================
+document.addEventListener("DOMContentLoaded", () => {
+  setupLoginUI();
+  updateCartBadge();
 });
-
-/* ---------------------------------------------------
-   Update navbar login/account icon UI
----------------------------------------------------- */
-function setupLoginUI() {
-  const loginBtn = document.getElementById("loginBtn");
-  const accountIcon = document.getElementById("accountIcon");
-
-  if (!loginBtn || !accountIcon) return;
-
-  const email = localStorage.getItem("userEmail");
-  const pic = localStorage.getItem("userPic");
-
-  if (!email) {
-    // User not logged in
-    loginBtn.style.display = "inline-block";
-    accountIcon.style.display = "none";
-    return;
-  }
-
-  // User logged in
-  loginBtn.style.display = "none";
-  accountIcon.style.display = "inline-block";
-  accountIcon.src = pic || "https://www.svgrepo.com/show/382106/profile-user.svg";
-}
-
-/* ---------------------------------------------------
-   Update cart badge
----------------------------------------------------- */
-function updateCartBadge() {
-  const badge = document.getElementById("cartCount");
-  if (!badge) return;
-
-  const cart = JSON.parse(localStorage.getItem("cart") || "[]");
-  badge.textContent = cart.length > 0 ? cart.length : "";
-}
