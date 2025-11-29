@@ -12,7 +12,6 @@
     body { background-color: #f8f9fa; }
     .navbar-brand { font-weight: bold; }
 
-    /* CARD ANIMATION */
     .card-button { 
       cursor: pointer; 
       transition: transform 0.2s, box-shadow 0.2s; 
@@ -23,7 +22,6 @@
       box-shadow: 0 8px 16px rgba(0,0,0,0.2); 
     }
 
-    /* CATEGORY COLORS */
     .summer { background-color: rgb(255, 253, 143); }
     .winter { background-color: rgb(179, 191, 255); }
     .wedding { background-color: rgb(255, 220, 220); }
@@ -31,7 +29,6 @@
     .casuals { background-color: rgb(207, 255, 226); }
     .premium { background-color: rgb(231,208,245); }
 
-    /* LOGIN BUTTON */
     .btn-login {
       background-color: rgb(255, 63, 51);
       color: #fff;
@@ -46,7 +43,6 @@
       color: #fff;
     }
 
-    /* SOCIAL ICONS */
     .social-area i {
       font-size: 1.8rem;
       margin: 0 12px;
@@ -63,60 +59,57 @@
 <body>
 
   <!-- NAVBAR -->
-<nav class="navbar navbar-expand-lg" style="background-color: #e3f2fd;">
-  <div class="container">
-    <a class="navbar-brand" href="index.html">Suits N Glam</a>
+  <nav class="navbar navbar-expand-lg" style="background-color: #e3f2fd;">
+    <div class="container">
+      <a class="navbar-brand" href="index.html">Suits N Glam</a>
 
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-      <span class="navbar-toggler-icon"></span>
-    </button>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
 
-    <div class="collapse navbar-collapse" id="navbarNav">
+      <div class="collapse navbar-collapse" id="navbarNav">
 
-      <ul class="navbar-nav ms-auto me-2">
-        <li class="nav-item"><a class="nav-link active" href="allproducts.html">All Products</a></li>
-        <li class="nav-item"><a class="nav-link" href="newarrivals.html">New Arrivals</a></li>
+        <ul class="navbar-nav ms-auto me-2">
+          <li class="nav-item"><a class="nav-link active" href="allproducts.html">All Products</a></li>
+          <li class="nav-item"><a class="nav-link" href="newarrivals.html">New Arrivals</a></li>
 
-        <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-            Shop By Category
-          </a>
-          <ul class="dropdown-menu">
-            <li><a class="dropdown-item" href="summer.html">Summer</a></li>
-            <li><a class="dropdown-item" href="winter.html">Winter</a></li>
-            <li><a class="dropdown-item" href="wedding.html">Wedding</a></li>
-            <li><a class="dropdown-item" href="casuals.html">Casuals</a></li>
-            <li><a class="dropdown-item" href="dailywear.html">Daily Wear</a></li>
-            <li><a class="dropdown-item" href="premiumwear.html">Premium Wear</a></li>
-          </ul>
-        </li>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+              Shop By Category
+            </a>
+            <ul class="dropdown-menu">
+              <li><a class="dropdown-item" href="summer.html">Summer</a></li>
+              <li><a class="dropdown-item" href="winter.html">Winter</a></li>
+              <li><a class="dropdown-item" href="wedding.html">Wedding</a></li>
+              <li><a class="dropdown-item" href="casuals.html">Casuals</a></li>
+              <li><a class="dropdown-item" href="dailywear.html">Daily Wear</a></li>
+              <li><a class="dropdown-item" href="premiumwear.html">Premium Wear</a></li>
+            </ul>
+          </li>
 
-        <li class="nav-item"><a class="nav-link" href="bestdeals.html">Best Deals</a></li>
-        <li class="nav-item"><a class="nav-link" href="sales.html">Sales</a></li>
-      </ul>
+          <li class="nav-item"><a class="nav-link" href="bestdeals.html">Best Deals</a></li>
+          <li class="nav-item"><a class="nav-link" href="sales.html">Sales</a></li>
+        </ul>
 
-      <!-- CART ICON -->
-      <a href="cart.html" class="d-flex align-items-center gap-2 me-3"
-         style="text-decoration:none; color:#000;">
-        <i class="bi bi-bag-heart-fill" style="font-size:1.6rem;"></i>
-        <span id="cartCount" class="badge bg-danger"></span>
-      </a>
+        <!-- CART ICON -->
+        <a href="cart.html" class="d-flex align-items-center gap-2 me-3"
+           style="text-decoration:none; color:#000;">
+          <i class="bi bi-bag-heart-fill" style="font-size:1.6rem;"></i>
+          <span id="cartCount" class="badge bg-danger"></span>
+        </a>
 
-      <!-- LOGIN BUTTON (logged out) -->
-      <button id="loginButton" class="btn-login" onclick="google.accounts.id.prompt()">Login</button>
-<img id="accountIcon"
-     src="images/default-user.png"
-     style="width:32px;height:32px;border-radius:50%;cursor:pointer;display:none;"
-     onclick="window.location.href='account.html'">
+        <!-- LOGIN BUTTON -->
+        <button id="loginButton" class="btn-login">Login</button>
 
+        <!-- FIXED: Only ONE accountIcon -->
+        <img id="accountIcon"
+             src=""
+             style="width:34px;height:34px;border-radius:50%;display:none;cursor:pointer;margin-left:10px;"
+             onclick="window.location.href='account.html'">
 
-      <!-- ACCOUNT ICON (logged in) -->
-      <img id="accountIcon"
-           src=""
-           style="width:34px;height:34px;border-radius:50%;display:none;cursor:pointer;margin-left:10px;">
+      </div>
     </div>
-  </div>
-</nav>
+  </nav>
 
   <!-- CATEGORY CARDS -->
   <div class="container mt-5">
@@ -179,7 +172,6 @@
     </div>
   </div>
 
-
   <!-- SOCIAL ICONS -->
   <div class="container text-center py-4 social-area">
       <i class="bi bi-instagram" onclick="window.open('https://www.instagram.com/suitsnglam/', '_blank')"></i>
@@ -188,12 +180,9 @@
       <i class="bi bi-youtube" onclick="window.open('#', '_blank')"></i>
   </div>
 
-
-  <!-- GOOGLE SDK -->
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <script src="https://cdn.jsdelivr.net/npm/jwt-decode/build/jwt-decode.min.js"></script>
 
-  <!-- AUTH + NAVBAR + CART -->
   <script src="js/google-auth.js"></script>
   <script src="js/navbar.js"></script>
   <script src="js/cart.js"></script>
