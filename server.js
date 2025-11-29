@@ -1,28 +1,39 @@
-// backend_deploy/server.js
 import express from "express";
-import cors from "cors";
-import dotenv from "dotenv";
+import path from "path";
+import { fileURLToPath } from "url";
 import connectDB from "./config/db.js";
-
+import productsRoute from "./routes/products.js";
 import userRoutes from "./routes/userRoutes.js";
-import productRoutes from "./routes/products.js";
-import orderRoutes from "./routes/orders.js";
-
-dotenv.config();
-connectDB();
+import ordersRoute from "./routes/orders.js";
 
 const app = express();
+const PORT = process.env.PORT || 5000;
 
-app.use(cors());
-app.use(express.json({ limit: "10mb" }));
+// Needed for ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-// Serve uploads folder
-app.use("/uploads", express.static("uploads"));
+// Connect to MongoDB
+connectDB();
 
-// API Routes
+// Middleware
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// 🔥 Serve Frontend (public folder)
+app.use(express.static(path.join(__dirname, "public")));
+
+// 🔥 Backend API Routes
+app.use("/api/products", productsRoute);
 app.use("/api/users", userRoutes);
-app.use("/api/products", productRoutes);
-app.use("/api/orders", orderRoutes);
+app.use("/api/orders", ordersRoute);
 
-const PORT = process.env.PORT || 10000;
-app.listen(PORT, () => console.log("🚀 Server running on port " + PORT));
+// 🔥 Fallback – return index.html for anything not API
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "index.html"));
+});
+
+// Start server
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on port ${PORT}`);
+});
