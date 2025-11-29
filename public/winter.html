@@ -9,44 +9,36 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 
   <style>
-    body { background-color: #f8f9fa; }
-    .navbar-brand { font-weight: bold; }
+    body { background-color:#f8f9fa; }
+    .navbar-brand { font-weight:bold; }
 
-    .card-button { cursor:pointer; transition:0.2s; border:none; }
+    .card-button { cursor:pointer; transition:.2s; border:none; }
     .card-button:hover { transform:translateY(-5px); box-shadow:0 8px 16px rgba(0,0,0,0.2); }
 
     .btn-login {
-      background-color: rgb(255,63,51);
+      background-color:rgb(255,63,51);
       color:#fff;
       padding:6px 14px;
       border-radius:6px;
       border:none;
-      transition:.2s;
+      transition:0.2s;
     }
-    .btn-login:hover { background-color: rgb(255,43,31); }
-
-    .social-area i {
-      font-size:1.7rem;
-      margin:0 12px;
-      color:#000;
-      cursor:pointer;
-    }
-    .social-area i:hover { opacity:0.7; }
+    .btn-login:hover { background-color:rgb(255,43,31); }
 
     .category-hero {
-      background: #d9e0ff;
-      border-radius: 10px;
-      padding: 18px;
-      margin-bottom: 18px;
+      background:#d9e0ff;
+      border-radius:10px;
+      padding:18px;
+      margin-bottom:18px;
     }
   </style>
 </head>
 
 <body>
 
-  <!-- NAVBAR -->
   <nav class="navbar navbar-expand-lg" style="background-color:#e3f2fd;">
     <div class="container">
+
       <a class="navbar-brand" href="index.html">Suits N Glam</a>
 
       <button class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -62,12 +54,12 @@
           <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown">Shop By Category</a>
             <ul class="dropdown-menu">
-              <li><a class="dropdown-item" href="summer.html">Summer</a></li>
-              <li><a class="dropdown-item" href="winter.html">Winter</a></li>
-              <li><a class="dropdown-item" href="wedding.html">Wedding</a></li>
-              <li><a class="dropdown-item" href="casuals.html">Casuals</a></li>
-              <li><a class="dropdown-item" href="dailywear.html">Daily Wear</a></li>
-              <li><a class="dropdown-item" href="premiumwear.html">Premium Wear</a></li>
+              <li><a href="summer.html" class="dropdown-item">Summer</a></li>
+              <li><a href="winter.html" class="dropdown-item">Winter</a></li>
+              <li><a href="wedding.html" class="dropdown-item">Wedding</a></li>
+              <li><a href="casuals.html" class="dropdown-item">Casuals</a></li>
+              <li><a href="dailywear.html" class="dropdown-item">Daily Wear</a></li>
+              <li><a href="premiumwear.html" class="dropdown-item">Premium Wear</a></li>
             </ul>
           </li>
 
@@ -81,38 +73,38 @@
         </a>
 
         <button id="loginBtn" class="btn-login">Login</button>
-
+        <img id="accountIcon"
+             src=""
+             style="width:34px;height:34px;border-radius:50%;display:none;cursor:pointer;margin-left:10px;"
+             onclick="window.location.href='account.html'">
       </div>
     </div>
   </nav>
 
-  <!-- HERO -->
   <div class="container mt-4">
     <div class="category-hero">
       <h2>Winter</h2>
-      <p class="mb-0">Warm & stylish winter wear.</p>
+      <p class="mb-0">Warm & stylish winter wear</p>
     </div>
   </div>
 
-  <!-- PRODUCTS -->
   <div class="container mt-3">
     <div class="row g-4" id="productsContainer"></div>
   </div>
 
-  <!-- SOCIAL -->
   <div class="container text-center py-4 social-area">
-    <i onclick="window.open('https://www.instagram.com/suitsnglam/', '_blank')" class="bi bi-instagram"></i>
-    <i onclick="window.open('https://www.threads.net/@suitsnglam', '_blank')" class="bi bi-chat-dots"></i>
-    <i onclick="window.open('https://www.facebook.com/mannishan', '_blank')" class="bi bi-facebook"></i>
-    <i onclick="window.open('#', '_blank')" class="bi bi-youtube"></i>
+    <i class="bi bi-instagram" onclick="window.open('https://www.instagram.com/suitsnglam/')"></i>
+    <i class="bi bi-chat-dots" onclick="window.open('https://www.threads.net/@suitsnglam')"></i>
+    <i class="bi bi-facebook" onclick="window.open('https://www.facebook.com/mannishan')"></i>
+    <i class="bi bi-youtube"></i>
   </div>
 
-  <!-- SCRIPTS -->
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <script src="https://cdn.jsdelivr.net/npm/jwt-decode/build/jwt-decode.min.js"></script>
+
   <script src="js/google-auth.js"></script>
   <script src="js/navbar.js"></script>
-  <script src="js/products.js"></script>
+  <script src="js/products-common.js"></script>
   <script src="js/cart.js"></script>
 
   <script>
