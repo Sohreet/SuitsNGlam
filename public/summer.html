@@ -23,32 +23,31 @@
     }
 
     .btn-login {
-      background-color: rgb(255, 253, 143);
+      background-color: rgb(255,63,51);
       color: #fff;
+      border: none;
       padding: 6px 14px;
       border-radius: 6px;
-      border: none;
       transition: 0.2s;
     }
     .btn-login:hover { background-color: rgb(255,43,31); }
 
-    .social-area i {
-      font-size: 1.7rem;
-      margin: 0 12px;
-      color: #000;
-      cursor: pointer;
-    }
-    .social-area i:hover { opacity: 0.7; }
-
-    /* category specific (keeps same visual tone) */
     .category-hero {
-      background: linear-gradient(90deg, rgba(255,253,143,0.2), rgba(255,253,143,0.05));
+      background: #fffda1;
       border-radius: 10px;
       padding: 18px;
       margin-bottom: 18px;
     }
+
+    .social-area i {
+      font-size: 1.8rem;
+      margin: 0 12px;
+      cursor: pointer;
+    }
+    .social-area i:hover { opacity: 0.6; }
   </style>
 </head>
+
 <body>
 
   <!-- NAVBAR -->
@@ -56,7 +55,7 @@
     <div class="container">
       <a class="navbar-brand" href="index.html">Suits N Glam</a>
 
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <button class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbarNav">
         <span class="navbar-toggler-icon"></span>
       </button>
 
@@ -67,9 +66,7 @@
           <li class="nav-item"><a class="nav-link" href="newarrivals.html">New Arrivals</a></li>
 
           <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-              Shop By Category
-            </a>
+            <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown">Shop By Category</a>
             <ul class="dropdown-menu">
               <li><a class="dropdown-item" href="summer.html">Summer</a></li>
               <li><a class="dropdown-item" href="winter.html">Winter</a></li>
@@ -85,13 +82,19 @@
         </ul>
 
         <!-- CART -->
-        <a href="cart.html" class="d-flex align-items-center gap-2 me-3" style="text-decoration:none; color:#000;">
+        <a href="cart.html" class="d-flex align-items-center gap-2 me-3" style="color:#000;text-decoration:none;">
           <i class="bi bi-bag-heart-fill" style="font-size:1.6rem;"></i>
           <span id="cartCount" class="badge bg-danger"></span>
         </a>
 
-        <!-- LOGIN -->
+        <!-- LOGIN BUTTON -->
         <button id="loginBtn" class="btn-login">Login</button>
+
+        <!-- ACCOUNT ICON -->
+        <img id="accountIcon"
+             src=""
+             style="width:34px;height:34px;border-radius:50%;cursor:pointer;display:none;margin-left:10px;"
+             onclick="window.location.href='account.html'">
 
       </div>
     </div>
@@ -100,22 +103,21 @@
   <!-- HERO -->
   <div class="container mt-4">
     <div class="category-hero">
-      <h2 id="categoryTitle">Summer</h2>
+      <h2>Summer</h2>
       <p class="mb-0">Light and breezy outfits perfect for warm days.</p>
     </div>
   </div>
 
-  <!-- PRODUCTS -->
   <div class="container mt-3">
     <div class="row g-4" id="productsContainer"></div>
   </div>
 
-  <!-- SOCIAL ICONS -->
+  <!-- SOCIAL -->
   <div class="container text-center py-4 social-area">
-    <i onclick="window.open('https://www.instagram.com/suitsnglam/', '_blank')" class="bi bi-instagram"></i>
-    <i onclick="window.open('https://www.threads.net/@suitsnglam', '_blank')" class="bi bi-chat-dots"></i>
-    <i onclick="window.open('https://www.facebook.com/mannishan', '_blank')" class="bi bi-facebook"></i>
-    <i onclick="window.open('#', '_blank')" class="bi bi-youtube"></i>
+      <i class="bi bi-instagram" onclick="window.open('https://www.instagram.com/suitsnglam/')"></i>
+      <i class="bi bi-chat-dots" onclick="window.open('https://www.threads.net/@suitsnglam')"></i>
+      <i class="bi bi-facebook" onclick="window.open('https://www.facebook.com/mannishan')"></i>
+      <i class="bi bi-youtube"></i>
   </div>
 
   <!-- SCRIPTS -->
@@ -124,20 +126,12 @@
 
   <script src="js/google-auth.js"></script>
   <script src="js/navbar.js"></script>
-  <script src="js/products.js"></script>
+  <script src="js/products-common.js"></script>
   <script src="js/cart.js"></script>
 
   <script>
-    // load summer products (ensure products.js implements loadProducts)
     loadProducts("summer");
-    document.getElementById("categoryTitle").textContent = "Summer";
   </script>
-
-  <script src="https://accounts.google.com/gsi/client" async defer></script>
-<script src="https://cdn.jsdelivr.net/npm/jwt-decode/build/jwt-decode.min.js"></script>
-
-<script src="js/google-auth.js"></script>
-<script src="js/navbar.js"></script>
 
 </body>
 </html>
