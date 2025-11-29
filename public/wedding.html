@@ -12,6 +12,13 @@
     body { background-color:#f8f9fa; }
     .navbar-brand { font-weight:bold; }
 
+    .category-hero {
+      background:#ffe4e4;
+      padding:18px;
+      border-radius:10px;
+      margin-bottom:18px;
+    }
+
     .card-button { cursor:pointer; transition:.2s; border:none; }
     .card-button:hover { transform:translateY(-5px); box-shadow:0 8px 16px rgba(0,0,0,0.2); }
 
@@ -19,34 +26,19 @@
       background-color:rgb(255,63,51);
       color:#fff;
       padding:6px 14px;
-      border-radius:6px;
       border:none;
+      border-radius:6px;
       transition:0.2s;
     }
     .btn-login:hover { background-color:rgb(255,43,31); }
-
-    .social-area i {
-      font-size:1.7rem;
-      margin:0 12px;
-      color:#000;
-      cursor:pointer;
-    }
-    .social-area i:hover { opacity:0.7; }
-
-    .category-hero {
-      background:#ffe4e4;
-      border-radius:10px;
-      padding:18px;
-      margin-bottom:18px;
-    }
   </style>
 </head>
 
 <body>
 
-  <!-- NAVBAR -->
   <nav class="navbar navbar-expand-lg" style="background-color:#e3f2fd;">
     <div class="container">
+
       <a class="navbar-brand" href="index.html">Suits N Glam</a>
 
       <button class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -75,17 +67,21 @@
           <li class="nav-item"><a class="nav-link" href="sales.html">Sales</a></li>
         </ul>
 
-        <a href="cart.html" class="d-flex align-items-center gap-2 me-3" style="color:#000; text-decoration:none;">
+        <a href="cart.html" class="d-flex align-items-center gap-2 me-3" style="color:#000;text-decoration:none;">
           <i class="bi bi-bag-heart-fill" style="font-size:1.6rem;"></i>
           <span id="cartCount" class="badge bg-danger"></span>
         </a>
 
         <button id="loginBtn" class="btn-login">Login</button>
+
+        <img id="accountIcon"
+             src=""
+             style="width:34px;height:34px;border-radius:50%;cursor:pointer;display:none;margin-left:10px;"
+             onclick="window.location.href='account.html'">
       </div>
     </div>
   </nav>
 
-  <!-- HERO -->
   <div class="container mt-4">
     <div class="category-hero">
       <h2>Wedding</h2>
@@ -93,28 +89,28 @@
     </div>
   </div>
 
-  <!-- PRODUCTS -->
   <div class="container mt-3">
     <div class="row g-4" id="productsContainer"></div>
   </div>
 
-  <!-- SOCIAL -->
   <div class="container text-center py-4 social-area">
-    <i onclick="window.open('https://www.instagram.com/suitsnglam/', '_blank')" class="bi bi-instagram"></i>
-    <i onclick="window.open('https://www.threads.net/@suitsnglam', '_blank')" class="bi bi-chat-dots"></i>
-    <i onclick="window.open('https://www.facebook.com/mannishan', '_blank')" class="bi bi-facebook"></i>
-    <i onclick="window.open('#', '_blank')" class="bi bi-youtube"></i>
+    <i class="bi bi-instagram" onclick="window.open('https://www.instagram.com/suitsnglam/')"></i>
+    <i class="bi bi-chat-dots" onclick="window.open('https://www.threads.net/@suitsnglam')"></i>
+    <i class="bi bi-facebook" onclick="window.open('https://www.facebook.com/mannishan')"></i>
+    <i class="bi bi-youtube"></i>
   </div>
 
-  <!-- SCRIPTS -->
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <script src="https://cdn.jsdelivr.net/npm/jwt-decode/build/jwt-decode.min.js"></script>
+
   <script src="js/google-auth.js"></script>
   <script src="js/navbar.js"></script>
-  <script src="js/products.js"></script>
+  <script src="js/products-common.js"></script>
   <script src="js/cart.js"></script>
 
-  <script> loadProducts("wedding"); </script>
+  <script>
+    loadProducts("wedding");
+  </script>
 
 </body>
 </html>
