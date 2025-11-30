@@ -1,12 +1,12 @@
-// ------------------------------------------------------
-// GOOGLE LOGIN (Unified Storage + Flicker Free)
-// ------------------------------------------------------
+// -------------------------------------------
+// GOOGLE AUTH (NO UI) — FINAL CLEAN VERSION
+// -------------------------------------------
 
 const GOOGLE_CLIENT_ID =
   "653374521156-6retcia1fiu5dvmbjik9sq89ontrkmvt.apps.googleusercontent.com";
 
-// Load Google SDK
-(function loadGoogleSDK() {
+// Load Google SDK once
+(function loadSDK() {
   if (document.getElementById("gsi-script")) return;
   const s = document.createElement("script");
   s.id = "gsi-script";
@@ -16,47 +16,38 @@ const GOOGLE_CLIENT_ID =
   document.head.appendChild(s);
 })();
 
-function applyUserToStorage(userObj) {
-  localStorage.setItem("sg_user", JSON.stringify(userObj));
+// Save user
+function saveUser(data, token) {
+  const user = {
+    email: data.email,
+    name: data.name,
+    picture: data.picture,
+    token
+  };
 
-  localStorage.setItem("userEmail", userObj.email);
-  localStorage.setItem("userName", userObj.name);
-  localStorage.setItem("userPic", userObj.picture);
-  localStorage.setItem("token", userObj.token);
+  localStorage.setItem("sg_user", JSON.stringify(user));
+
+  const ADMINS = ["sohabrar10@gmail.com", "suitsnglam01@gmail.com"];
+  if (ADMINS.includes(user.email)) {
+    localStorage.setItem("isAdmin", "true");
+  } else {
+    localStorage.removeItem("isAdmin");
+  }
 }
 
+// Handle Google login
 function handleCredentialResponse(response) {
-  try {
-    const data = jwt_decode(response.credential);
+  const data = jwt_decode(response.credential);
+  saveUser(data, response.credential);
 
-    const user = {
-      email: data.email,
-      name: data.name,
-      picture: data.picture,
-      token: response.credential
-    };
-
-    applyUserToStorage(user);
-
-    const ADMIN_EMAILS = ["sohabrar10@gmail.com", "suitsnglam01@gmail.com"];
-    if (ADMIN_EMAILS.includes(data.email)) {
-      localStorage.setItem("isAdmin", "true");
-    } else {
-      localStorage.removeItem("isAdmin");
-    }
-
-    if (window.setupLoginUI) setupLoginUI();
-    if (window.updateCartBadge) updateCartBadge();
-
-  } catch (e) {
-    console.error("Google Login Error →", e);
-  }
+  // Tell navbar to update UI
+  if (window.setupLoginUI) setupLoginUI();
+  if (window.updateCartBadge) updateCartBadge();
 }
 
-function triggerGoogleLoginPopup() {
-  if (typeof google === "undefined" || !google.accounts) {
-    return setTimeout(triggerGoogleLoginPopup, 300);
-  }
+// Trigger popup
+function googleLogin() {
+  if (!google?.accounts) return setTimeout(googleLogin, 300);
 
   google.accounts.id.initialize({
     client_id: GOOGLE_CLIENT_ID,
@@ -66,11 +57,8 @@ function triggerGoogleLoginPopup() {
   google.accounts.id.prompt();
 }
 
+// Attach login button event
 document.addEventListener("DOMContentLoaded", () => {
-  const btn = document.getElementById("loginBtn") || document.getElementById("loginButton");
-  if (btn) btn.addEventListener("click", triggerGoogleLoginPopup);
-
-  if (localStorage.getItem("sg_user") && window.setupLoginUI) {
-    setupLoginUI();
-  }
+  const btn = document.getElementById("loginButton") || document.getElementById("loginBtn");
+  if (btn) btn.addEventListener("click", googleLogin);
 });
