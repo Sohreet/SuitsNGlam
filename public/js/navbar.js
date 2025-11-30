@@ -1,70 +1,28 @@
-console.log("NAVBAR JS RUNNING");
-console.log("accountIcon =", document.getElementById("accountIcon"));
-console.log("redirect override =", window.location.pathname.includes("admin.html"));
+document.addEventListener("DOMContentLoaded", () => {
+  const loginBtn = document.getElementById("loginBtn");
+  const accountIcon = document.getElementById("accountIcon");
+  const navLoginArea = document.querySelector(".nav-login-area");
 
-// --------------------------------------------------
-// NAVBAR UI — FINAL NON-FLICKER VERSION
-// --------------------------------------------------
+  // ALWAYS show login area (remove flicker)
+  navLoginArea.style.visibility = "visible";
 
-const loginBtn = document.getElementById("loginBtn") || document.getElementById("loginButton");
-const accountIcon = document.getElementById("accountIcon");
-const loginArea = document.querySelector(".nav-login-area");
-const cartBadge = document.getElementById("cartCount");
-
-// Read saved user
-function getUser() {
-  const raw = localStorage.getItem("sg_user");
-  return raw ? JSON.parse(raw) : null;
-}
-
-// Update navbar UI (NO FLICKER)
-function setupLoginUI() {
-  const user = getUser();
+  const user = localStorage.getItem("sng_user");
 
   if (user) {
-  accountIcon.style.display = "inline-block";
-  loginBtn.style.display = "none";
-} else {
-  accountIcon.style.display = "none";
-  loginBtn.style.display = "inline-block";
-}
+    // Logged IN
+    const u = JSON.parse(user);
 
-  if (loginArea) loginArea.style.visibility = "visible";
-}
-
-// FIX: Prevent redirect on admin page
-if (accountIcon) {
-  if (!window.location.pathname.includes("admin.html")) {
-    accountIcon.addEventListener("click", () => {
-      window.location.href = "account.html";
-    });
+    loginBtn.style.display = "none";
+    accountIcon.style.display = "block";
+    accountIcon.src = u.picture || "https://cdn-icons-png.flaticon.com/512/149/149071.png";
+  } else {
+    // Logged OUT
+    loginBtn.style.display = "block";
+    accountIcon.style.display = "none";
   }
-}
 
-// Update cart badge
-async function updateCartBadge() {
-  if (!cartBadge) return;
-
-  cartBadge.textContent = "";
-
-  const user = getUser();
-  if (!user?.token) return;
-
-  try {
-    const res = await fetch("https://api.suitsnglam.com/api/cart", {
-      headers: { "auth-token": user.token },
-    });
-
-    const data = await res.json();
-    if (data.items?.length) cartBadge.textContent = data.items.length;
-
-  } catch (err) {
-    console.error("Cart badge error:", err);
-  }
-}
-
-// Run instantly when DOM loads
-document.addEventListener("DOMContentLoaded", () => {
-  setupLoginUI();
-  updateCartBadge();
+  // Login button click
+  loginBtn.addEventListener("click", () => {
+    google.accounts.id.prompt(); // Show Google login popup
+  });
 });
