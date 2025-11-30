@@ -9,59 +9,61 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 
   <style>
-    body { background-color: #f8f9fa; }
-    .navbar-brand { font-weight: bold; }
+    body { background:#f8f9fa; }
+    .navbar-brand { font-weight:bold; }
 
-    /* Product card hover */
-    .card-button {
-      cursor: pointer;
-      transition: 0.2s;
-      border: none;
+    .category-hero {
+      background:#fffda1;
+      border-radius:10px;
+      padding:18px;
+      margin-bottom:18px;
     }
+
+    .card-button {
+      cursor:pointer;
+      transition:.2s;
+      border:none;
+    }
+
     .card-button:hover {
       transform: translateY(-5px);
       box-shadow: 0 8px 16px rgba(0,0,0,0.2);
     }
 
-    /* LOGIN BUTTON */
     .btn-login {
-      background-color: rgb(255,63,51);
-      color: #fff;
-      border: none;
-      padding: 6px 14px;
-      border-radius: 6px;
-      transition: 0.2s;
-    }
-    .btn-login:hover { background-color: rgb(255,43,31); }
-
-    /* HERO BOX */
-    .category-hero {
-      background: #fffda1;
-      border-radius: 10px;
-      padding: 18px;
-      margin-bottom: 18px;
+      background-color:rgb(255,63,51);
+      color:#fff;
+      padding:6px 14px;
+      border:none;
+      border-radius:6px;
     }
 
-    /* Flicker fix */
-    .nav-login-area {
-      visibility: hidden;
-    }
+    .btn-login:hover { background-color:rgb(255,43,31); }
 
-    /* Social Icons */
-    .social-area i {
-      font-size: 1.8rem;
-      margin: 0 12px;
-      cursor: pointer;
+    /* Anti flicker */
+    .nav-login-area { visibility:hidden; }
+
+    /* Coming Soon */
+    #comingSoonMsg {
+      display:none;
+      text-align:center;
+      font-size:1.3rem;
+      padding:40px 0;
+      color:#555;
+      font-weight:500;
     }
-    .social-area i:hover { opacity: 0.6; }
   </style>
 </head>
 
 <body>
 
-  <!-- ===================== NAVBAR ====================== -->
+  <!-- NAVBAR -->
   <nav class="navbar navbar-expand-lg" style="background-color:#e3f2fd;">
     <div class="container">
+
+      <!-- Back to Home -->
+      <a href="index.html" class="btn btn-outline-primary me-3">← Home</a>
+
       <a class="navbar-brand" href="index.html">Suits N Glam</a>
 
       <button class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -69,15 +71,13 @@
       </button>
 
       <div class="collapse navbar-collapse" id="navbarNav">
-
         <ul class="navbar-nav ms-auto me-2">
 
-          <li class="nav-item"><a class="nav-link" href="allproducts.html">All Products</a></li>
-          <li class="nav-item"><a class="nav-link" href="newarrivals.html">New Arrivals</a></li>
+          <li><a class="nav-link" href="allproducts.html">All Products</a></li>
+          <li><a class="nav-link" href="newarrivals.html">New Arrivals</a></li>
 
           <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown">Shop By Category</a>
-
             <ul class="dropdown-menu">
               <li><a class="dropdown-item" href="summer.html">Summer</a></li>
               <li><a class="dropdown-item" href="winter.html">Winter</a></li>
@@ -88,20 +88,19 @@
             </ul>
           </li>
 
-          <li class="nav-item"><a class="nav-link" href="bestdeals.html">Best Deals</a></li>
-          <li class="nav-item"><a class="nav-link" href="sales.html">Sales</a></li>
+          <li><a class="nav-link" href="bestdeals.html">Best Deals</a></li>
+          <li><a class="nav-link" href="sales.html">Sales</a></li>
         </ul>
 
-        <!-- CART -->
-        <a href="cart.html" class="d-flex align-items-center gap-2 me-3" style="text-decoration:none;color:#000;">
+        <!-- Cart -->
+        <a href="cart.html" class="d-flex align-items-center me-3" style="color:#000;text-decoration:none;">
           <i class="bi bi-bag-heart-fill" style="font-size:1.6rem;"></i>
           <span id="cartCount" class="badge bg-danger"></span>
         </a>
 
-        <!-- LOGIN / ACCOUNT WRAPPER -->
+        <!-- Login / Account -->
         <div class="nav-login-area d-flex align-items-center">
-          <button id="loginBtn" class="btn-login">Login</button>
-
+          <button id="loginButton" class="btn-login">Login</button>
           <img id="accountIcon"
                src=""
                style="width:34px;height:34px;border-radius:50%;cursor:pointer;display:none;margin-left:10px;"
@@ -112,7 +111,8 @@
     </div>
   </nav>
 
-  <!-- ===================== HERO ====================== -->
+
+  <!-- HERO -->
   <div class="container mt-4">
     <div class="category-hero">
       <h2>Summer</h2>
@@ -120,30 +120,35 @@
     </div>
   </div>
 
-  <!-- ===================== PRODUCTS ====================== -->
+  <!-- Coming Soon -->
+  <div id="comingSoonMsg">☀️ Summer Collection Coming Soon ☀️</div>
+
+  <!-- Products -->
   <div class="container mt-3">
     <div class="row g-4" id="productsContainer"></div>
   </div>
 
-  <!-- ===================== SOCIAL ====================== -->
-  <div class="container text-center py-4 social-area">
+  <!-- SOCIAL -->
+  <div class="container text-center py-4">
     <i class="bi bi-instagram" onclick="window.open('https://www.instagram.com/suitsnglam/', '_blank')"></i>
     <i class="bi bi-chat-dots" onclick="window.open('https://www.threads.net/@suitsnglam', '_blank')"></i>
-    <i class="bi bi-facebook" onclick="window.open('https://www.facebook.com/mannishan', '_blank')"></i>
+    <i class="bi bi-facebook" onclick="window.open('https://www.facebook.com/mannishan')"></i>
     <i class="bi bi-youtube"></i>
   </div>
 
-  <!-- ===================== SCRIPTS ====================== -->
+  <!-- JS -->
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <script src="https://cdn.jsdelivr.net/npm/jwt-decode/build/jwt-decode.min.js"></script>
 
   <script src="js/google-auth.js"></script>
   <script src="js/navbar.js"></script>
   <script src="js/products-common.js"></script>
-  
+
   <script>
-    loadProducts("summer");
+    loadProducts("summer", "productsContainer", "comingSoonMsg");
   </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
 
 </body>
 </html>
