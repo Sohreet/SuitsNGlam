@@ -1,24 +1,17 @@
-// =====================================================
-// GLOBAL NAVBAR LOGIN SYSTEM (FLICKER-FREE VERSION)
-// =====================================================
+// ------------------------------
+// FLICKER-FREE GLOBAL NAVBAR
+// ------------------------------
 
-// Elements (safe for all pages)
-const loginBtn =
-  document.getElementById("loginButton") ||
-  document.getElementById("loginBtn");
-
+const loginBtn = document.getElementById("loginBtn") || document.getElementById("loginButton");
 const accountIcon = document.getElementById("accountIcon");
+const wrapper = document.querySelector(".nav-login-area");
 const cartBadge = document.getElementById("cartCount");
 
-// =====================================================
-// READ USER FROM LOCAL STORAGE (Unified Format)
-// =====================================================
+// Read user
 function getUser() {
-  // Full object format
   const obj = localStorage.getItem("sg_user");
   if (obj) return JSON.parse(obj);
 
-  // Old key fallback
   const email = localStorage.getItem("userEmail");
   if (email) {
     return {
@@ -28,74 +21,48 @@ function getUser() {
       token: localStorage.getItem("token") || ""
     };
   }
-
   return null;
 }
 
-// =====================================================
-// FLICKER-FREE NAVBAR UPDATE
-// =====================================================
+// Apply login/logout UI
 function setupLoginUI() {
   const user = getUser();
 
-  // Hide everything first to prevent DOM flicker
-  if (loginBtn) {
-    loginBtn.style.visibility = "hidden";
-    loginBtn.style.display = "none";
-  }
-  if (accountIcon) {
-    accountIcon.style.visibility = "hidden";
-    accountIcon.style.display = "none";
-  }
+  // Hide first (prevents flicker)
+  if (wrapper) wrapper.style.visibility = "hidden";
 
-  // If logged in → show profile icon
+  if (loginBtn) loginBtn.style.display = "none";
+  if (accountIcon) accountIcon.style.display = "none";
+
   if (user) {
     if (accountIcon) {
       accountIcon.src = user.picture || "images/default-user.png";
       accountIcon.style.display = "inline-block";
-      accountIcon.style.visibility = "visible";
     }
+  } else {
+    if (loginBtn) loginBtn.style.display = "inline-block";
   }
 
-  // If logged out → show login button
-  else {
-    if (loginBtn) {
-      loginBtn.style.display = "inline-block";
-      loginBtn.style.visibility = "visible";
-    }
-  }
+  // Reveal wrapper AFTER correct UI is set
+  requestAnimationFrame(() => {
+    if (wrapper) wrapper.style.visibility = "visible";
+  });
 }
 
-// =====================================================
-// LOGOUT
-// =====================================================
+// Logout function
 function logoutUser() {
-  localStorage.removeItem("sg_user");
-  localStorage.removeItem("userEmail");
-  localStorage.removeItem("userName");
-  localStorage.removeItem("userPic");
-  localStorage.removeItem("isAdmin");
-  localStorage.removeItem("token");
-
-  if (google?.accounts?.id) {
-    google.accounts.id.disableAutoSelect();
-  }
-
-  setupLoginUI();
-  updateCartBadge();
+  localStorage.clear();
+  if (google?.accounts?.id) google.accounts.id.disableAutoSelect();
   window.location.href = "index.html";
 }
 
 window.logoutUser = logoutUser;
 
-// =====================================================
-// UPDATE CART BADGE
-// =====================================================
+// Cart badge
 async function updateCartBadge() {
   if (!cartBadge) return;
 
   cartBadge.textContent = "";
-
   const user = getUser();
   if (!user || !user.token) return;
 
@@ -105,10 +72,8 @@ async function updateCartBadge() {
     });
 
     const data = await res.json();
+    if (data.items) cartBadge.textContent = data.items.length;
 
-    if (data.items?.length > 0) {
-      cartBadge.textContent = data.items.length;
-    }
   } catch (err) {
     console.error("Cart badge error:", err);
   }
@@ -116,9 +81,7 @@ async function updateCartBadge() {
 
 window.updateCartBadge = updateCartBadge;
 
-// =====================================================
-// RUN ON PAGE LOAD
-// =====================================================
+// On load
 document.addEventListener("DOMContentLoaded", () => {
   setupLoginUI();
   updateCartBadge();
