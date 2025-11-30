@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -13,7 +12,7 @@
     body { background-color:#f8f9fa; }
     .navbar-brand { font-weight: bold; }
 
-    /* Login button */
+    /* Login button style */
     .btn-login{
       background-color:#ff3f33;
       color:white;
@@ -21,9 +20,13 @@
       border:none;
       border-radius:6px;
       font-weight:600;
-      cursor: pointer;
+      cursor:pointer;
     }
-    .btn-login:hover{ background-color:#ff2b1f; }
+    .btn-login:hover{
+      background-color:#ff2b1f;
+    }
+
+    .nav-login-area { visibility: visible !important; }
 
     .home-icon{
       font-size:1.6rem;
@@ -34,7 +37,11 @@
     }
     .home-icon:hover{ opacity:0.7; }
 
-    .card-button{ cursor:pointer; transition:0.2s; border:none; }
+    .card-button{
+      cursor:pointer;
+      transition:0.2s;
+      border:none;
+    }
     .card-button:hover{
       transform:translateY(-6px);
       box-shadow:0 8px 16px rgba(0,0,0,0.2);
@@ -105,11 +112,9 @@
       <div class="nav-login-area d-flex align-items-center">
         <button id="loginBtn" class="btn-login">Login</button>
 
-        <img id="accountIcon" src="" 
-             style="width:34px;height:34px;border-radius:50%;cursor:pointer;display:none;margin-left:10px;">
+        <img id="accountIcon" src="" style="width:34px;height:34px;border-radius:50%;cursor:pointer;display:none;margin-left:10px;">
 
-        <span id="adminBadgeNav" 
-              style="display:none;background:#c60000;color:white;padding:4px 10px;border-radius:6px;font-weight:700;margin-left:8px;">
+        <span id="adminBadgeNav" style="display:none;background:#c60000;color:white;padding:4px 10px;border-radius:6px;font-weight:700;margin-left:8px;">
           ADMIN
         </span>
       </div>
@@ -123,53 +128,41 @@
 <div class="container mt-5">
   <div class="row g-4">
 
-    <div class="col-md-4 col-sm-6">
-      <a href="summer.html" class="text-decoration-none">
-        <div class="card card-button summer p-4 text-center">
-          <h5>Summer</h5><p>Light and breezy outfits</p>
-        </div>
-      </a>
-    </div>
+    <div class="col-md-4 col-sm-6"><a href="summer.html" class="text-decoration-none">
+      <div class="card card-button summer p-4 text-center">
+        <h5>Summer</h5><p>Light and breezy outfits</p>
+      </div>
+    </a></div>
 
-    <div class="col-md-4 col-sm-6">
-      <a href="winter.html" class="text-decoration-none">
-        <div class="card card-button winter p-4 text-center">
-          <h5>Winter</h5><p>Warm & stylish</p>
-        </div>
-      </a>
-    </div>
+    <div class="col-md-4 col-sm-6"><a href="winter.html" class="text-decoration-none">
+      <div class="card card-button winter p-4 text-center">
+        <h5>Winter</h5><p>Warm & stylish</p>
+      </div>
+    </a></div>
 
-    <div class="col-md-4 col-sm-6">
-      <a href="wedding.html" class="text-decoration-none">
-        <div class="card card-button wedding p-4 text-center">
-          <h5>Wedding</h5><p>Elegant & glamorous</p>
-        </div>
-      </a>
-    </div>
+    <div class="col-md-4 col-sm-6"><a href="wedding.html" class="text-decoration-none">
+      <div class="card card-button wedding p-4 text-center">
+        <h5>Wedding</h5><p>Elegant & glamorous</p>
+      </div>
+    </a></div>
 
-    <div class="col-md-4 col-sm-6">
-      <a href="casuals.html" class="text-decoration-none">
-        <div class="card card-button casuals p-4 text-center">
-          <h5>Casuals</h5><p>Comfortable everyday wear</p>
-        </div>
-      </a>
-    </div>
+    <div class="col-md-4 col-sm-6"><a href="casuals.html" class="text-decoration-none">
+      <div class="card card-button casuals p-4 text-center">
+        <h5>Casuals</h5><p>Comfortable everyday wear</p>
+      </div>
+    </a></div>
 
-    <div class="col-md-4 col-sm-6">
-      <a href="dailywear.html" class="text-decoration-none">
-        <div class="card card-button dailywear p-4 text-center">
-          <h5>Daily Wear</h5><p>Stylish for daily use</p>
-        </div>
-      </a>
-    </div>
+    <div class="col-md-4 col-sm-6"><a href="dailywear.html" class="text-decoration-none">
+      <div class="card card-button dailywear p-4 text-center">
+        <h5>Daily Wear</h5><p>Stylish for daily use</p>
+      </div>
+    </a></div>
 
-    <div class="col-md-4 col-sm-6">
-      <a href="premiumwear.html" class="text-decoration-none">
-        <div class="card card-button premium p-4 text-center">
-          <h5>Premium Wear</h5><p>Luxury & Exclusive</p>
-        </div>
-      </a>
-    </div>
+    <div class="col-md-4 col-sm-6"><a href="premiumwear.html" class="text-decoration-none">
+      <div class="card card-button premium p-4 text-center">
+        <h5>Premium Wear</h5><p>Luxury & Exclusive</p>
+      </div>
+    </a></div>
 
   </div>
 </div>
@@ -182,16 +175,44 @@
   <i class="bi bi-youtube"></i>
 </div>
 
-<!-- GOOGLE CLIENT -->
+<!-- EMAIL LOGIN MODAL -->
+<div class="modal fade" id="emailLoginModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content p-3">
+      <h5 class="mb-3">Login with Email</h5>
+      <input id="loginEmail" type="email" class="form-control my-2" placeholder="Email">
+      <input id="loginPass" type="password" class="form-control my-2" placeholder="Password">
+      <button class="btn btn-primary w-100 my-2" onclick="emailLogin()">Login</button>
+      <div class="text-center">
+        <small>or</small>
+      </div>
+      <div class="d-grid gap-2 mt-2">
+        <button class="btn btn-outline-secondary" onclick="triggerGoogleLogin()">Continue with Google</button>
+      </div>
+      <p class="text-center mt-3">
+        Don't have an account? <a href="#" onclick="openRegister()">Register</a>
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- REGISTER MODAL -->
+<div class="modal fade" id="registerModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content p-3">
+      <h5 class="mb-3">Create Account</h5>
+      <input id="regName" type="text" class="form-control my-2" placeholder="Name">
+      <input id="regEmail" type="email" class="form-control my-2" placeholder="Email">
+      <input id="regPass" type="password" class="form-control my-2" placeholder="Password">
+      <button class="btn btn-success w-100 my-2" onclick="emailRegister()">Register</button>
+    </div>
+  </div>
+</div>
+
+<!-- GOOGLE + APP.JS -->
 <script src="https://accounts.google.com/gsi/client" async defer></script>
-
-<!-- JWT DECODE -->
 <script src="https://cdn.jsdelivr.net/npm/jwt-decode/build/jwt-decode.min.js"></script>
-
-<!-- MAIN APP -->
 <script src="js/app.js"></script>
-
-<!-- BOOTSTRAP -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
 
 </body>
