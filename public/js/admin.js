@@ -16,6 +16,10 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 
+// BACKEND IS ON THE SAME SERVER → NO NEED FOR URL
+const BASE_URL = "";  // automatically becomes https://suitsnglam.com
+
+
 /* -------------------------------------------------------
    FORM SUBMIT (ADD or UPDATE PRODUCT)
 ------------------------------------------------------- */
@@ -50,8 +54,8 @@ form.addEventListener("submit", async (e) => {
   }
 
   const url = productId
-    ? `https://www.suitsnglam.com/api/products/${productId}`
-    : "https://www.suitsnglam.com/api/products";
+    ? `/api/products/${productId}`
+    : `/api/products`;
 
   const method = productId ? "PUT" : "POST";
 
@@ -69,20 +73,25 @@ form.addEventListener("submit", async (e) => {
   loadProducts();
 });
 
+
 /* -------------------------------------------------------
    LOAD ALL PRODUCTS
 ------------------------------------------------------- */
 async function loadProducts() {
-  const res = await fetch("https://www.suitsnglam.com/api/products");
+  const res = await fetch(`/api/products`);
   const data = await res.json();
 
   const tbody = document.getElementById("productsTable");
   tbody.innerHTML = "";
 
   data.forEach((p) => {
+    const imageUrl = p.images?.[0]
+      ? `${p.images[0]}`          // already served from same host
+      : "img/noimg.png";
+
     tbody.innerHTML += `
       <tr>
-        <td><img src="${p.images?.[0] || 'img/noimg.png'}"></td>
+        <td><img src="${imageUrl}" style="width:60px;height:60px;object-fit:cover;border-radius:6px;"></td>
         <td>${p.title}</td>
         <td>₹${p.price}</td>
         <td>${p.category}</td>
@@ -102,11 +111,12 @@ async function loadProducts() {
   });
 }
 
+
 /* -------------------------------------------------------
    EDIT PRODUCT (AUTO-FILL FORM)
 ------------------------------------------------------- */
 async function editProduct(id) {
-  const res = await fetch(`https://www.suitsnglam.com/api/products/${id}`);
+  const res = await fetch(`/api/products/${id}`);
   const p = await res.json();
 
   document.getElementById("productId").value = p._id;
@@ -123,13 +133,14 @@ async function editProduct(id) {
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
+
 /* -------------------------------------------------------
    DELETE PRODUCT
 ------------------------------------------------------- */
 async function deleteProduct(id) {
   if (!confirm("Delete this product?")) return;
 
-  const res = await fetch(`https://www.suitsnglam.com/api/products/${id}`, {
+  const res = await fetch(`/api/products/${id}`, {
     method: "DELETE",
   });
 
