@@ -22,7 +22,7 @@
     }
     .btn-login:hover { background:#ff2b1f; }
 
-    /* Flicker Fix */
+    /* prevent flicker */
     .nav-login-area { visibility:visible !important; }
 
     /* Home icon */
@@ -61,9 +61,7 @@
         <li class="nav-item"><a class="nav-link" href="newarrivals.html">New Arrivals</a></li>
 
         <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
-            Shop By Category
-          </a>
+          <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Shop By Category</a>
           <ul class="dropdown-menu">
             <li><a class="dropdown-item" href="summer.html">Summer</a></li>
             <li><a class="dropdown-item" href="winter.html">Winter</a></li>
@@ -79,25 +77,24 @@
 
       </ul>
 
-      <!-- CART -->
+      <!-- CART BUTTON -->
       <a href="cart.html" class="d-flex align-items-center gap-2 me-3 text-decoration-none text-dark">
         <i class="bi bi-bag-heart-fill" style="font-size:1.6rem;"></i>
         <span id="cartCount" class="badge bg-danger"></span>
       </a>
 
-      <!-- LOGIN / ACCOUNT -->
+      <!-- LOGIN / ACCOUNT / ADMIN -->
       <div class="nav-login-area d-flex align-items-center">
-
         <button id="loginBtn" class="btn-login">Login</button>
 
         <img id="accountIcon"
              style="width:34px;height:34px;border-radius:50%;display:none;cursor:pointer;margin-left:10px;">
 
         <span id="adminBadgeNav"
-              style="background:#c60000;color:white;padding:4px 10px;border-radius:6px;font-weight:700;display:none;margin-left:10px;">
+              style="background:#c60000;color:white;padding:4px 10px;
+                     border-radius:6px;font-weight:700;display:none;margin-left:10px;">
           ADMIN
         </span>
-
       </div>
 
     </div>
@@ -109,29 +106,17 @@
 <div class="container mt-4">
   <h2 class="fw-bold">Best Deals</h2>
 
-  <p id="comingSoonMsg" class="text-muted fw-bold" style="display:none;">
-    Coming Soon...
-  </p>
-
   <div id="productsContainer" class="row g-4 mt-3"></div>
 </div>
 
 
-<!-- JS LOADER -->
+<!-- LOAD PRODUCTS -->
 <script>
 document.addEventListener("DOMContentLoaded", () => {
-
-  // Load
   loadProducts("bestdeals");
-
-  setTimeout(() => {
-    if (document.querySelectorAll(".product-card").length === 0) {
-      document.getElementById("comingSoonMsg").style.display = "block";
-    }
-  }, 800);
-
 });
 </script>
+
 
 <!-- GOOGLE + APP.JS -->
 <script src="https://accounts.google.com/gsi/client" async defer></script>
