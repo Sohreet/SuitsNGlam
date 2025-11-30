@@ -42,7 +42,6 @@ window.addEventListener("beforeunload", () => {
     const icon = document.getElementById("accountIcon");
     if (icon) {
       icon.onclick = (e) => {
-        // Block redirect on admin page
         if (window.location.pathname.includes("admin.html")) {
           e.preventDefault();
           e.stopImmediatePropagation();
@@ -66,7 +65,6 @@ window.addEventListener("beforeunload", () => {
           <li class="nav-item"><a class="nav-link" href="allproducts.html">All Products</a></li>
         </ul>
 
-        <!-- Account Icon (required by navbar.js) -->
         <img id="accountIcon"
              src="images/default-user.png"
              style="width:32px;height:32px;border-radius:50%;cursor:pointer;display:none;margin-right:12px;">
@@ -76,22 +74,16 @@ window.addEventListener("beforeunload", () => {
     </div>
   </nav>
 
-  <!-- MAIN ADMIN AREA -->
   <div class="container">
-
     <h2 class="mt-4 mb-3">Admin Dashboard</h2>
 
-    <!-- PRODUCT FORM -->
     <div class="admin-box">
-
       <h4>Add / Update Product</h4>
 
       <form id="productForm" enctype="multipart/form-data">
-
         <input type="hidden" id="productId">
 
         <div class="row mt-3">
-          
           <div class="col-md-6 mb-3">
             <label class="form-label">Product Title</label>
             <input type="text" id="title" class="form-control" required>
@@ -163,10 +155,8 @@ window.addEventListener("beforeunload", () => {
 
         <button type="submit" class="btn btn-primary mt-3">Save Product</button>
       </form>
-
     </div>
 
-    <!-- ALL PRODUCTS TABLE -->
     <div class="admin-box mt-4">
       <h4>All Products</h4>
       <table class="table table-bordered mt-3">
@@ -187,18 +177,18 @@ window.addEventListener("beforeunload", () => {
 
   </div>
 
-  <!-- SCRIPTS (CORRECT ORDER → NO FLICKER) -->
+  <!-- SCRIPTS -->
 
   <!-- Google Auth -->
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <script src="https://cdn.jsdelivr.net/npm/jwt-decode/build/jwt-decode.min.js"></script>
-  <script src="js/google-auth.js"></script>
+  <script src="/public/js/google-auth.js"></script>
 
-  <!-- Admin must load BEFORE navbar -->
-  <script src="js/admin.js"></script>
+  <!-- Admin script BEFORE navbar -->
+  <script src="/public/js/admin.js"></script>
 
-  <!-- Navbar LAST so it doesn't override admin -->
-  <script src="js/navbar.js"></script>
+  <!-- 🔥 FIXED: Navbar script path -->
+  <script src="/public/js/navbar.js"></script>
 
 </body>
 </html>
