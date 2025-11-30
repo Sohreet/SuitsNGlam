@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Product Details - Suits N Glam</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+
+  <style>
+    body { background:white !important; }
+
+    /* MAIN IMAGE */
+    #mainImage {
+      width: 100%;
+      border-radius: 10px;
+      max-height: 420px;
+      object-fit: cover;
+    }
+
+    /* THUMBNAIL GALLERY */
+    .thumb-img {
+      width: 80px;
+      height: 80px;
+      border-radius: 6px;
+      object-fit: cover;
+      cursor: pointer;
+      margin-right: 8px;
+      border: 2px solid transparent;
+    }
+    .thumb-img:hover {
+      border: 2px solid #c60000;
+    }
+
+    .badge-style {
+      background:#c60000;
+      color:white;
+      padding:5px 10px;
+      border-radius:6px;
+      font-weight:600;
+      margin-right: 6px;
+      font-size:13px;
+    }
+
+    /* METRE INPUT */
+    .meter-btn {
+      width:34px;
+      height:34px;
+      border:1px solid #888;
+      border-radius:6px;
+      background:white;
+      font-weight:700;
+    }
+    .meter-field {
+      width:60px;
+      text-align:center;
+    }
+
+    /* ADD TO CART BUTTON */
+    .add-btn {
+      background:#c60000 !important;
+      border:none !important;
+      font-weight:700;
+      padding:10px 18px;
+    }
+    .add-btn:hover {
+      background:#a00000 !important;
+    }
+  </style>
+</head>
+
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar navbar-expand-lg" style="background-color:#e3f2fd;">
+  <div class="container">
+    <a class="navbar-brand" href="index.html">Suits N Glam</a>
+
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarNav">
+  
+      <ul class="navbar-nav ms-auto me-2">
+        <li class="nav-item"><a class="nav-link" href="allproducts.html">All Products</a></li>
+      </ul>
+
+      <div class="nav-login-area d-flex align-items-center">
+        <button id="loginBtn" class="btn-login">Login</button>
+        <img id="accountIcon" style="width:34px;height:34px;border-radius:50%;cursor:pointer;display:none;margin-left:10px;">
+        <span id="adminBadgeNav" class="admin-badge" style="display:none;">ADMIN</span>
+      </div>
+    </div>
+  </div>
+</nav>
+
+
+<!-- PRODUCT PAGE -->
+<div class="container mt-4">
+
+  <div class="row g-4">
+
+    <!-- LEFT SIDE (Images) -->
+    <div class="col-md-6">
+      <img id="mainImage" src="">
+
+      <div id="galleryImages" class="d-flex mt-3"></div>
+
+      <div id="pVideo"></div>
+    </div>
+
+    <!-- RIGHT SIDE (Details) -->
+    <div class="col-md-6">
+
+      <h2 id="pTitle"></h2>
+
+      <div class="mb-2">
+        <span id="badgeNew" class="badge-style" style="display:none;">NEW ARRIVAL</span>
+        <span id="badgeBest" class="badge-style" style="display:none;background:#ff9c00;">BEST DEAL</span>
+      </div>
+
+      <p class="text-muted" id="pCategory"></p>
+
+      <h3 class="fw-bold mt-3">₹<span id="pPrice"></span> / metre</h3>
+
+      <p class="mt-3" id="pDesc"></p>
+
+      <div class="d-flex align-items-center mt-4 mb-3">
+        <button class="meter-btn" onclick="meterChange(productId,-1)">-</button>
+        <input id="meterField" class="form-control mx-2 meter-field" value="1" readonly>
+        <button class="meter-btn" onclick="meterChange(productId,1)">+</button>
+      </div>
+
+      <button id="addCartBtn" class="btn add-btn w-100">Add to Cart</button>
+
+    </div>
+  </div>
+
+</div>
+
+
+<!-- JAVASCRIPT -->
+<script src="js/app.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+/*** LOAD PRODUCT ***/
+let productId = null;
+
+document.addEventListener("DOMContentLoaded", () => {
+
+  // Extract ID
+  const params = new URLSearchParams(location.search);
+  productId = params.get("id");
+
+  if (!productId) return;
+
+  const list = JSON.parse(localStorage.getItem("products") || "[]");
+  const p = list.find(x => x._id === productId);
+  if (!p) return;
+
+  // Set main info
+  document.getElementById("pTitle").textContent = p.name;
+  document.getElementById("pPrice").textContent = p.price;
+  document.getElementById("pDesc").textContent = p.description;
+  document.getElementById("mainImage").src = p.images[0];
+  document.getElementById("pCategory").textContent = "Category: " + p.category;
+
+  // New Arrival badge
+  const now = Date.now();
+  if (now - p.addedAt <= 15 * 24 * 60 * 60 * 1000) {
+    document.getElementById("badgeNew").style.display = "inline-block";
+  }
+
+  // Best Deal badge
+  if (p.orderCount >= 10) {
+    document.getElementById("badgeBest").style.display = "inline-block";
+  }
+
+  // Gallery
+  p.images.forEach(img => {
+    document.getElementById("galleryImages").innerHTML += `
+      <img src="${img}" class="thumb-img" onclick="setMainImg('${img}')">
+    `;
+  });
+
+  // Video (if exists)
+  if (p.video) {
+    document.getElementById("pVideo").innerHTML = `
+      <video class="w-100 mt-3" controls>
+        <source src="${p.video}" type="video/mp4">
+      </video>
+    `;
+  }
+
+  // Stock check
+  const btn = document.getElementById("addCartBtn");
+  if (!p.inStock) {
+    btn.textContent = "OUT OF STOCK";
+    btn.disabled = true;
+  } else {
+    btn.onclick = () => addProductToCart();
+  }
+
+});
+
+/*** CHANGE MAIN IMAGE ***/
+function setMainImg(src) {
+  document.getElementById("mainImage").src = src;
+}
+
+/*** ADD TO CART FROM PRODUCT PAGE ***/
+function addProductToCart() {
+  const metres = Number(document.getElementById("meterField").value);
+
+  const list = JSON.parse(localStorage.getItem("products") || "[]");
+  const p = list.find(x => x._id === productId);
+
+  const user = getUser();
+  if (!user) return alert("Please login first.");
+
+  if (!p.inStock) return alert("This product is out of stock.");
+
+  const cart = JSON.parse(localStorage.getItem("cart") || "[]");
+
+  cart.push({
+    title: p.name,
+    price: p.price,
+    metres,
+    image: p.images[0]
+  });
+
+  localStorage.setItem("cart", JSON.stringify(cart));
+  alert("Added to cart!");
+}
+</script>
+
+</body>
+</html>
