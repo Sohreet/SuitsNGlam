@@ -24,15 +24,6 @@
       width: 120px;
       border-radius: 10px;
     }
-
-    .delete-btn {
-      background:#dc3545;
-      border:none;
-      color:white;
-      padding:4px 10px;
-      border-radius:6px;
-      cursor:pointer;
-    }
   </style>
 </head>
 <body>
@@ -40,13 +31,17 @@
 <!-- NAVBAR -->
 <nav class="navbar navbar-expand-lg" style="background-color:#e3f2fd;">
   <div class="container">
+
+    <!-- HOME ICON -->
     <a class="navbar-brand fw-bold d-flex align-items-center" href="index.html">
       <i class="bi bi-house-fill me-2"></i> Suits N Glam
     </a>
 
     <div class="ms-auto d-flex align-items-center">
       <span class="badge bg-danger me-3">ADMIN</span>
-      <img id="accountIcon" style="width:34px;height:34px;border-radius:50%;cursor:pointer;">
+
+      <img id="accountIcon"
+           style="width:34px;height:34px;border-radius:50%;cursor:pointer;">
     </div>
   </div>
 </nav>
@@ -83,6 +78,8 @@
       <div class="col-md-4">
         <label class="form-label">Category</label>
         <select id="p_category" class="form-select">
+          <option value="all">All Products</option>
+          <option value="newarrivals">New Arrivals</option>
           <option value="summer">Summer</option>
           <option value="winter">Winter</option>
           <option value="wedding">Wedding</option>
@@ -91,7 +88,6 @@
           <option value="premiumwear">Premium Wear</option>
           <option value="sales">Sales</option>
           <option value="bestdeals">Best Deals</option>
-          <option value="newarrivals">New Arrivals</option>
         </select>
       </div>
 
@@ -117,7 +113,6 @@
         <div id="vidPreview" class="mt-2"></div>
       </div>
 
-      <!-- SALE TOGGLE -->
       <div class="col-12">
         <label class="form-check">
           <input class="form-check-input" type="checkbox" id="p_sale">
@@ -133,7 +128,7 @@
 
   </div>
 
-  <!-- PRODUCT LIST PREVIEW + DELETE -->
+  <!-- PRODUCT LIST (WITH DELETE BUTTON) -->
   <div class="mt-4">
     <h4>All Products</h4>
     <div id="productsAdminList"></div>
@@ -214,13 +209,11 @@ async function adminAddProduct() {
     return alert("Please fill all required fields!");
   }
 
-  // Convert IMAGES to base64
   let images = [];
   for (let file of p_images.files) {
     images.push(await fileToBase64(file));
   }
 
-  // Convert VIDEO to base64 (optional)
   let video = "";
   if (p_video.files.length > 0) {
     video = await fileToBase64(p_video.files[0]);
@@ -245,27 +238,24 @@ async function adminAddProduct() {
 }
 
 /******************************************************
- * DELETE PRODUCT (API)
+ * DELETE PRODUCT  ⭐ NEW ⭐
  ******************************************************/
-async function adminDeleteProduct(id) {
+async function deleteProduct(id) {
   if (!confirm("Delete this product permanently?")) return;
 
-  const res = await fetch(`/api/admin/products/${id}`, {
-    method: "DELETE"
-  });
-
+  const res = await fetch(`/api/admin/products/${id}`, { method: "DELETE" });
   const data = await res.json();
 
   if (data.success) {
-    alert("Product deleted!");
+    alert("Product deleted");
     renderAdminProducts();
   } else {
-    alert("Error deleting product.");
+    alert("Failed to delete");
   }
 }
 
 /******************************************************
- * RENDER ALL PRODUCTS FOR ADMIN
+ * RENDER ALL PRODUCTS
  ******************************************************/
 async function renderAdminProducts() {
   const out = document.getElementById("productsAdminList");
@@ -274,18 +264,21 @@ async function renderAdminProducts() {
 
   out.innerHTML = products.map(p => `
     <div class="card p-2 mb-2">
-      <div class="d-flex align-items-center">
+      <div class="d-flex align-items-center justify-content-between">
 
-        <img src="${p.images?.[0]}" class="img-preview">
+        <div class="d-flex align-items-center">
+          <img src="${p.images?.[0]}" class="img-preview">
 
-        <div class="ms-2 flex-grow-1">
-          <strong>${p.name}</strong><br>
-          ₹${p.price} — ${p.category}
-          ${p.sale ? `<span class="badge bg-primary ms-2">SALE</span>` : ""}
-          ${p.stock === 0 ? `<span class="badge bg-danger ms-2">OUT OF STOCK</span>` : ""}
+          <div class="ms-2">
+            <strong>${p.name}</strong>
+            <br>
+            ₹${p.price} — ${p.category}
+            ${p.sale ? `<span class="badge bg-primary ms-2">SALE</span>` : ""}
+            ${p.stock === 0 ? `<span class="badge bg-danger ms-2">OUT OF STOCK</span>` : ""}
+          </div>
         </div>
 
-        <button class="delete-btn" onclick="adminDeleteProduct('${p._id}')">
+        <button class="btn btn-danger btn-sm" onclick="deleteProduct('${p._id}')">
           <i class="bi bi-trash"></i>
         </button>
 
