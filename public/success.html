@@ -11,20 +11,22 @@
     body{background:#f8f9fa;}
   </style>
 </head>
+
 <body>
 
 <div class="container text-center mt-5">
-  <h2>🎉 Payment Successful!</h2>
-  <h4>Your order has been placed.</h4>
+  <h2 class="fw-bold">🎉 Payment Successful!</h2>
+  <h5>Your order has been placed successfully.</h5>
+
   <p class="mt-3">Amount Paid: ₹<span id="amt"></span></p>
 
-  <a href="orderhistory.html" class="btn btn-primary mt-3">View Order History</a>
+  <a href="orderhistory.html" class="btn btn-primary mt-3">View My Orders</a>
   <a href="index.html" class="btn btn-success mt-3">Continue Shopping</a>
 </div>
 
 <script>
-const urlParams = new URLSearchParams(window.location.search);
-document.getElementById("amt").textContent = urlParams.get("amount");
+const params = new URLSearchParams(location.search);
+document.getElementById("amt").textContent = params.get("amount");
 </script>
 
 </body>
