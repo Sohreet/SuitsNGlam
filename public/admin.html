@@ -25,13 +25,6 @@
 </head>
 
 <body>
-<script>
-  // Disable account icon redirect on admin page
-  document.addEventListener("DOMContentLoaded", () => {
-    const acc = document.getElementById("accountIcon");
-    if (acc) acc.onclick = (e) => e.stopPropagation();
-  });
-</script>
 
   <!-- Navbar -->
   <nav class="navbar navbar-expand-lg" style="background-color:#e3f2fd;">
@@ -47,11 +40,15 @@
           <li class="nav-item"><a class="nav-link" href="allproducts.html">All Products</a></li>
         </ul>
 
+        <!-- 💥 REQUIRED ACCOUNT ICON (FIXED FLICKER) -->
+        <img id="accountIcon"
+             src="images/default-user.png"
+             style="width:32px;height:32px;border-radius:50%;cursor:pointer;display:none;margin-right:12px;">
+
         <button id="logoutBtn" class="btn btn-danger">Logout</button>
       </div>
     </div>
   </nav>
-
 
   <!-- MAIN ADMIN AREA -->
   <div class="container">
@@ -84,6 +81,7 @@
             <textarea id="description" class="form-control" rows="2"></textarea>
           </div>
 
+          <!-- CATEGORY -->
           <div class="col-md-6 mb-3">
             <label class="form-label">Category</label>
             <select id="category" class="form-control" required>
@@ -97,6 +95,7 @@
             </select>
           </div>
 
+          <!-- BEST DEALS / SALES -->
           <div class="col-md-6 mb-3">
             <label class="form-label">Tags</label>
             <div class="d-flex gap-3">
@@ -111,6 +110,7 @@
             </div>
           </div>
 
+          <!-- METRES -->
           <div class="col-md-6 mb-3">
             <label class="form-label">Min Metres</label>
             <input type="number" id="minMetres" class="form-control" value="1">
@@ -126,11 +126,13 @@
             <input type="number" id="stock" class="form-control" value="0">
           </div>
 
+          <!-- IMAGES -->
           <div class="col-md-6 mb-3">
             <label class="form-label">Images (max 5)</label>
             <input type="file" id="images" class="form-control" multiple accept="image/*">
           </div>
 
+          <!-- VIDEO -->
           <div class="col-md-6 mb-3">
             <label class="form-label">Video (optional)</label>
             <input type="file" id="video" class="form-control" accept="video/*">
@@ -142,7 +144,6 @@
       </form>
 
     </div>
-
 
     <!-- ALL PRODUCTS TABLE -->
     <div class="admin-box mt-4">
@@ -165,18 +166,17 @@
 
   </div>
 
-
-  <!-- SCRIPTS (VERY IMPORTANT ORDER) -->
+  <!-- SCRIPTS (CORRECT ORDER → NO FLICKER) -->
 
   <!-- Google Auth -->
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <script src="https://cdn.jsdelivr.net/npm/jwt-decode/build/jwt-decode.min.js"></script>
   <script src="js/google-auth.js"></script>
 
-  <!-- ADMIN CHECK MUST RUN BEFORE NAVBAR -->
+  <!-- Admin must load BEFORE navbar -->
   <script src="js/admin.js"></script>
 
-  <!-- Navbar runs LAST (so it cannot override admin login) -->
+  <!-- Navbar LAST so it doesn't override admin -->
   <script src="js/navbar.js"></script>
 
 </body>
