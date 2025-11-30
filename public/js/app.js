@@ -1,35 +1,39 @@
 /******************************************************
- * SUITS N GLAM — FINAL MERGED APP.JS (STABLE VERSION)
+ * SUITS N GLAM — FINAL MERGED APP.JS (FULL VERSION)
  ******************************************************/
 
 console.log("APP.JS LOADED");
 
 /******************************************************
- * UNIVERSAL HELPERS
+ * GLOBALS
  ******************************************************/
 const ADMINS = ["sohabrar10@gmail.com", "suitsnglam01@gmail.com"];
 
+/******************************************************
+ * UNIVERSAL HELPERS
+ ******************************************************/
 function getUser() {
   const raw = localStorage.getItem("sg_user");
   if (!raw) return null;
   try { return JSON.parse(raw); } catch { return null; }
 }
 
-function escapeHtml(text) {
-  return text?.replace(/[&<>"']/g, m =>
-    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" }[m])
+function escapeHtml(str) {
+  return str?.replace(/[&<>"']/g, (m) =>
+    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#039;" }[m])
   );
 }
 
 /******************************************************
- * NAVBAR LOGIN UI — FIXED (NO FLICKER)
+ * NAVBAR LOGIN UI — FIX (NO FLICKER)
  ******************************************************/
 function setupLoginUI() {
-  const user = getUser();
   const loginBtn = document.getElementById("loginBtn");
   const icon = document.getElementById("accountIcon");
   const navArea = document.querySelector(".nav-login-area");
   const adminBadge = document.getElementById("adminBadgeNav");
+
+  const user = getUser();
 
   if (!loginBtn || !icon || !navArea) return;
 
@@ -42,29 +46,18 @@ function setupLoginUI() {
     return;
   }
 
-  // User logged in
   loginBtn.style.display = "none";
   icon.src = user.picture || "/public/images/default-user.png";
   icon.style.display = "inline-block";
 
-  // Admin badge
   if (ADMINS.includes(user.email)) {
     if (adminBadge) adminBadge.style.display = "inline-block";
-  }
-
-  /***********************
-   * FIX: ACCOUNT ICON REDIRECT
-   ***********************/
-  if (ADMINS.includes(user.email)) {
-    // Admin → admin.html
     icon.onclick = () => window.location.href = "admin.html";
   } else {
-    // Normal user → account.html
     icon.onclick = () => window.location.href = "account.html";
+    if (adminBadge) adminBadge.style.display = "none";
   }
 }
-
-document.addEventListener("DOMContentLoaded", setupLoginUI);
 
 /******************************************************
  * GOOGLE LOGIN
@@ -73,14 +66,13 @@ const GOOGLE_CLIENT_ID =
   "653374521156-6retcia1fiu5dvmbjik9sq89ontrkmvt.apps.googleusercontent.com";
 
 (function loadSDK() {
-  if (!document.getElementById("gsi-script")) {
-    const s = document.createElement("script");
-    s.id = "gsi-script";
-    s.src = "https://accounts.google.com/gsi/client";
-    s.async = true;
-    s.defer = true;
-    document.head.appendChild(s);
-  }
+  if (document.getElementById("gsi-script")) return;
+  const s = document.createElement("script");
+  s.id = "gsi-script";
+  s.src = "https://accounts.google.com/gsi/client";
+  s.async = true;
+  s.defer = true;
+  document.head.appendChild(s);
 })();
 
 function saveUser(data, token) {
@@ -89,16 +81,13 @@ function saveUser(data, token) {
     name: data.name,
     picture: data.picture,
     token,
-    joined: new Date().toLocaleDateString()
+    joined: new Date().toLocaleDateString(),
   };
 
   localStorage.setItem("sg_user", JSON.stringify(user));
 
-  if (ADMINS.includes(user.email)) {
-    localStorage.setItem("adminLoggedIn", "true");
-  } else {
-    localStorage.removeItem("adminLoggedIn");
-  }
+  if (ADMINS.includes(user.email)) localStorage.setItem("adminLoggedIn", "true");
+  else localStorage.removeItem("adminLoggedIn");
 }
 
 function handleCredentialResponse(response) {
@@ -106,15 +95,13 @@ function handleCredentialResponse(response) {
     const data = jwt_decode(response.credential);
     saveUser(data, response.credential);
     setupLoginUI();
-  } catch (e) {
-    console.error("Google Auth failed:", e);
+  } catch (err) {
+    console.error("Google Auth Error:", err);
   }
 }
 
 function googleLogin() {
-  if (!window.google?.accounts?.id) {
-    return setTimeout(googleLogin, 300);
-  }
+  if (!google?.accounts?.id) return setTimeout(googleLogin, 200);
 
   google.accounts.id.initialize({
     client_id: GOOGLE_CLIENT_ID,
@@ -124,69 +111,152 @@ function googleLogin() {
   google.accounts.id.prompt();
 }
 
+/******************************************************
+ * AUTO SETUP LOGIN UI ON PAGE LOAD
+ ******************************************************/
 document.addEventListener("DOMContentLoaded", () => {
-  const btn = document.getElementById("loginBtn");
-  if (btn) btn.onclick = googleLogin;
+  setupLoginUI();
+  updateCartBadge();
 });
 
 /******************************************************
  * CART BADGE
  ******************************************************/
-async function updateCartBadge() {
+function updateCartBadge() {
   const badge = document.getElementById("cartCount");
   if (!badge) return;
 
-  badge.textContent = "";
-  const user = getUser();
-
-  // Local fallback
-  const cartLocal = JSON.parse(localStorage.getItem("cart") || "[]");
-  if (cartLocal.length) {
-    badge.textContent = cartLocal.length;
-    return;
-  }
+  const cart = JSON.parse(localStorage.getItem("cart") || "[]");
+  badge.textContent = cart.length ? cart.length : "";
 }
 
 window.updateCartBadge = updateCartBadge;
 
 /******************************************************
- * LOAD PRODUCTS — FIXED (API + ADMIN-ADDED PRODUCTS)
+ * CART SYSTEM
+ ******************************************************/
+function loadCartPage() {
+  const cont = document.getElementById("cartItems");
+  const empty = document.getElementById("cartEmpty");
+  const summary = document.getElementById("cartSummary");
+
+  const cart = JSON.parse(localStorage.getItem("cart") || "[]");
+
+  if (!cart.length) {
+    empty.style.display = "block";
+    cont.innerHTML = "";
+    summary.style.display = "none";
+    updateCartBadge();
+    return;
+  }
+
+  empty.style.display = "none";
+  summary.style.display = "block";
+
+  cont.innerHTML = "";
+  let total = 0;
+
+  cart.forEach((item, i) => {
+    total += Number(item.price) * Number(item.metres);
+
+    cont.innerHTML += `
+      <div class="col-md-4">
+        <div class="card p-2">
+          <img src="${item.image}" class="w-100" style="height:180px;object-fit:cover">
+
+          <div class="card-body">
+            <h5>${item.title}</h5>
+            <p>₹${item.price} × ${item.metres}m</p>
+
+            <button class="btn btn-danger btn-sm" onclick="removeItem(${i})">
+              Remove
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+  });
+
+  document.getElementById("cartTotal").textContent = total;
+  updateCartBadge();
+}
+window.loadCartPage = loadCartPage;
+
+function removeItem(i) {
+  let cart = JSON.parse(localStorage.getItem("cart") || "[]");
+  cart.splice(i, 1);
+  localStorage.setItem("cart", JSON.stringify(cart));
+  loadCartPage();
+}
+window.removeItem = removeItem;
+
+/******************************************************
+ * PRODUCT DETAILS PAGE
+ ******************************************************/
+async function loadSingleProduct() {
+  const params = new URLSearchParams(window.location.search);
+  const id = params.get("id");
+
+  if (!id) return;
+
+  const res = await fetch(`/api/products/${id}`);
+  const p = await res.json();
+
+  document.getElementById("pd-title").textContent = p.name;
+  document.getElementById("pd-price").textContent = "₹" + p.price;
+  document.getElementById("pd-desc").textContent = p.description;
+
+  const imgCont = document.getElementById("pd-images");
+  imgCont.innerHTML = p.images.map(img =>
+    `<img src="${img}" class="img-fluid mb-2" style="border-radius:10px;">`
+  ).join("");
+
+  if (p.video) {
+    document.getElementById("pd-video").innerHTML = `
+      <video controls width="100%" class="mt-3 rounded">
+        <source src="${p.video}">
+      </video>
+    `;
+  }
+
+  window.selectedProduct = p;
+}
+window.loadSingleProduct = loadSingleProduct;
+
+function addDetailToCart() {
+  const metres = Number(document.getElementById("meterInput").value || 1);
+
+  const p = window.selectedProduct;
+  if (!p) return;
+
+  const cart = JSON.parse(localStorage.getItem("cart") || "[]");
+
+  cart.push({
+    productId: p._id,
+    title: p.name,
+    price: p.price,
+    image: p.images[0],
+    metres
+  });
+
+  localStorage.setItem("cart", JSON.stringify(cart));
+  updateCartBadge();
+
+  alert("Added to cart!");
+}
+
+/******************************************************
+ * LOAD PRODUCTS BY CATEGORY
  ******************************************************/
 async function loadProducts(category, containerId = "productsContainer") {
   const container = document.getElementById(containerId);
-  if (!container) return;
+  container.innerHTML = "Loading...";
 
-  container.innerHTML = `<p class="text-muted">Loading...</p>`;
+  const res = await fetch(`/api/products/category/${category}`);
+  const products = await res.json();
 
-  let products = [];
-
-  /* 1️⃣ Load from API (if working) */
-  try {
-    const res = await fetch(`/api/products/category/${category}`);
-    if (res.ok) {
-      const apiProducts = await res.json();
-      products = [...products, ...apiProducts];
-    }
-  } catch (e) {
-    console.warn("API not available, loading only local products.");
-  }
-
-  /* 2️⃣ Load admin-added local products */
-  const localProducts = JSON.parse(localStorage.getItem("products") || "[]");
-
-  // filter local products by category
-  const localFiltered = localProducts.filter(p => {
-    return p.category?.toLowerCase() === category.toLowerCase() ||
-           category === "all";
-  });
-
-  products = [...products, ...localFiltered];
-
-  /* 3️⃣ Display */
   if (!products.length) {
-    container.innerHTML = `
-      <p class="text-muted fw-bold">Coming Soon...</p>
-    `;
+    container.innerHTML = `<p class="text-muted fw-bold">Coming Soon...</p>`;
     return;
   }
 
@@ -197,16 +267,18 @@ async function loadProducts(category, containerId = "productsContainer") {
 
     container.innerHTML += `
       <div class="col-md-4 product-card">
-        <div class="card shadow-sm" onclick="openProduct('${p._id || p.id}')">
-          <img src="${p.images?.[0] || ''}" class="card-img-top" 
+        <div class="card shadow-sm" onclick="openProduct('${p._id}')">
+
+          <img src="${p.images[0]}" class="card-img-top" 
                style="height:250px;object-fit:cover">
 
           ${outOfStock ? `<span class="badge bg-danger m-2">Out of Stock</span>` : ""}
 
           <div class="card-body">
             <h5>${p.name}</h5>
-            <p>₹${p.pricePerMeter || p.price}/m</p>
+            <p class="fw-bold">₹${p.price}/m</p>
           </div>
+
         </div>
       </div>
     `;
@@ -214,71 +286,15 @@ async function loadProducts(category, containerId = "productsContainer") {
 }
 window.loadProducts = loadProducts;
 
-/******************************************************
- * OPEN PRODUCT DETAILS PAGE
- ******************************************************/
 function openProduct(id) {
   window.location.href = `product.html?id=${id}`;
 }
-
 window.openProduct = openProduct;
 
 /******************************************************
- * CART OPERATIONS
+ * ADMIN PROTECTION
  ******************************************************/
-function loadCartPage() {
-  const items = JSON.parse(localStorage.getItem("cart") || "[]");
-  const cont = document.getElementById("cartItems");
-  const empty = document.getElementById("cartEmpty");
-  const summary = document.getElementById("cartSummary");
-
-  if (!items.length) {
-    empty.style.display = "block";
-    cont.innerHTML = "";
-    summary.style.display = "none";
-    updateCartBadge();
-    return;
-  }
-
-  empty.style.display = "none";
-  summary.style.display = "block";
-  cont.innerHTML = "";
-
-  let total = 0;
-
-  items.forEach((p, i) => {
-    total += Number(p.price || 0) * Number(p.metres || 1);
-    cont.innerHTML += `
-      <div class="col-md-4">
-        <div class="card p-2">
-          <img src="${p.image}" style="height:180px;width:100%;object-fit:cover">
-          <div class="card-body">
-            <h5>${p.title}</h5>
-            <p>₹${p.price} × ${p.metres}m</p>
-            <button class="btn btn-danger btn-sm" onclick="removeItem(${i})">Remove</button>
-          </div>
-        </div>
-      </div>
-    `;
-  });
-
-  document.getElementById("cartTotal").textContent = total;
-  updateCartBadge();
+if (window.location.pathname.includes("admin")) {
+  const isAdmin = localStorage.getItem("adminLoggedIn");
+  if (!isAdmin) window.location.href = "index.html";
 }
-
-window.loadCartPage = loadCartPage;
-
-function removeItem(i) {
-  const cart = JSON.parse(localStorage.getItem("cart") || "[]");
-  cart.splice(i, 1);
-  localStorage.setItem("cart", JSON.stringify(cart));
-  loadCartPage();
-  updateCartBadge();
-}
-
-window.removeItem = removeItem;
-
-/******************************************************
- * ORDER SYSTEM (unchanged)
- ******************************************************/
-document.addEventListener("DOMContentLoaded", updateCartBadge);
