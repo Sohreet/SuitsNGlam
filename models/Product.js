@@ -1,25 +1,17 @@
-import mongoose from "mongoose";
+const mongoose = require("mongoose");
 
-const productSchema = new mongoose.Schema(
-  {
-    title: String,
-    description: String,
-    price: Number,
-    stock: { type: Number, default: 0 },
+const ProductSchema = new mongoose.Schema({
+  title: String,
+  price: Number,
+  description: String,
+  category: String,
+  isBestDeal: Boolean,
+  isSale: Boolean,
+  minMetres: Number,
+  maxMetres: Number,
+  stock: Number,
+  images: [String],   // file paths: /uploads/images/xxx.jpg
+  video: String       // file path: /uploads/videos/xxx.mp4
+}, { timestamps: true });
 
-    images: [String],
-    video: { type: String, default: null },
-
-    // ADD THIS (very important)
-    collection: { type: String, default: "" },
-
-    minMetres: { type: Number, default: 1 },
-    maxMetres: { type: Number, default: 6 },
-
-    isBestDeal: { type: Boolean, default: false },
-    isSale: { type: Boolean, default: false }
-  },
-  { timestamps: true }
-);
-
-export default mongoose.model("Product", productSchema);
+module.exports = mongoose.model("Product", ProductSchema);
