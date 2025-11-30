@@ -1,11 +1,11 @@
 /* -------------------------------------------------------
-   ADMIN AUTH CHECK (FIXED)
+   ADMIN AUTH CHECK (FINAL FIXED VERSION)
 ------------------------------------------------------- */
 document.addEventListener("DOMContentLoaded", () => {
-  const admin = localStorage.getItem("adminLoggedIn");
+  // Google login sets: localStorage.setItem("isAdmin", "true")
+  const isAdmin = localStorage.getItem("isAdmin");
 
-  // MUST CHECK for "true", not just truthy value
-  if (admin !== "true") {
+  if (isAdmin !== "true") {
     alert("Admin access denied!");
     window.location.href = "index.html";
     return;
@@ -14,12 +14,13 @@ document.addEventListener("DOMContentLoaded", () => {
   loadProducts();
 
   document.getElementById("logoutBtn").addEventListener("click", () => {
-    localStorage.removeItem("adminLoggedIn");
+    localStorage.removeItem("isAdmin");
+    localStorage.removeItem("sg_user"); // optional
     window.location.href = "index.html";
   });
 });
 
-// BACKEND IS ON SAME SERVER
+// Backend on same server
 const BASE_URL = "";
 
 
@@ -114,7 +115,7 @@ async function loadProducts() {
 
 
 /* -------------------------------------------------------
-   EDIT PRODUCT (AUTO-FILL FORM)
+   EDIT PRODUCT
 ------------------------------------------------------- */
 async function editProduct(id) {
   const res = await fetch(`/api/products/${id}`);
