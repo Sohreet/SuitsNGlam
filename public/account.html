@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>My Account - Suits N Glam</title>
 
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -10,112 +10,43 @@
 
   <style>
     body { background:#f8f9fa; }
-
-    /* ADMIN BADGE */
-    .admin-badge {
-      background:#28a745;
-      color:white;
-      padding:4px 8px;
-      border-radius:6px;
-      font-size:12px;
-      font-weight:700;
-      margin-left:8px;
-    }
-
-    /* LOGIN BUTTON RED */
-    .btn-login {
-      color:#c60000 !important;
-      border:2px solid #c60000;
-      background:white;
-      padding:4px 12px;
-      border-radius:6px;
-      font-weight:600;
-    }
-    .btn-login:hover {
-      background:#c60000;
-      color:white !important;
-    }
+    .nav-login-area { visibility:visible !important; }
+    .btn-login { color:#c60000 !important; border:2px solid #c60000; background:white; padding:4px 12px; border-radius:6px; font-weight:600; }
+    .btn-login:hover { background:#c60000; color:white !important; }
+    .admin-badge { background:#28a745; color:#fff; padding:4px 8px; border-radius:6px; font-weight:700; margin-left:10px; }
+    .home-icon { font-size:1.6rem; cursor:pointer; margin-right:12px; }
   </style>
 </head>
 <body>
 
-<!-- NAVBAR -->
 <nav class="navbar navbar-expand-lg" style="background-color:#e3f2fd;">
   <div class="container">
     <a class="navbar-brand fw-bold" href="index.html">Suits N Glam</a>
 
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-
-    <div class="collapse navbar-collapse" id="navbarNav">
-
-      <ul class="navbar-nav ms-auto me-3">
-        <li class="nav-item"><a class="nav-link" href="allproducts.html">All Products</a></li>
-        <li class="nav-item"><a class="nav-link" href="newarrivals.html">New Arrivals</a></li>
-
-        <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Shop By Category</a>
-          <ul class="dropdown-menu">
-            <li><a class="dropdown-item" href="summer.html">Summer</a></li>
-            <li><a class="dropdown-item" href="winter.html">Winter</a></li>
-            <li><a class="dropdown-item" href="wedding.html">Wedding</a></li>
-            <li><a class="dropdown-item" href="casuals.html">Casuals</a></li>
-            <li><a class="dropdown-item" href="dailywear.html">Daily Wear</a></li>
-            <li><a class="dropdown-item" href="premiumwear.html">Premium Wear</a></li>
-          </ul>
-        </li>
-
-        <li class="nav-item"><a class="nav-link" href="bestdeals.html">Best Deals</a></li>
-        <li class="nav-item"><a class="nav-link" href="sales.html">Sales</a></li>
-      </ul>
-
-      <!-- CART -->
-      <a href="cart.html" class="d-flex align-items-center gap-2 me-3 text-decoration-none text-dark">
-        <i class="bi bi-bag-heart-fill" style="font-size:1.6rem;"></i>
-        <span id="cartCount" class="badge bg-danger"></span>
-      </a>
-
-      <!-- LOGIN / ACCOUNT -->
-      <div class="nav-login-area d-flex align-items-center">
-        <button id="loginBtn" class="btn-login">Login</button>
-
-        <img id="accountIcon"
-             style="width:34px;height:34px;border-radius:50%;cursor:pointer;display:none;margin-left:10px;">
-
-        <!-- NAVBAR ADMIN BADGE -->
-        <span id="adminBadgeNav" class="admin-badge" style="display:none;">ADMIN</span>
-      </div>
-
+    <div class="ms-auto d-flex align-items-center nav-login-area">
+      <i class="bi bi-house-fill home-icon" onclick="location.href='index.html'"></i>
+      <button id="loginBtn" class="btn-login">Login</button>
+      <img id="accountIcon" style="width:34px;height:34px;border-radius:50%;display:none;margin-left:10px;cursor:pointer;">
+      <span id="adminBadgeNav" class="admin-badge" style="display:none;">ADMIN</span>
     </div>
   </div>
 </nav>
 
-
-<!-- ACCOUNT CONTENT -->
 <div class="container mt-4">
-  <h2 class="mb-3 d-flex align-items-center">
-    My Account
-    <span id="adminBadgePage" class="admin-badge" style="display:none;margin-left:10px;">ADMIN</span>
-  </h2>
+  <h2 class="mb-3 d-flex align-items-center">My Account <span id="adminBadgePage" class="admin-badge" style="display:none;margin-left:12px;">ADMIN</span></h2>
 
   <div id="accountInfo" class="card p-4">
-    <div id="accountFallback" style="display:none;">
+    <div id="accountFallback">
       <p>Please login to view account details.</p>
-      <button class="btn btn-primary" onclick="googleLogin()">Login</button>
+      <button class="btn btn-primary" onclick="googleLogin()">Login with Google</button>
     </div>
   </div>
 
   <div class="mt-4">
-    <a href="orderhistory.html" class="btn btn-primary">Order History</a>
+    <a id="ordersBtn" href="orderhistory.html" class="btn btn-primary">Order History</a>
     <a href="ordertracking.html" class="btn btn-secondary">Track Orders</a>
-
     <button class="btn btn-danger" onclick="logout()">Logout</button>
-
-    <!-- ADMIN DASHBOARD BUTTON -->
-    <a id="adminDashboardBtn" href="admin.html" class="btn btn-outline-danger ms-2" style="display:none;">
-      Go to Admin Dashboard
-    </a>
+    <a id="adminDashboardBtn" href="admin.html" class="btn btn-outline-danger ms-2" style="display:none;">Go to Admin Dashboard</a>
   </div>
 </div>
 
@@ -123,7 +54,7 @@
 function logout() {
   localStorage.removeItem("sg_user");
   localStorage.removeItem("adminLoggedIn");
-  window.location.href = "index.html";
+  location.href = "index.html";
 }
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -132,36 +63,32 @@ document.addEventListener("DOMContentLoaded", () => {
   const fallback = document.getElementById("accountFallback");
   const loginBtn = document.getElementById("loginBtn");
   const accIcon = document.getElementById("accountIcon");
-
   const adminBadgeNav = document.getElementById("adminBadgeNav");
   const adminBadgePage = document.getElementById("adminBadgePage");
   const adminBtn = document.getElementById("adminDashboardBtn");
 
   if (!raw) {
     fallback.style.display = "block";
-    loginBtn.style.display = "inline-block";
     return;
   }
 
   const user = JSON.parse(raw);
+  fallback.style.display = "none";
 
-  // SHOW USER INFO
   accCard.innerHTML = `
     <div class="d-flex align-items-center gap-3">
-      <img src="${user.picture}" style="width:70px;height:70px;border-radius:50%;object-fit:cover;">
+      <img src="${user.picture||''}" style="width:70px;height:70px;border-radius:50%;object-fit:cover;">
       <div>
-        <h5 class="mb-1">${user.name}</h5>
+        <h5 class="mb-1">${user.name || user.email}</h5>
         <p class="text-muted mb-0">${user.email}</p>
       </div>
     </div>
   `;
 
-  // HIDE LOGIN, SHOW ICON
   loginBtn.style.display = "none";
-  accIcon.src = user.picture;
-  accIcon.style.display = "block";
+  accIcon.src = user.picture || "";
+  accIcon.style.display = accIcon.src ? "block" : "none";
 
-  // ADMIN CHECK
   if (user.email === "sohabrar10@gmail.com") {
     adminBadgeNav.style.display = "inline-block";
     adminBadgePage.style.display = "inline-block";
@@ -170,9 +97,7 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 </script>
 
-<script src="https://cdn.jsdelivr.net/npm/jwt-decode/build/jwt-decode.min.js"></script>
 <script src="js/app.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
-
 </body>
 </html>
