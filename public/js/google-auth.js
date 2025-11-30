@@ -1,5 +1,5 @@
 google.accounts.id.initialize({
-  client_id: "YOUR_GOOGLE_CLIENT_ID",
+  client_id: 653374521156-6retcia1fiu5dvmbjik9sq89ontrkmvt.apps.googleusercontent.com,
   callback: function (response) {
     const decoded = jwt_decode(response.credential);
 
