@@ -31,7 +31,7 @@
     .casuals { background-color: rgb(207,255,226); }
     .premium { background-color: rgb(231,208,245); }
 
-    /* Flicker fix */
+    /* Hide login/account until JS decides (no flicker) */
     .nav-login-area {
       visibility: hidden;
     }
@@ -46,7 +46,6 @@
     }
     .btn-login:hover { background-color: rgb(255,43,31); }
 
-    /* Social icons */
     .social-area i {
       font-size: 1.8rem;
       margin: 0 12px;
@@ -59,7 +58,7 @@
 
 <body>
 
-<!-- ===================== NAVBAR (ONLY ONE) ====================== -->
+<!-- ===================== NAVBAR ====================== -->
 <nav class="navbar navbar-expand-lg" style="background-color:#e3f2fd;">
   <div class="container">
     <a class="navbar-brand" href="index.html">Suits N Glam</a>
@@ -96,7 +95,7 @@
         <span id="cartCount" class="badge bg-danger"></span>
       </a>
 
-      <!-- LOGIN / ACCOUNT (flicker-free wrapper) -->
+      <!-- LOGIN / ACCOUNT -->
       <div class="nav-login-area d-flex align-items-center">
         <button id="loginBtn" class="btn-login">Login</button>
 
@@ -109,7 +108,6 @@
     </div>
   </div>
 </nav>
-
 
 <!-- ===================== CATEGORY CARDS ====================== -->
 <div class="container mt-5">
@@ -172,7 +170,6 @@
   </div>
 </div>
 
-
 <!-- ===================== SOCIAL ICONS ====================== -->
 <div class="container text-center py-4 social-area">
   <i class="bi bi-instagram" onclick="window.open('https://www.instagram.com/suitsnglam/', '_blank')"></i>
@@ -182,26 +179,39 @@
 </div>
 
 <!-- ===================== SCRIPTS ====================== -->
+
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <script src="https://cdn.jsdelivr.net/npm/jwt-decode/build/jwt-decode.min.js"></script>
-<script>
-document.addEventListener("DOMContentLoaded", () => {
-  const btn = document.getElementById("loginBtn");
-  console.log("Login button found?", btn);
-
-  if (btn) {
-    btn.addEventListener("click", () => {
-      console.log("Login button clicked");
-      googleLogin();
-    });
-  }
-});
-</script>
 
 <script src="js/google-auth.js"></script>
 <script src="js/navbar.js"></script>
 <script src="js/cart.js"></script>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- 🔥 INSTANT NO-FLICKER LOGIN UI (MOST IMPORTANT PART) -->
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const raw = localStorage.getItem("sg_user");
+  const loginArea = document.querySelector(".nav-login-area");
+  const loginBtn = document.getElementById("loginBtn");
+  const accountIcon = document.getElementById("accountIcon");
+
+  let user = null;
+  try { user = raw ? JSON.parse(raw) : null; } catch {}
+
+  if (user) {
+    accountIcon.src = user.picture || "images/default-user.png";
+    accountIcon.style.display = "inline-block";
+    loginBtn.style.display = "none";
+  } else {
+    accountIcon.style.display = "none";
+    loginBtn.style.display = "inline-block";
+  }
+
+  loginArea.style.visibility = "visible"; // show instantly, no flicker
+});
+</script>
 
 </body>
 </html>
