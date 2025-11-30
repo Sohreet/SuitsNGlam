@@ -1,5 +1,5 @@
 /******************************************************
- * SUITS N GLAM — SMART APP.JS
+ * SUITS N GLAM — FINAL SMART APP.JS
  * Handles:
  * - Google Login
  * - Navbar UI
@@ -7,8 +7,9 @@
  * - Product System (localStorage)
  * - Auto New Arrivals
  * - Auto Best Deals
- * - Admin Controls
- * - Orders
+ * - Sales Toggle
+ * - Order System
+ * - Metres 1–6
  ******************************************************/
 
 console.log("APP.JS LOADED");
@@ -20,12 +21,6 @@ function getUser() {
   const raw = localStorage.getItem("sg_user");
   if (!raw) return null;
   try { return JSON.parse(raw); } catch { return null; }
-}
-
-function escapeHtml(str) {
-  if (!str) return "";
-  return str.replace(/[&<>"']/g, m =>
-    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m]));
 }
 
 /******************************************************
@@ -46,6 +41,7 @@ function setupLoginUI() {
     accIcon.style.display = "block";
     accIcon.onclick = () => (window.location.href = "account.html");
 
+    // SAFE ADMIN BADGE
     if (user.email === "sohabrar10@gmail.com") {
       if (adminBadge) adminBadge.style.display = "inline-block";
       localStorage.setItem("adminLoggedIn", "true");
@@ -55,7 +51,6 @@ function setupLoginUI() {
     accIcon.style.display = "none";
   }
 }
-
 document.addEventListener("DOMContentLoaded", setupLoginUI);
 
 /******************************************************
@@ -95,7 +90,7 @@ function handleCredentialResponse(response) {
 
     setupLoginUI();
 
-    // ⭐ FIX: REDIRECT TO ACCOUNT PAGE AFTER LOGIN
+    // ⭐ Redirect after login fix
     window.location.href = "account.html";
 
   } catch (err) {
@@ -108,7 +103,7 @@ function googleLogin() {
     return setTimeout(googleLogin, 300);
 
   google.accounts.id.initialize({
-    client_id: 653374521156-6retcia1fiu5dvmbjik9sq89ontrkmvt.apps.googleusercontent.com,
+    client_id: GOOGLE_CLIENT_ID,
     callback: handleCredentialResponse
   });
 
@@ -167,6 +162,17 @@ function removeItem(index) {
 }
 
 /******************************************************
+ * METER CHANGE (LIMIT 1 to 6)
+ ******************************************************/
+function meterChange(id, delta) {
+  const field = document.getElementById(`meter-${id}`);
+  let v = parseInt(field.value);
+
+  v = Math.max(1, Math.min(6, v + delta));  // ⭐ LIMIT 1–6
+  field.value = v;
+}
+
+/******************************************************
  * PRODUCT LOADING (LOCALSTORAGE)
  ******************************************************/
 function loadProducts(category) {
@@ -198,13 +204,11 @@ function loadProducts(category) {
 
   filtered.forEach(p => {
     const id = p._id;
-    const mainImg = p.images[0];
 
     container.innerHTML += `
       <div class="col-md-4 product-card">
         <div class="card shadow-sm">
-          <img src="${mainImg}" class="card-img-top">
-
+          <img src="${p.images[0]}" class="card-img-top">
           <div class="card-body">
             <h5>${p.name}</h5>
             <p>${p.description}</p>
@@ -213,7 +217,7 @@ function loadProducts(category) {
 
             <div class="d-flex mb-2">
               <button class="btn btn-sm btn-outline-secondary" onclick="meterChange('${id}', -1)">-</button>
-              <input id="meter-${id}" class="form-control mx-2" style="width:60px;" value="2" readonly>
+              <input id="meter-${id}" class="form-control mx-2" style="width:60px;" value="1" readonly>
               <button class="btn btn-sm btn-outline-secondary" onclick="meterChange('${id}', 1)">+</button>
             </div>
 
@@ -226,23 +230,13 @@ function loadProducts(category) {
 }
 
 /******************************************************
- * METER CHANGE
- ******************************************************/
-function meterChange(id, delta) {
-  const field = document.getElementById(`meter-${id}`);
-  let v = parseInt(field.value);
-  v = Math.max(1, v + delta);
-  field.value = v;
-}
-
-/******************************************************
  * ADD TO CART
  ******************************************************/
 function addToCart(productId) {
   const list = JSON.parse(localStorage.getItem("products") || "[]");
   const product = list.find(p => p._id === productId);
-  const user = getUser();
 
+  const user = getUser();
   if (!user) return alert("Please login first.");
 
   const metres = Number(document.getElementById(`meter-${productId}`).value);
@@ -261,21 +255,22 @@ function addToCart(productId) {
 }
 
 /******************************************************
- * CHECKOUT (LOCAL ONLY)
+ * ORDER SAVING (LOCAL)
  ******************************************************/
 function saveOrder(amount, shipping) {
   const cart = JSON.parse(localStorage.getItem("cart") || "[]");
   const orders = JSON.parse(localStorage.getItem("orders") || "[]");
   let products = JSON.parse(localStorage.getItem("products") || "[]");
 
-  // Increase order count for best deals auto
-  cart.forEach(cartItem => {
-    const p = products.find(x => x.name === cartItem.title);
+  // Auto Best Deals
+  cart.forEach(item => {
+    const p = products.find(x => x.name === item.title);
     if (p) p.orderCount++;
   });
 
   localStorage.setItem("products", JSON.stringify(products));
 
+  // Save order
   orders.push({
     id: "ORD" + Math.floor(Math.random() * 900000 + 100000),
     date: new Date().toLocaleString(),
