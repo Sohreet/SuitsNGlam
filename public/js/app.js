@@ -125,8 +125,12 @@ function attachLoginButton() {
 document.addEventListener("DOMContentLoaded", () => {
   setupLoginUI();
   updateCartBadge();
+
+  // REMOVE initGSI + waitForGSI — not needed in redirect mode
+  // Attach login button directly
   attachLoginButton();
 });
+
 
 /******************************************************
  * CART SYSTEM
