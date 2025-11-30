@@ -23,6 +23,7 @@
       box-shadow: 0 8px 16px rgba(0,0,0,0.2);
     }
 
+    /* LOGIN BUTTON */
     .btn-login {
       background-color: rgb(255,63,51);
       color: #fff;
@@ -33,6 +34,7 @@
     }
     .btn-login:hover { background-color: rgb(255,43,31); }
 
+    /* HERO BOX */
     .category-hero {
       background: #fffda1;
       border-radius: 10px;
@@ -40,6 +42,12 @@
       margin-bottom: 18px;
     }
 
+    /* Flicker fix */
+    .nav-login-area {
+      visibility: hidden;
+    }
+
+    /* Social Icons */
     .social-area i {
       font-size: 1.8rem;
       margin: 0 12px;
@@ -51,7 +59,7 @@
 
 <body>
 
-  <!-- NAVBAR -->
+  <!-- ===================== NAVBAR ====================== -->
   <nav class="navbar navbar-expand-lg" style="background-color:#e3f2fd;">
     <div class="container">
       <a class="navbar-brand" href="index.html">Suits N Glam</a>
@@ -84,27 +92,27 @@
           <li class="nav-item"><a class="nav-link" href="sales.html">Sales</a></li>
         </ul>
 
-        <!-- CART ICON -->
-        <a href="cart.html" class="d-flex align-items-center gap-2 me-3"
-           style="color:#000;text-decoration:none;">
+        <!-- CART -->
+        <a href="cart.html" class="d-flex align-items-center gap-2 me-3" style="text-decoration:none;color:#000;">
           <i class="bi bi-bag-heart-fill" style="font-size:1.6rem;"></i>
           <span id="cartCount" class="badge bg-danger"></span>
         </a>
 
-        <!-- LOGIN BUTTON (Google Auth will replace this) -->
-        <button id="loginButton" class="btn-login">Login</button>
+        <!-- LOGIN / ACCOUNT WRAPPER -->
+        <div class="nav-login-area d-flex align-items-center">
+          <button id="loginBtn" class="btn-login">Login</button>
 
-        <!-- ACCOUNT ICON -->
-        <img id="accountIcon"
-             src=""
-             style="width:34px;height:34px;border-radius:50%;cursor:pointer;display:none;margin-left:10px;"
-             onclick="window.location.href='account.html'">
+          <img id="accountIcon"
+               src=""
+               style="width:34px;height:34px;border-radius:50%;cursor:pointer;display:none;margin-left:10px;"
+               onclick="window.location.href='account.html'">
+        </div>
 
       </div>
     </div>
   </nav>
 
-  <!-- HERO SECTION -->
+  <!-- ===================== HERO ====================== -->
   <div class="container mt-4">
     <div class="category-hero">
       <h2>Summer</h2>
@@ -112,12 +120,12 @@
     </div>
   </div>
 
-  <!-- PRODUCTS -->
+  <!-- ===================== PRODUCTS ====================== -->
   <div class="container mt-3">
     <div class="row g-4" id="productsContainer"></div>
   </div>
 
-  <!-- SOCIAL ICONS -->
+  <!-- ===================== SOCIAL ====================== -->
   <div class="container text-center py-4 social-area">
     <i class="bi bi-instagram" onclick="window.open('https://www.instagram.com/suitsnglam/', '_blank')"></i>
     <i class="bi bi-chat-dots" onclick="window.open('https://www.threads.net/@suitsnglam', '_blank')"></i>
@@ -125,11 +133,10 @@
     <i class="bi bi-youtube"></i>
   </div>
 
-  <!-- GOOGLE LOGIN + JWT -->
+  <!-- ===================== SCRIPTS ====================== -->
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <script src="https://cdn.jsdelivr.net/npm/jwt-decode/build/jwt-decode.min.js"></script>
 
-  <!-- SITE LOGIC -->
   <script src="js/google-auth.js"></script>
   <script src="js/navbar.js"></script>
   <script src="js/products-common.js"></script>
