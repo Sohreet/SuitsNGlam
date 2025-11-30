@@ -1,139 +1,172 @@
 /******************************************************
- * SUITS N GLAM — FINAL MERGED app.js
+ * SUITS N GLAM — FINAL MASTER APP.JS 
+ * Includes:
+ * - Google Login (Popup fixed)
+ * - Cart system fixed
+ * - Product add/delete (Admin)
+ * - Category loading
+ * - Navbar login across all pages
+ * - Coming soon fix
  ******************************************************/
+
 console.log("APP.JS LOADED");
 
-const ADMINS = ["sohabrar10@gmail.com","suitsnglam01@gmail.com"];
+/******************************************************
+ * GLOBALS
+ ******************************************************/
+const ADMINS = ["sohabrar10@gmail.com", "suitsnglam01@gmail.com"];
 const GOOGLE_CLIENT_ID = "653374521156-6retcia1fiu5dvmbjik9sq89ontrkmvt.apps.googleusercontent.com";
 
-/* ---------- helpers ---------- */
-function getUser(){
+let _gsiInitialized = false;
+
+/******************************************************
+ * HELPERS
+ ******************************************************/
+function getUser() {
   const raw = localStorage.getItem("sg_user");
   if (!raw) return null;
   try { return JSON.parse(raw); } catch { return null; }
 }
 
-function saveUserLocal(userObj){
-  localStorage.setItem("sg_user", JSON.stringify(userObj));
-  if (ADMINS.includes(userObj.email)) localStorage.setItem("adminLoggedIn","true");
-  else localStorage.removeItem("adminLoggedIn");
+function escapeHtml(str) {
+  return str?.replace(/[&<>"']/g, (m) =>
+    ({
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      "\"": "&quot;",
+      "'": "&#039;"
+    }[m])
+  );
 }
 
-/* ---------- navbar/login UI (no flicker) ---------- */
-function setupLoginUI(){
+/******************************************************
+ * NAVBAR LOGIN UI
+ ******************************************************/
+function setupLoginUI() {
   const loginBtn = document.getElementById("loginBtn");
-  const accountIcon = document.getElementById("accountIcon");
+  const icon = document.getElementById("accountIcon");
   const navArea = document.querySelector(".nav-login-area");
-  const adminBadgeNav = document.getElementById("adminBadgeNav");
-
-  if (!navArea) return;
-  navArea.style.visibility = "visible";
+  const adminBadge = document.getElementById("adminBadgeNav");
 
   const user = getUser();
-  if (!loginBtn || !accountIcon) return;
+
+  if (!loginBtn || !icon || !navArea) return;
+
+  navArea.style.visibility = "visible";
 
   if (!user) {
     loginBtn.style.display = "inline-block";
-    accountIcon.style.display = "none";
-    if (adminBadgeNav) adminBadgeNav.style.display = "none";
+    icon.style.display = "none";
+    if (adminBadge) adminBadge.style.display = "none";
     return;
   }
 
   loginBtn.style.display = "none";
-  accountIcon.src = user.picture || "/public/images/default-user.png";
-  accountIcon.style.display = "inline-block";
+  icon.src = user.picture || "/public/images/default-user.png";
+  icon.style.display = "inline-block";
 
   if (ADMINS.includes(user.email)) {
-    if (adminBadgeNav) adminBadgeNav.style.display = "inline-block";
-    accountIcon.onclick = () => window.location.href = "admin.html";
+    if (adminBadge) adminBadge.style.display = "inline-block";
+    icon.onclick = () => window.location.href = "admin.html";
   } else {
-    if (adminBadgeNav) adminBadgeNav.style.display = "none";
-    accountIcon.onclick = () => window.location.href = "account.html";
+    icon.onclick = () => window.location.href = "account.html";
+    if (adminBadge) adminBadge.style.display = "none";
   }
 }
 
-/* ---------- Google Sign-In robust init ---------- */
-let _gsiInitialized = false;
+/******************************************************
+ * GOOGLE LOGIN
+ ******************************************************/
+function saveUser(data, token) {
+  const user = {
+    email: data.email,
+    name: data.name,
+    picture: data.picture,
+    token,
+    joined: new Date().toLocaleDateString()
+  };
 
-function handleCredentialResponse(resp){
-  try {
-    const data = jwt_decode(resp.credential);
-    const user = { email: data.email, name: data.name, picture: data.picture, token: resp.credential, joined: new Date().toLocaleDateString() };
-    saveUserLocal(user);
-    setupLoginUI();
-    updateCartBadge();
-  } catch (err) { console.error("GSI decode error", err); }
+  localStorage.setItem("sg_user", JSON.stringify(user));
+
+  if (ADMINS.includes(user.email)) {
+    localStorage.setItem("adminLoggedIn", "true");
+  } else {
+    localStorage.removeItem("adminLoggedIn");
+  }
 }
 
-function initGSI(){
+function handleCredentialResponse(response) {
+  try {
+    const data = jwt_decode(response.credential);
+    saveUser(data, response.credential);
+    setupLoginUI();
+    updateCartBadge();
+  } catch (err) {
+    console.error("Google Auth Error:", err);
+  }
+}
+
+function initGSI() {
   if (_gsiInitialized) return;
   if (!window.google || !google.accounts || !google.accounts.id) return;
-  google.accounts.id.initialize({ client_id: GOOGLE_CLIENT_ID, callback: handleCredentialResponse, ux_mode: "popup" });
+
+  google.accounts.id.initialize({
+    client_id: 653374521156-6retcia1fiu5dvmbjik9sq89ontrkmvt.apps.googleusercontent.com,
+    callback: handleCredentialResponse,
+    ux_mode: "popup"
+  });
+
   _gsiInitialized = true;
 }
 
-function loadGSIScriptOnce(){
-  if (document.getElementById("gsi-script")) return;
-  const s = document.createElement("script");
-  s.id = "gsi-script";
-  s.src = "https://accounts.google.com/gsi/client";
-  s.async = true; s.defer = true;
-  s.onload = () => { initGSI(); };
-  document.head.appendChild(s);
-}
-
-function waitForGSI(timeoutMs=5000){
-  return new Promise(resolve=>{
-    if (window.google && google.accounts && google.accounts.id) return resolve(true);
+async function waitForGSI(timeout = 4000) {
+  return new Promise((resolve) => {
+    if (window.google) return resolve(true);
     const start = Date.now();
-    const iv = setInterval(()=>{
-      if (window.google && google.accounts && google.accounts.id) { clearInterval(iv); return resolve(true); }
-      if (Date.now()-start > timeoutMs) { clearInterval(iv); return resolve(false); }
-    },150);
+    const interval = setInterval(() => {
+      if (window.google) {
+        clearInterval(interval);
+        return resolve(true);
+      }
+      if (Date.now() - start > timeout) {
+        clearInterval(interval);
+        return resolve(false);
+      }
+    }, 100);
   });
 }
 
-async function attachLoginButton(){
-  const btn = document.getElementById("loginBtn");
-  if (!btn) return;
-  btn.removeEventListener("click", _loginClickHandler);
-  btn.addEventListener("click", _loginClickHandler);
-}
+async function loginClickHandler() {
+  const ready = await waitForGSI();
+  if (!ready) return alert("Google login not loaded yet.");
 
-async function _loginClickHandler(e){
-  const ok = await waitForGSI(7000);
-  if (!ok) {
-    loadGSIScriptOnce();
-    const ok2 = await waitForGSI(7000);
-    if (!ok2) return alert("Google Sign-In not available. Try again later.");
-  }
   initGSI();
-  try { google.accounts.id.prompt(); } catch (err) { console.error("GSI prompt failed", err); alert("Google Sign-In failed."); }
+  google.accounts.id.prompt();
 }
 
-/* expose googleLogin for pages */
-function googleLogin(){
-  _loginClickHandler();
+function attachLoginButton() {
+  const btn = document.getElementById("loginBtn");
+  if (btn) btn.onclick = loginClickHandler;
 }
-window.googleLogin = googleLogin;
 
-/* init */
-document.addEventListener("DOMContentLoaded", async ()=>{
+/******************************************************
+ * INITIALIZE ALL
+ ******************************************************/
+document.addEventListener("DOMContentLoaded", async () => {
   setupLoginUI();
   updateCartBadge();
 
-  if (window.google && google.accounts && google.accounts.id) initGSI();
-  else {
-    // try to load if page included GSI tag didn't finish or didn't include it
-    await waitForGSI(2500);
-    if (!window.google) loadGSIScriptOnce();
-    else initGSI();
-  }
+  if (window.google) initGSI();
+  else await waitForGSI();
+
   attachLoginButton();
 });
 
-/* ---------- CART ---------- */
-function updateCartBadge(){
+/******************************************************
+ * CART SYSTEM
+ ******************************************************/
+function updateCartBadge() {
   const badge = document.getElementById("cartCount");
   if (!badge) return;
   const cart = JSON.parse(localStorage.getItem("cart") || "[]");
@@ -141,208 +174,197 @@ function updateCartBadge(){
 }
 window.updateCartBadge = updateCartBadge;
 
-function addToCart(productId, metres=1){
-  metres = Math.max(1, Math.min(6, Number(metres) || 1));
-
-  // fetch product details (try server, fallback local)
-  fetch(`/api/products/${productId}`).then(r=>r.json()).then(p=>{
-    if (!p) return alert("Product not found");
-    const cart = JSON.parse(localStorage.getItem("cart") || "[]");
-    cart.push({
-      productId: p._id || p.id,
-      title: p.name,
-      price: p.price,
-      image: p.images?.[0] || '',
-      metres
-    });
-    localStorage.setItem("cart", JSON.stringify(cart));
-    updateCartBadge();
-    alert("Added to cart!");
-  }).catch(async ()=> {
-    // fallback local product store
-    const localProducts = JSON.parse(localStorage.getItem("products") || "[]");
-    const p = localProducts.find(x => x._id === productId);
-    if (!p) return alert("Product not found (offline)");
-    const cart = JSON.parse(localStorage.getItem("cart") || "[]");
-    cart.push({ productId: p._id, title: p.name, price: p.price, image: p.images?.[0]||'', metres });
-    localStorage.setItem("cart", JSON.stringify(cart));
-    updateCartBadge();
-    alert("Added to cart (local)!");
+function addToCart(product, metres = 1) {
+  let cart = JSON.parse(localStorage.getItem("cart") || "[]");
+  cart.push({
+    id: product._id,
+    name: product.name,
+    price: product.price,
+    image: product.images[0],
+    metres
   });
+  localStorage.setItem("cart", JSON.stringify(cart));
+  updateCartBadge();
+  alert("Added to cart!");
 }
+
 window.addToCart = addToCart;
 
-function loadCartPage(){
-  const container = document.getElementById("cartItems");
-  const emptyEl = document.getElementById("cartEmpty");
+function loadCartPage() {
+  const cont = document.getElementById("cartItems");
+  const empty = document.getElementById("cartEmpty");
   const summary = document.getElementById("cartSummary");
-  const totalEl = document.getElementById("cartTotal");
-
-  if (!container) return;
 
   const cart = JSON.parse(localStorage.getItem("cart") || "[]");
-  container.innerHTML = "";
+
   if (!cart.length) {
-    if (emptyEl) emptyEl.style.display = "block";
-    if (summary) summary.style.display = "none";
-    updateCartBadge(); return;
+    empty.style.display = "block";
+    cont.innerHTML = "";
+    summary.style.display = "none";
+    updateCartBadge();
+    return;
   }
 
-  if (emptyEl) emptyEl.style.display = "none";
-  if (summary) summary.style.display = "block";
+  empty.style.display = "none";
+  summary.style.display = "block";
 
+  cont.innerHTML = "";
   let total = 0;
-  cart.forEach((it, i) => {
-    total += Number(it.price || 0) * Number(it.metres || 1);
-    container.innerHTML += `
+
+  cart.forEach((i, idx) => {
+    total += i.price * i.metres;
+
+    cont.innerHTML += `
       <div class="col-md-4">
-        <div class="card p-2">
-          <img src="${it.image||''}" class="w-100" style="height:180px;object-fit:cover">
+        <div class="card p-2 shadow-sm">
+          <img src="${i.image}" style="height:150px;width:100%;object-fit:cover;">
           <div class="card-body">
-            <h5>${it.title}</h5>
-            <p>₹${it.price} × ${it.metres}m</p>
-            <button class="btn btn-danger btn-sm" onclick="removeItem(${i})">Remove</button>
+            <h5>${i.name}</h5>
+            <p>₹${i.price} × ${i.metres}m</p>
+            <button class="btn btn-danger btn-sm" onclick="removeItem(${idx})">Remove</button>
           </div>
         </div>
       </div>
     `;
   });
 
-  if (totalEl) totalEl.textContent = total;
+  document.getElementById("cartTotal").textContent = total;
   updateCartBadge();
 }
 window.loadCartPage = loadCartPage;
 
-function removeItem(index){
-  const cart = JSON.parse(localStorage.getItem("cart") || "[]");
-  cart.splice(index,1);
+function removeItem(i) {
+  let cart = JSON.parse(localStorage.getItem("cart") || "[]");
+  cart.splice(i, 1);
   localStorage.setItem("cart", JSON.stringify(cart));
   loadCartPage();
-  updateCartBadge();
 }
 window.removeItem = removeItem;
 
-/* ---------- PRODUCTS (list & single) ---------- */
-async function loadProducts(category, containerId="productsContainer"){
-  const container = document.getElementById(containerId);
-  if (!container) return;
-  container.innerHTML = "Loading...";
-
-  try {
-    const res = await fetch(`/api/products/category/${encodeURIComponent(category)}`);
-    const products = await res.json();
-    if (!products || products.length === 0) {
-      container.innerHTML = `<p class="text-muted fw-bold">Coming Soon...</p>`;
-      return;
-    }
-    container.innerHTML = "";
-    products.forEach(p => {
-      const outOfStock = (p.stock === 0);
-      container.innerHTML += `
-        <div class="col-md-4 product-card">
-          <div class="card shadow-sm" onclick="openProduct('${p._id || p.id}')">
-            <img src="${p.images?.[0] || ''}" class="card-img-top" style="height:250px;object-fit:cover">
-            ${outOfStock ? `<span class="badge bg-danger m-2">Out of Stock</span>` : ""}
-            <div class="card-body">
-              <h5>${p.name}</h5>
-              <p class="fw-bold">₹${p.price}/m</p>
-            </div>
-          </div>
-        </div>
-      `;
-    });
-  } catch (err) {
-    console.error("loadProducts error:", err);
-    // fallback: localStorage products
-    const local = JSON.parse(localStorage.getItem("products") || "[]").filter(pp => (category==="all" || pp.category===category));
-    if (!local.length) { container.innerHTML = `<p class="text-muted fw-bold">Coming Soon...</p>`; return; }
-    container.innerHTML = "";
-    local.forEach(p => {
-      container.innerHTML += `
-        <div class="col-md-4 product-card">
-          <div class="card shadow-sm" onclick="openProduct('${p._id}')">
-            <img src="${p.images?.[0]||''}" class="card-img-top" style="height:250px;object-fit:cover">
-            ${p.stock===0?`<span class="badge bg-danger m-2">Out of Stock</span>`:""}
-            <div class="card-body"><h5>${p.name}</h5><p class="fw-bold">₹${p.price}/m</p></div>
-          </div>
-        </div>
-      `;
-    });
-  }
-}
-window.loadProducts = loadProducts;
-
-function openProduct(id){ window.location.href = `product.html?id=${id}`; }
-window.openProduct = openProduct;
-
-async function loadSingleProduct(){
-  const params = new URLSearchParams(window.location.search);
-  const id = params.get("id");
+/******************************************************
+ * PRODUCT PAGE LOAD
+ ******************************************************/
+async function loadSingleProduct() {
+  const id = new URLSearchParams(window.location.search).get("id");
   if (!id) return;
-  try {
-    const res = await fetch(`/api/products/${encodeURIComponent(id)}`);
-    const p = await res.json();
-    window.selectedProduct = p;
-    return p;
-  } catch (err) {
-    // fallback local
-    const local = JSON.parse(localStorage.getItem("products") || "[]");
-    const p = local.find(x=>x._id===id);
-    window.selectedProduct = p;
-    return p;
-  }
+
+  const res = await fetch(`/api/products/${id}`);
+  const p = await res.json();
+
+  document.getElementById("p_name").textContent = p.name;
+  document.getElementById("p_price").textContent = p.price;
+  document.getElementById("p_desc").textContent = p.description;
+  document.getElementById("p_category").textContent = p.category;
+
+  document.getElementById("mainImage").src = p.images[0];
+
+  const thumbRow = document.getElementById("thumbRow");
+  thumbRow.innerHTML = "";
+  p.images.forEach((img, i) => {
+    thumbRow.innerHTML += `
+      <img src="${img}" class="thumb-img ${i === 0 ? "active" : ""}" 
+           onclick="document.getElementById('mainImage').src='${img}'">
+    `;
+  });
+
+  window.currentProduct = p;
 }
 window.loadSingleProduct = loadSingleProduct;
 
-/* ---------- ADMIN helpers ---------- */
-async function renderAdminProducts(){
-  // used by admin.html and admin dashboard
-  try {
-    const res = await fetch("/api/products/category/all");
-    if (!res.ok) throw new Error("server fail");
-    const products = await res.json();
-    return products;
-  } catch (err) {
-    return JSON.parse(localStorage.getItem("products") || "[]");
+function addToCartPage() {
+  const metres = Number(document.getElementById("metreInput").value);
+  addToCart(window.currentProduct, metres);
+}
+
+/******************************************************
+ * LOAD PRODUCTS BY CATEGORY
+ ******************************************************/
+async function loadProducts(cat, containerId = "productsContainer") {
+  const box = document.getElementById(containerId);
+  box.innerHTML = "Loading...";
+
+  const res = await fetch(`/api/products/category/${cat}`);
+  const products = await res.json();
+
+  if (!products.length) {
+    box.innerHTML = `<p class='text-muted fw-bold'>Coming Soon...</p>`;
+    return;
+  }
+
+  box.innerHTML = "";
+
+  products.forEach((p) => {
+    box.innerHTML += `
+      <div class="col-md-4 product-card">
+        <div class="card shadow-sm" onclick="openProduct('${p._id}')">
+          <img src="${p.images[0]}" style="height:250px;width:100%;object-fit:cover;">
+          <div class="card-body">
+            <h5>${p.name}</h5>
+            <p class="fw-bold">₹${p.price}/m</p>
+          </div>
+        </div>
+      </div>
+    `;
+  });
+}
+window.loadProducts = loadProducts;
+
+function openProduct(id) {
+  window.location.href = `product.html?id=${id}`;
+}
+
+/******************************************************
+ * ADMIN DELETE PRODUCT
+ ******************************************************/
+async function adminDeleteProduct(id) {
+  if (!confirm("Delete this product permanently?")) return;
+
+  const res = await fetch(`/api/admin/products/${id}`, {
+    method: "DELETE"
+  });
+
+  const data = await res.json();
+  if (data.success) {
+    alert("Product deleted.");
+    renderAdminProducts();
+  } else {
+    alert("Delete failed.");
   }
 }
+window.adminDeleteProduct = adminDeleteProduct;
 
-async function deleteProductClient(id){
-  try {
-    const res = await fetch(`/api/admin/products/${encodeURIComponent(id)}`, { method:"DELETE" });
-    if (res.ok) return true;
-  } catch (e) {}
-  // fallback local deletion
-  const products = JSON.parse(localStorage.getItem("products") || "[]");
-  const idx = products.findIndex(p => p._id === id);
-  if (idx>=0) { products.splice(idx,1); localStorage.setItem("products", JSON.stringify(products)); return true; }
-  return false;
+/******************************************************
+ * ADMIN PRODUCT LIST
+ ******************************************************/
+async function renderAdminProducts() {
+  const out = document.getElementById("productsAdminList");
+  const res = await fetch("/api/products/category/all");
+  const products = await res.json();
+
+  out.innerHTML = products
+    .map((p) => `
+      <div class="card p-2 mb-2">
+        <div class="d-flex align-items-center">
+          <img src="${p.images[0]}" style="width:70px;height:70px;border-radius:8px;object-fit:cover;">
+          <div class="ms-3">
+            <strong>${p.name}</strong> — ₹${p.price}  
+            <br>
+            <span>${p.category}</span>
+          </div>
+          <button class="btn btn-danger btn-sm ms-auto" onclick="adminDeleteProduct('${p._id}')">
+            Delete
+          </button>
+        </div>
+      </div>
+    `)
+    .join("");
 }
-window.deleteProductClient = deleteProductClient;
-
-/* ---------- ORDER helpers ---------- */
-function saveOrder(amount, shipping){
-  const cart = JSON.parse(localStorage.getItem("cart") || "[]");
-  const orders = JSON.parse(localStorage.getItem("orders") || "[]");
-  orders.unshift({
-    id: "ORD"+Math.floor(Math.random()*900000+100000),
-    date: new Date().toLocaleString(),
-    total: amount,
-    status: "Confirmed",
-    items: cart,
-    shipping
-  });
-  localStorage.setItem("orders", JSON.stringify(orders));
-  // clear cart
-  localStorage.removeItem("cart");
-  updateCartBadge();
-}
-
-/* Expose some high-level functions */
-window.setupLoginUI = setupLoginUI;
-window.saveUserLocal = saveUserLocal;
 window.renderAdminProducts = renderAdminProducts;
-window.deleteProductClient = deleteProductClient;
-window.saveOrder = saveOrder;
 
-/* ---------- end app.js ---------- */
+/******************************************************
+ * ADMIN GUARD
+ ******************************************************/
+if (window.location.pathname.includes("admin")) {
+  const admin = localStorage.getItem("adminLoggedIn");
+  if (!admin) window.location.href = "index.html";
+}
