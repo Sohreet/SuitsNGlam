@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>My Account - Suits N Glam</title>
 
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -10,10 +10,19 @@
 
   <style>
     body { background:#f8f9fa; }
-    .nav-login-area { visibility:visible !important; }
+
+    /* ADMIN BADGE */
     .admin-badge {
-      background:#c60000;color:#fff;padding:4px 8px;border-radius:6px;font-weight:700;margin-left:8px;
+      background:#28a745;
+      color:white;
+      padding:4px 8px;
+      border-radius:6px;
+      font-size:12px;
+      font-weight:700;
+      margin-left:8px;
     }
+
+    /* LOGIN BUTTON RED */
     .btn-login {
       color:#c60000 !important;
       border:2px solid #c60000;
@@ -22,15 +31,18 @@
       border-radius:6px;
       font-weight:600;
     }
-    .btn-login:hover { background:#c60000; color:white !important; }
+    .btn-login:hover {
+      background:#c60000;
+      color:white !important;
+    }
   </style>
 </head>
 <body>
 
-<!-- NAVBAR (same as index) -->
+<!-- NAVBAR -->
 <nav class="navbar navbar-expand-lg" style="background-color:#e3f2fd;">
   <div class="container">
-    <a class="navbar-brand" href="index.html">Suits N Glam</a>
+    <a class="navbar-brand fw-bold" href="index.html">Suits N Glam</a>
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
       <span class="navbar-toggler-icon"></span>
@@ -38,9 +50,10 @@
 
     <div class="collapse navbar-collapse" id="navbarNav">
 
-      <ul class="navbar-nav ms-auto me-2">
+      <ul class="navbar-nav ms-auto me-3">
         <li class="nav-item"><a class="nav-link" href="allproducts.html">All Products</a></li>
         <li class="nav-item"><a class="nav-link" href="newarrivals.html">New Arrivals</a></li>
+
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Shop By Category</a>
           <ul class="dropdown-menu">
@@ -52,6 +65,7 @@
             <li><a class="dropdown-item" href="premiumwear.html">Premium Wear</a></li>
           </ul>
         </li>
+
         <li class="nav-item"><a class="nav-link" href="bestdeals.html">Best Deals</a></li>
         <li class="nav-item"><a class="nav-link" href="sales.html">Sales</a></li>
       </ul>
@@ -67,10 +81,10 @@
         <button id="loginBtn" class="btn-login">Login</button>
 
         <img id="accountIcon"
-             src=""
              style="width:34px;height:34px;border-radius:50%;cursor:pointer;display:none;margin-left:10px;">
-             
-        <span id="adminBadge" class="admin-badge" style="display:none">ADMIN</span>
+
+        <!-- NAVBAR ADMIN BADGE -->
+        <span id="adminBadgeNav" class="admin-badge" style="display:none;">ADMIN</span>
       </div>
 
     </div>
@@ -78,24 +92,27 @@
 </nav>
 
 
-<!-- CONTENT -->
+<!-- ACCOUNT CONTENT -->
 <div class="container mt-4">
-  <h2 class="mb-3">My Account</h2>
+  <h2 class="mb-3 d-flex align-items-center">
+    My Account
+    <span id="adminBadgePage" class="admin-badge" style="display:none;margin-left:10px;">ADMIN</span>
+  </h2>
 
   <div id="accountInfo" class="card p-4">
-    <!-- app.js will fill user info; fallback display -->
     <div id="accountFallback" style="display:none;">
       <p>Please login to view account details.</p>
-      <button class="btn btn-primary" onclick="location.href='login.html'">Login</button>
+      <button class="btn btn-primary" onclick="googleLogin()">Login</button>
     </div>
   </div>
 
   <div class="mt-4">
-    <a id="ordersBtn" href="orderhistory.html" class="btn btn-primary">Order History</a>
+    <a href="orderhistory.html" class="btn btn-primary">Order History</a>
     <a href="ordertracking.html" class="btn btn-secondary">Track Orders</a>
+
     <button class="btn btn-danger" onclick="logout()">Logout</button>
 
-    <!-- Admin Dashboard button (shown only to admin) -->
+    <!-- ADMIN DASHBOARD BUTTON -->
     <a id="adminDashboardBtn" href="admin.html" class="btn btn-outline-danger ms-2" style="display:none;">
       Go to Admin Dashboard
     </a>
@@ -109,14 +126,15 @@ function logout() {
   window.location.href = "index.html";
 }
 
-/* Show account info + admin controls when sg_user exists */
 document.addEventListener("DOMContentLoaded", () => {
   const raw = localStorage.getItem("sg_user");
-  const accountInfo = document.getElementById("accountInfo");
+  const accCard = document.getElementById("accountInfo");
   const fallback = document.getElementById("accountFallback");
   const loginBtn = document.getElementById("loginBtn");
   const accIcon = document.getElementById("accountIcon");
-  const adminBadge = document.getElementById("adminBadge");
+
+  const adminBadgeNav = document.getElementById("adminBadgeNav");
+  const adminBadgePage = document.getElementById("adminBadgePage");
   const adminBtn = document.getElementById("adminDashboardBtn");
 
   if (!raw) {
@@ -127,30 +145,26 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const user = JSON.parse(raw);
 
-  // Populate account card
-  accountInfo.innerHTML = `
+  // SHOW USER INFO
+  accCard.innerHTML = `
     <div class="d-flex align-items-center gap-3">
-      <img src="${user.picture||''}" style="width:64px;height:64px;border-radius:50%;object-fit:cover;">
+      <img src="${user.picture}" style="width:70px;height:70px;border-radius:50%;object-fit:cover;">
       <div>
-        <h5 style="margin:0">${user.name || user.email}</h5>
-        <p class="mb-0 text-muted">${user.email || ''}</p>
+        <h5 class="mb-1">${user.name}</h5>
+        <p class="text-muted mb-0">${user.email}</p>
       </div>
     </div>
-    <hr />
-    <p><strong>Joined:</strong> ${user.joined || '—'}</p>
   `;
 
-  // Hide login button & show profile icon
+  // HIDE LOGIN, SHOW ICON
   loginBtn.style.display = "none";
-  if (user.picture) {
-    accIcon.src = user.picture;
-    accIcon.style.display = "block";
-  }
+  accIcon.src = user.picture;
+  accIcon.style.display = "block";
 
-  // If admin, show admin badge + button
-  const adminEmail = "sohabrar10@gmail.com";
-  if (user.email === adminEmail) {
-    adminBadge.style.display = "inline-block";
+  // ADMIN CHECK
+  if (user.email === "sohabrar10@gmail.com") {
+    adminBadgeNav.style.display = "inline-block";
+    adminBadgePage.style.display = "inline-block";
     adminBtn.style.display = "inline-block";
   }
 });
