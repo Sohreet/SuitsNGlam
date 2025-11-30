@@ -1,11 +1,10 @@
 /* -------------------------------------------------------
-   ADMIN AUTH CHECK (FINAL FIXED VERSION)
+   ADMIN AUTH CHECK — FINAL MATCHED VERSION
 ------------------------------------------------------- */
 document.addEventListener("DOMContentLoaded", () => {
-  // Google login sets: localStorage.setItem("isAdmin", "true")
-  const isAdmin = localStorage.getItem("isAdmin");
+  const admin = localStorage.getItem("adminLoggedIn"); // SAME as google-auth.js
 
-  if (isAdmin !== "true") {
+  if (admin !== "true") {
     alert("Admin access denied!");
     window.location.href = "index.html";
     return;
@@ -14,13 +13,13 @@ document.addEventListener("DOMContentLoaded", () => {
   loadProducts();
 
   document.getElementById("logoutBtn").addEventListener("click", () => {
-    localStorage.removeItem("isAdmin");
+    localStorage.removeItem("adminLoggedIn"); // logout admin
     localStorage.removeItem("sg_user"); // optional
     window.location.href = "index.html";
   });
 });
 
-// Backend on same server
+// BACKEND ON SAME SERVER
 const BASE_URL = "";
 
 
