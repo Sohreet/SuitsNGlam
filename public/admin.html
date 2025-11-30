@@ -9,8 +9,24 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 
   <style>
-    body{background:#f8f9fa;}
-    .nav-login-area { visibility:hidden; }
+    body { background:#f8f9fa; }
+
+    /* Show login+account on admin */
+    .nav-login-area { visibility:visible !important; }
+
+    .btn-login {
+      color:#c60000 !important;
+      border:2px solid #c60000;
+      background:white;
+      padding:4px 12px;
+      border-radius:6px;
+      font-weight:600;
+    }
+    .btn-login:hover {
+      background:#c60000;
+      color:white !important;
+    }
+
     .admin-actions { display:flex; gap:8px; flex-wrap:wrap; }
   </style>
 </head>
@@ -19,6 +35,7 @@
 <!-- NAVBAR -->
 <nav class="navbar navbar-expand-lg" style="background-color:#e3f2fd;">
   <div class="container">
+
     <a class="navbar-brand" href="index.html">Suits N Glam</a>
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -26,30 +43,50 @@
     </button>
 
     <div class="collapse navbar-collapse" id="navbarNav">
+
       <ul class="navbar-nav ms-auto me-2">
         <li class="nav-item"><a class="nav-link" href="allproducts.html">All Products</a></li>
       </ul>
 
       <div class="nav-login-area d-flex align-items-center">
         <button id="loginBtn" class="btn-login">Login</button>
-        <img id="accountIcon" style="width:34px;height:34px;border-radius:50%;display:none;">
+        <img id="accountIcon"
+             style="width:34px;height:34px;border-radius:50%;cursor:pointer;display:none;margin-left:10px;">
       </div>
     </div>
   </div>
 </nav>
+
 
 <div class="container mt-4">
   <h3>Admin Dashboard</h3>
 
   <div id="adminMsg" class="alert alert-warning mt-3" style="display:none;"></div>
 
+  <!-- ADD PRODUCT CARD -->
   <div class="card p-3 mt-3">
     <h5>Add Product</h5>
 
     <div class="row g-2">
       <div class="col-md-4"><input id="p_name" class="form-control" placeholder="Name"></div>
       <div class="col-md-2"><input id="p_price" class="form-control" placeholder="Price"></div>
-      <div class="col-md-3"><input id="p_category" class="form-control" placeholder="Category"></div>
+
+      <!-- FIXED CATEGORY DROPDOWN -->
+      <div class="col-md-3">
+        <select id="p_category" class="form-control">
+          <option value="">Select Category</option>
+          <option value="newarrivals">New Arrivals</option>
+          <option value="bestdeals">Best Deals</option>
+          <option value="sales">Sales</option>
+          <option value="summer">Summer</option>
+          <option value="winter">Winter</option>
+          <option value="wedding">Wedding</option>
+          <option value="casuals">Casuals</option>
+          <option value="dailywear">Daily Wear</option>
+          <option value="premiumwear">Premium Wear</option>
+        </select>
+      </div>
+
       <div class="col-md-3"><input id="p_image" class="form-control" placeholder="Image URL"></div>
     </div>
 
@@ -65,75 +102,99 @@
   <div class="mt-4" id="productsAdminList"></div>
 </div>
 
+
 <script>
+// LOGOUT
 function adminLogout() {
+  localStorage.removeItem("sg_user");
   localStorage.removeItem("adminLoggedIn");
   alert("Logged out of admin");
   window.location.href = "index.html";
 }
 
+// ADD PRODUCT
 function adminAddProduct() {
   const name = document.getElementById("p_name").value.trim();
   const price = Number(document.getElementById("p_price").value.trim() || 0);
-  const category = document.getElementById("p_category").value.trim() || "general";
+  const category = document.getElementById("p_category").value.trim();
   const image = document.getElementById("p_image").value.trim();
   const desc = document.getElementById("p_desc").value.trim();
 
   if (!name) return alert("Provide product name");
+  if (!category) return alert("Select a category");
 
   const products = JSON.parse(localStorage.getItem("products") || "[]");
+
   const newP = {
     _id: "P" + Math.random().toString(36).slice(2,9),
-    name, price, category, images: image ? [image] : [],
+    name,
+    price,
+    category,
+    images: image ? [image] : [],
     description: desc
   };
+
   products.push(newP);
   localStorage.setItem("products", JSON.stringify(products));
   renderAdminProducts();
-  alert("Product added (local)");
+  alert("Product added!");
 }
 
+// SHOW PRODUCTS
 function renderAdminProducts() {
   const out = document.getElementById("productsAdminList");
   const products = JSON.parse(localStorage.getItem("products") || "[]");
-  if (!products.length) { out.innerHTML = "<p>No products yet.</p>"; return; }
+
+  if (!products.length) {
+    out.innerHTML = "<p>No products yet.</p>";
+    return;
+  }
+
   out.innerHTML = products.map(p => `
     <div class="card p-2 mb-2">
       <div class="d-flex align-items-center">
-        <img src="${p.images?.[0]||''}" style="width:80px;height:60px;object-fit:cover;margin-right:12px;">
+        <img src="${p.images?.[0] || ''}"
+             style="width:80px;height:60px;object-fit:cover;margin-right:12px;">
         <div>
           <strong>${p.name}</strong><br>
-          ₹${p.price} — ${p.category}
+          ₹${p.price} — <span class="text-primary">${p.category}</span>
         </div>
       </div>
     </div>
   `).join("");
 }
 
-/* Admin guard + initial render */
+
+// ADMIN GUARD
 document.addEventListener("DOMContentLoaded", () => {
   const raw = localStorage.getItem("sg_user");
   if (!raw) {
-    document.getElementById("adminMsg").style.display = "block";
-    document.getElementById("adminMsg").textContent = "Please login as admin first.";
-    setTimeout(()=> window.location.href = "index.html", 1500);
+    showAdminError("Please login as admin first.");
     return;
   }
+
   const user = JSON.parse(raw);
-  const admins = ["sohabrar10@gmail.com","suitsnglam01@gmail.com"];
+
+  // ✔ YOUR REAL ADMIN ID
+  const admins = ["sohabrar10@gmail.com"];
+
   if (!admins.includes(user.email)) {
-    document.getElementById("adminMsg").style.display = "block";
-    document.getElementById("adminMsg").textContent = "Admin access only.";
-    setTimeout(()=> window.location.href = "index.html", 1500);
+    showAdminError("Admin access only.");
     return;
   }
 
   renderAdminProducts();
 });
+
+function showAdminError(msg) {
+  const box = document.getElementById("adminMsg");
+  box.style.display = "block";
+  box.textContent = msg;
+  setTimeout(() => (window.location.href = "index.html"), 1500);
+}
 </script>
 
 <script src="js/app.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
-
 </body>
 </html>
