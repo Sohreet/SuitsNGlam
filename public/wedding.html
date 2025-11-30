@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Wedding - Suits N Glam</title>
+  <title>Winter - Suits N Glam</title>
 
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
@@ -11,7 +11,6 @@
   <style>
     body { background:white !important; }
 
-    /* Login button (same as index) */
     .btn-login {
       background:#ff3f33;
       color:white !important;
@@ -24,20 +23,20 @@
 
     .nav-login-area { visibility:visible !important; }
 
-    /* Home icon */
     .home-icon {
-      font-size:1.6rem; cursor:pointer; color:black; margin-right:15px;
+      font-size:1.6rem;
+      cursor:pointer;
+      color:black;
+      margin-right:15px;
     }
     .home-icon:hover { opacity:0.7; }
 
     .product-card { cursor:pointer; }
-    .product-card:hover { transform:scale(1.02); transition:0.2s; }
   </style>
 </head>
 
 <body>
 
-<!-- NAVBAR -->
 <nav class="navbar navbar-expand-lg" style="background-color:#e3f2fd;">
   <div class="container">
 
@@ -49,7 +48,6 @@
 
     <div class="collapse navbar-collapse" id="navbarNav">
 
-      <!-- Home Icon -->
       <i class="bi bi-house-fill home-icon" onclick="window.location.href='index.html'"></i>
 
       <ul class="navbar-nav ms-auto me-2">
@@ -74,14 +72,13 @@
 
       </ul>
 
-      <!-- CART -->
       <a href="cart.html" class="d-flex align-items-center gap-2 me-3 text-decoration-none text-dark">
         <i class="bi bi-bag-heart-fill" style="font-size:1.6rem;"></i>
         <span id="cartCount" class="badge bg-danger"></span>
       </a>
 
-      <!-- LOGIN / ACCOUNT / ADMIN -->
       <div class="nav-login-area d-flex align-items-center">
+
         <button id="loginBtn" class="btn-login">Login</button>
 
         <img id="accountIcon"
@@ -92,44 +89,30 @@
                      font-weight:700;display:none;margin-left:10px;">
           ADMIN
         </span>
+
       </div>
 
     </div>
   </div>
 </nav>
 
-
-<!-- PAGE CONTENT -->
 <div class="container mt-4">
 
-  <h2 class="fw-bold">Wedding</h2>
+  <h2 class="fw-bold">Summer</h2>
 
-  <p id="comingSoonMsg" class="text-muted" style="display:none;font-weight:600;">
-    Coming Soon...
-  </p>
-
+  <!-- ONLY THE PRODUCTS CONTAINER -->
   <div id="productsContainer" class="row g-4 mt-3"></div>
 
 </div>
 
-<!-- LOAD PRODUCTS -->
 <script>
 document.addEventListener("DOMContentLoaded", () => {
-
-  loadProducts("wedding");
-
-  setTimeout(() => {
-    if (document.querySelectorAll(".product-card").length === 0)
-      document.getElementById("comingSoonMsg").style.display = "block";
-  }, 800);
-
+  loadProducts("winter");
 });
 </script>
 
-<!-- SCRIPTS -->
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <script src="https://cdn.jsdelivr.net/npm/jwt-decode/build/jwt-decode.min.js"></script>
-
 <script src="js/app.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
 
