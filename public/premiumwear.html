@@ -31,8 +31,18 @@
     }
     .btn-login:hover { background-color:rgb(255,43,31); }
 
-    /* no flicker */
+    /* Flicker fix */
     .nav-login-area { visibility:hidden; }
+
+    /* Coming Soon */
+    #comingSoonMsg {
+      display:none;
+      text-align:center;
+      font-size:1.3rem;
+      padding:40px 0;
+      color:#555;
+      font-weight:500;
+    }
   </style>
 </head>
 
@@ -41,6 +51,9 @@
   <!-- NAVBAR -->
   <nav class="navbar navbar-expand-lg" style="background-color:#e3f2fd;">
     <div class="container">
+
+      <!-- Back Home -->
+      <a href="index.html" class="btn btn-outline-primary me-3">← Home</a>
 
       <a class="navbar-brand" href="index.html">Suits N Glam</a>
 
@@ -100,6 +113,9 @@
     </div>
   </div>
 
+  <!-- COMING SOON MESSAGE -->
+  <div id="comingSoonMsg">🚧 Products Coming Soon 🚧</div>
+
   <!-- PRODUCT GRID -->
   <div class="container mt-3">
     <div class="row g-4" id="productsContainer"></div>
@@ -112,8 +128,12 @@
   <script src="js/google-auth.js"></script>
   <script src="js/navbar.js"></script>
   <script src="js/products-common.js"></script>
-  
-  <script> loadProducts("premium"); </script>
+
+  <script>
+    loadProducts("premium", "productsContainer", "comingSoonMsg");
+  </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
 
 </body>
 </html>
