@@ -29,21 +29,16 @@
       margin-bottom: 12px;
     }
 
-    /* LOGIN BUTTON FIX */
     .btn-login {
       background-color: rgb(255,63,51);
       color: white;
       border: none;
       padding: 6px 14px;
       border-radius: 6px;
-      text-decoration: none !important;
       cursor: pointer;
     }
 
-    .btn-login:hover {
-      background-color: rgb(255,43,31);
-      color: white;
-    }
+    .btn-login:hover { background-color: rgb(255,43,31); }
 
     .btn-logout {
       background-color: rgb(255,63,51);
@@ -53,10 +48,7 @@
       border-radius: 8px;
     }
 
-    .btn-logout:hover {
-      background-color: rgb(255,43,31);
-      color: white;
-    }
+    .btn-logout:hover { background-color: rgb(255,43,31); }
 
     .admin-badge {
       background: #e8d4ff;
@@ -92,13 +84,14 @@
           <span id="cartCount" class="badge bg-danger"></span>
         </a>
 
-        <!-- LOGIN BUTTON -->
-        <button id="loginBtn" class="btn-login">Login</button>
+        <!-- FIXED LOGIN BUTTON -->
+        <button id="loginButton" class="btn-login">Login</button>
 
         <!-- ACCOUNT ICON -->
         <img id="accountIcon"
              src=""
-             style="width:34px;height:34px;border-radius:50%;display:none;cursor:pointer;margin-left:10px;">
+             style="width:34px;height:34px;border-radius:50%;display:none;cursor:pointer;margin-left:10px;"
+             onclick="window.location.href='account.html'">
       </div>
     </div>
   </nav>
@@ -138,8 +131,6 @@
   <script>
     window.onload = function () {
       const email = localStorage.getItem("userEmail");
-      const name = localStorage.getItem("userName");
-      const pic = localStorage.getItem("userPic");
 
       if (!email) {
         alert("Please login first");
@@ -147,10 +138,14 @@
         return;
       }
 
-      document.getElementById("profileName").textContent = name || email.split("@")[0];
+      document.getElementById("profileName").textContent =
+        localStorage.getItem("userName") || email.split("@")[0];
+
       document.getElementById("profileEmail").textContent = email;
+
       document.getElementById("profilePic").src =
-        pic || "https://www.svgrepo.com/show/382106/profile-user.svg";
+        localStorage.getItem("userPic") ||
+        "https://www.svgrepo.com/show/382106/profile-user.svg";
 
       if (localStorage.getItem("isAdmin") === "true") {
         document.getElementById("adminArea").style.display = "block";
