@@ -11,6 +11,11 @@
   <style>
     body { background:#f8f9fa; }
 
+    /* Hide page before user loads — prevents flicker */
+    #accountPage {
+      visibility: hidden;
+    }
+
     .profile-card {
       max-width: 700px;
       margin: 60px auto;
@@ -49,27 +54,30 @@
 
 <body>
 
-  <!-- ================= PROFILE CARD (ONLY CONTENT) ================= -->
-  <div class="profile-card">
+  <!-- ================= ACCOUNT PAGE WRAPPER ================= -->
+  <div id="accountPage">
 
-    <img id="profilePic" class="profile-pic"
-      src="https://www.svgrepo.com/show/382106/profile-user.svg" alt="Profile">
+    <div class="profile-card">
+      <img id="profilePic" class="profile-pic"
+        src="https://www.svgrepo.com/show/382106/profile-user.svg" alt="Profile">
 
-    <h3 id="profileName">Your Name</h3>
-    <p id="profileEmail" class="text-muted">you@example.com</p>
+      <h3 id="profileName">Your Name</h3>
+      <p id="profileEmail" class="text-muted">you@example.com</p>
 
-    <div id="adminArea" style="display:none; margin: 15px 0;">
-      <a href="admin.html" class="btn btn-outline-primary me-2">Admin Dashboard</a>
-      <span class="admin-badge">Admin</span>
-    </div>
+      <div id="adminArea" style="display:none; margin: 15px 0;">
+        <a href="admin.html" class="btn btn-outline-primary me-2">Admin Dashboard</a>
+        <span class="admin-badge">Admin</span>
+      </div>
 
-    <div class="d-flex justify-content-center mt-3 gap-3">
-      <button id="logoutBtn" class="btn-logout">Logout</button>
-      <a href="orderhistory.html" class="btn btn-outline-secondary">My Orders</a>
-    </div>
+      <div class="d-flex justify-content-center mt-3 gap-3">
+        <button id="logoutBtn" class="btn-logout">Logout</button>
+        <a href="orderhistory.html" class="btn btn-outline-secondary">My Orders</a>
+      </div>
 
-    <div class="mt-4">
-      <a href="index.html" class="btn btn-light">← Back to Home</a>
+      <div class="mt-4">
+        <a href="index.html" class="btn btn-light">← Back to Home</a>
+      </div>
+
     </div>
 
   </div>
@@ -77,8 +85,6 @@
   <!-- ================= SCRIPTS ================= -->
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <script src="https://cdn.jsdelivr.net/npm/jwt-decode/build/jwt-decode.min.js"></script>
-
-  <!-- ONLY GOOGLE AUTH REQUIRED -->
   <script src="js/google-auth.js"></script>
 
   <!-- PROFILE LOGIC -->
@@ -93,6 +99,7 @@
 
       const user = JSON.parse(raw);
 
+      // Fill UI
       document.getElementById("profileName").textContent = user.name;
       document.getElementById("profileEmail").textContent = user.email;
       document.getElementById("profilePic").src =
@@ -101,6 +108,9 @@
       if (localStorage.getItem("isAdmin") === "true") {
         document.getElementById("adminArea").style.display = "block";
       }
+
+      // Finally show the full page (PREVENTS FLICKER)
+      document.getElementById("accountPage").style.visibility = "visible";
     });
 
     document.getElementById("logoutBtn").onclick = () => {
