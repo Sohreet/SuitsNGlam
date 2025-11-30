@@ -10,7 +10,7 @@
 
   <style>
     body { background:white !important; }
-    .nav-login-area { visibility:hidden; }
+    .nav-login-area { visibility:visible !important; }
 
     .login-btn {
       color:#c60000 !important;
@@ -24,6 +24,9 @@
       background:#c60000;
       color:white !important;
     }
+
+    .product-card { cursor:pointer; }
+    .product-card:hover { transform:scale(1.02); transition:0.2s; }
   </style>
 </head>
 
@@ -32,13 +35,59 @@
 <!-- NAVBAR -->
 <nav class="navbar navbar-expand-lg" style="background-color:#e3f2fd;">
   <div class="container">
-    <a class="navbar-brand" href="index.html">Suits N Glam</a>
+
+    <a class="navbar-brand fw-bold" href="index.html">Suits N Glam</a>
+
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarNav">
+
+      <ul class="navbar-nav ms-auto me-2">
+
+        <li class="nav-item"><a class="nav-link" href="allproducts.html">All Products</a></li>
+        <li class="nav-item"><a class="nav-link" href="newarrivals.html">New Arrivals</a></li>
+
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#">Shop By Category</a>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="summer.html">Summer</a></li>
+            <li><a class="dropdown-item" href="winter.html">Winter</a></li>
+            <li><a class="dropdown-item" href="wedding.html">Wedding</a></li>
+            <li><a class="dropdown-item" href="casuals.html">Casuals</a></li>
+            <li><a class="dropdown-item" href="dailywear.html">Daily Wear</a></li>
+            <li><a class="dropdown-item" href="premiumwear.html">Premium Wear</a></li>
+          </ul>
+        </li>
+
+        <li class="nav-item"><a class="nav-link" href="bestdeals.html">Best Deals</a></li>
+        <li class="nav-item"><a class="nav-link" href="sales.html">Sales</a></li>
+
+      </ul>
+
+      <!-- CART -->
+      <a href="cart.html" class="d-flex align-items-center gap-2 me-3 text-decoration-none text-dark">
+        <i class="bi bi-bag-heart-fill" style="font-size:1.6rem;"></i>
+        <span id="cartCount" class="badge bg-danger"></span>
+      </a>
+
+      <!-- LOGIN / ACCOUNT ICON -->
+      <div class="nav-login-area d-flex align-items-center">
+        <button id="loginBtn" class="login-btn">Login</button>
+        <img id="accountIcon" style="width:34px;height:34px;border-radius:50%;cursor:pointer;display:none;margin-left:10px;">
+        <span id="adminBadgeNav" class="admin-badge" style="background:#c60000;color:white;padding:4px 10px;border-radius:6px;font-weight:700;display:none;">
+          ADMIN
+        </span>
+      </div>
+
+    </div>
   </div>
 </nav>
 
 <!-- PAGE CONTENT -->
 <div class="container mt-4">
-  <h2>Summer</h2>  <!-- 🔹 CHANGE PAGE TITLE -->
+  <h2>Summer</h2>
 
   <p id="comingSoonMsg" class="text-muted" style="display:none;font-weight:600;">
     Coming Soon...
@@ -50,10 +99,12 @@
 <!-- SCRIPT -->
 <script>
 document.addEventListener("DOMContentLoaded", () => {
-
-  // 🔹 CHANGE CATEGORY NAME HERE
   loadProducts("summer");
 
+  setTimeout(() => {
+    if (document.querySelectorAll(".product-card").length === 0)
+      document.getElementById("comingSoonMsg").style.display = "block";
+  }, 500);
 });
 </script>
 
