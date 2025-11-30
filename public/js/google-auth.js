@@ -1,8 +1,5 @@
-console.log("GOOGLE AUTH LOADED");
-console.log("adminLoggedIn on load =", localStorage.getItem("adminLoggedIn"));
-
 // --------------------------------------------------
-// GOOGLE AUTH — FIXED ADMIN LOGIN VERSION
+// GOOGLE AUTH — FINAL ADMIN VERSION
 // --------------------------------------------------
 
 const GOOGLE_CLIENT_ID =
@@ -19,6 +16,10 @@ const GOOGLE_CLIENT_ID =
   document.head.appendChild(s);
 })();
 
+// REAL ADMIN EMAIL(S)
+const ADMINS = ["sohabrar10@gmail.com"];
+
+// Save user data
 function saveUser(data, token) {
   const user = {
     email: data.email,
@@ -29,16 +30,17 @@ function saveUser(data, token) {
 
   localStorage.setItem("sg_user", JSON.stringify(user));
 
-  const ADMINS = ["sohabrar10@gmail.com"];
-
-  // 🔥 FIXED ADMIN LOGIC
+  // 🔥 CORRECT ADMIN CHECK
   if (ADMINS.includes(user.email)) {
     localStorage.setItem("adminLoggedIn", "true");
+    console.log("ADMIN LOGIN SUCCESS");
   } else {
     localStorage.removeItem("adminLoggedIn");
+    console.log("NOT AN ADMIN");
   }
 }
 
+// Handle Google login
 function handleCredentialResponse(response) {
   try {
     const data = jwt_decode(response.credential);
@@ -51,6 +53,7 @@ function handleCredentialResponse(response) {
   }
 }
 
+// Show login popup
 function googleLogin() {
   if (!google?.accounts?.id) return setTimeout(googleLogin, 200);
 
