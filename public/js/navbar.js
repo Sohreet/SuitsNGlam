@@ -1,3 +1,7 @@
+console.log("NAVBAR JS RUNNING");
+console.log("accountIcon =", document.getElementById("accountIcon"));
+console.log("redirect override =", window.location.pathname.includes("admin.html"));
+
 // --------------------------------------------------
 // NAVBAR UI — FINAL NON-FLICKER VERSION
 // --------------------------------------------------
