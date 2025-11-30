@@ -1,28 +1,36 @@
-document.addEventListener("DOMContentLoaded", () => {
+console.log("NAVBAR JS LOADED");
+
+// Read saved user
+function getUser() {
+  const raw = localStorage.getItem("sg_user");
+  return raw ? JSON.parse(raw) : null;
+}
+
+function setupLoginUI() {
+  const user = getUser();
   const loginBtn = document.getElementById("loginBtn");
   const accountIcon = document.getElementById("accountIcon");
-  const navLoginArea = document.querySelector(".nav-login-area");
+  const loginArea = document.querySelector(".nav-login-area");
 
-  // ALWAYS show login area (remove flicker)
-  navLoginArea.style.visibility = "visible";
-
-  const user = localStorage.getItem("sng_user");
-
-  if (user) {
-    // Logged IN
-    const u = JSON.parse(user);
-
-    loginBtn.style.display = "none";
-    accountIcon.style.display = "block";
-    accountIcon.src = u.picture || "https://cdn-icons-png.flaticon.com/512/149/149071.png";
-  } else {
-    // Logged OUT
-    loginBtn.style.display = "block";
-    accountIcon.style.display = "none";
+  if (!loginBtn || !accountIcon || !loginArea) {
+    console.error("Navbar elements missing");
+    return;
   }
 
-  // Login button click
-  loginBtn.addEventListener("click", () => {
-    google.accounts.id.prompt(); // Show Google login popup
-  });
+  if (user) {
+    // show account picture
+    accountIcon.src = user.picture || "images/default-user.png";
+    accountIcon.style.display = "inline-block";
+    loginBtn.style.display = "none";
+  } else {
+    accountIcon.style.display = "none";
+    loginBtn.style.display = "inline-block";
+  }
+
+  // prevent flicker
+  loginArea.style.visibility = "visible";
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  setupLoginUI();
 });
