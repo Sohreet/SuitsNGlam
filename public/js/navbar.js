@@ -1,23 +1,21 @@
 // =====================================================
 // GLOBAL NAVBAR LOGIN SYSTEM
-// Works on ALL pages automatically
 // =====================================================
 
-// Get elements safely
-const loginBtn = document.getElementById("loginButton") || document.getElementById("loginBtn");
+const loginBtn =
+  document.getElementById("loginButton") ||
+  document.getElementById("loginBtn");
+
 const accountIcon = document.getElementById("accountIcon");
 const cartBadge = document.getElementById("cartCount");
 
 // =====================================================
-// READ USER FROM LOCAL STORAGE
-// Supports both old + new formats
+// READ USER (supports both formats)
 // =====================================================
 function getUser() {
-  // Prefer full object
   const obj = localStorage.getItem("sg_user");
   if (obj) return JSON.parse(obj);
 
-  // Fallback (old localStorage keys)
   const email = localStorage.getItem("userEmail");
   if (email) {
     return {
@@ -32,25 +30,21 @@ function getUser() {
 }
 
 // =====================================================
-// UPDATE NAVBAR LOGIN UI
+// LOGIN UI UPDATE
 // =====================================================
 function setupLoginUI() {
   const user = getUser();
 
   if (user) {
-    // Hide login button
     if (loginBtn) loginBtn.style.display = "none";
 
-    // Show profile image
     if (accountIcon) {
       accountIcon.src = user.picture || "images/default-user.png";
       accountIcon.style.display = "inline-block";
     }
   } else {
-    // Show login button
     if (loginBtn) loginBtn.style.display = "inline-block";
 
-    // Hide profile icon
     if (accountIcon) accountIcon.style.display = "none";
   }
 }
@@ -69,14 +63,15 @@ function logoutUser() {
   setupLoginUI();
   updateCartBadge();
 
+  if (google?.accounts?.id) google.accounts.id.disableAutoSelect();
+
   window.location.href = "index.html";
 }
 
-// Make logout available globally
 window.logoutUser = logoutUser;
 
 // =====================================================
-// CART BADGE UPDATE (works after login too)
+// CART BADGE
 // =====================================================
 async function updateCartBadge() {
   if (!cartBadge) return;
@@ -93,7 +88,7 @@ async function updateCartBadge() {
 
     const data = await res.json();
 
-    if (data.items && data.items.length > 0) {
+    if (data.items?.length > 0) {
       cartBadge.textContent = data.items.length;
     }
 
@@ -102,11 +97,10 @@ async function updateCartBadge() {
   }
 }
 
-// Make it available globally
 window.updateCartBadge = updateCartBadge;
 
 // =====================================================
-// RUN ON PAGE LOAD
+// INIT
 // =====================================================
 document.addEventListener("DOMContentLoaded", () => {
   setupLoginUI();
