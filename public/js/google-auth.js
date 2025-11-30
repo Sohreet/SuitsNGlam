@@ -1,11 +1,11 @@
-// -------------------------------------------
-// GOOGLE AUTH (NO UI) — FINAL CLEAN VERSION
-// -------------------------------------------
+// --------------------------------------------------
+// GOOGLE AUTH — FINAL NON-FLICKER VERSION
+// --------------------------------------------------
 
 const GOOGLE_CLIENT_ID =
   "653374521156-6retcia1fiu5dvmbjik9sq89ontrkmvt.apps.googleusercontent.com";
 
-// Load Google SDK once
+// Load SDK once
 (function loadSDK() {
   if (document.getElementById("gsi-script")) return;
   const s = document.createElement("script");
@@ -22,43 +22,43 @@ function saveUser(data, token) {
     email: data.email,
     name: data.name,
     picture: data.picture,
-    token
+    token,
   };
 
   localStorage.setItem("sg_user", JSON.stringify(user));
 
   const ADMINS = ["sohabrar10@gmail.com", "suitsnglam01@gmail.com"];
-  if (ADMINS.includes(user.email)) {
-    localStorage.setItem("isAdmin", "true");
-  } else {
-    localStorage.removeItem("isAdmin");
+  localStorage.setItem("isAdmin", ADMINS.includes(user.email) ? "true" : "false");
+}
+
+// Handle login response
+function handleCredentialResponse(response) {
+  try {
+    const data = jwt_decode(response.credential);
+    saveUser(data, response.credential);
+
+    // Update UI instantly
+    if (window.setupLoginUI) setupLoginUI();
+    if (window.updateCartBadge) updateCartBadge();
+  } catch (err) {
+    console.error("Google Auth Error:", err);
   }
 }
 
-// Handle Google login
-function handleCredentialResponse(response) {
-  const data = jwt_decode(response.credential);
-  saveUser(data, response.credential);
-
-  // Tell navbar to update UI
-  if (window.setupLoginUI) setupLoginUI();
-  if (window.updateCartBadge) updateCartBadge();
-}
-
-// Trigger popup
+// Open login popup
 function googleLogin() {
-  if (!google?.accounts) return setTimeout(googleLogin, 300);
+  if (!google?.accounts?.id) return setTimeout(googleLogin, 200);
 
   google.accounts.id.initialize({
     client_id: GOOGLE_CLIENT_ID,
-    callback: handleCredentialResponse
+    callback: handleCredentialResponse,
   });
 
   google.accounts.id.prompt();
 }
 
-// Attach login button event
+// Attach login button
 document.addEventListener("DOMContentLoaded", () => {
-  const btn = document.getElementById("loginButton") || document.getElementById("loginBtn");
+  const btn = document.getElementById("loginBtn") || document.getElementById("loginButton");
   if (btn) btn.addEventListener("click", googleLogin);
 });
