@@ -30,8 +30,6 @@
       margin-right:15px;
     }
     .home-icon:hover { opacity:0.7; }
-
-    .product-card { cursor:pointer; }
   </style>
 </head>
 
@@ -52,7 +50,6 @@
       <i class="bi bi-house-fill home-icon" onclick="window.location.href='index.html'"></i>
 
       <ul class="navbar-nav ms-auto me-2">
-
         <li class="nav-item"><a class="nav-link" href="allproducts.html">All Products</a></li>
         <li class="nav-item"><a class="nav-link" href="newarrivals.html">New Arrivals</a></li>
 
@@ -70,7 +67,6 @@
 
         <li class="nav-item"><a class="nav-link" href="bestdeals.html">Best Deals</a></li>
         <li class="nav-item"><a class="nav-link active" href="sales.html">Sales</a></li>
-
       </ul>
 
       <a href="cart.html" class="d-flex align-items-center gap-2 me-3 text-decoration-none text-dark">
@@ -80,12 +76,10 @@
 
       <div class="nav-login-area d-flex align-items-center">
         <button id="loginBtn" class="btn-login">Login</button>
-
         <img id="accountIcon"
-             style="width:34px;height:34px;border-radius:50%;display:none;cursor:pointer;margin-left:10px;">
-
+          style="width:34px;height:34px;border-radius:50%;display:none;cursor:pointer;margin-left:10px;">
         <span id="adminBadgeNav"
-              style="background:#c60000;color:white;padding:4px 10px;border-radius:6px;font-weight:700;display:none;margin-left:10px;">
+          style="background:#c60000;color:white;padding:4px 10px;border-radius:6px;font-weight:700;display:none;margin-left:10px;">
           ADMIN
         </span>
       </div>
@@ -95,22 +89,17 @@
 </nav>
 
 
-<!-- PAGE CONTENT -->
 <div class="container mt-4">
   <h2 class="fw-bold">Sales</h2>
-
   <div id="productsContainer" class="row g-4 mt-3"></div>
 </div>
 
-
-<!-- LOAD PRODUCTS -->
 <script>
 document.addEventListener("DOMContentLoaded", () => {
   loadProducts("sales");
 });
 </script>
 
-<!-- SCRIPTS -->
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <script src="https://cdn.jsdelivr.net/npm/jwt-decode/build/jwt-decode.min.js"></script>
 <script src="js/app.js"></script>
