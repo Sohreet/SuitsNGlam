@@ -12,16 +12,18 @@
     body { background-color: #f8f9fa; }
     .navbar-brand { font-weight: bold; }
 
-    .card-button { 
-      cursor: pointer; 
-      transition: transform 0.2s, box-shadow 0.2s; 
-      border: none; 
+    /* Hover animation on cards */
+    .card-button {
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      border: none;
     }
-    .card-button:hover { 
-      transform: translateY(-5px); 
-      box-shadow: 0 8px 16px rgba(0,0,0,0.2); 
+    .card-button:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 16px rgba(0,0,0,0.2);
     }
 
+    /* Category colors */
     .summer { background-color: rgb(255, 253, 143); }
     .winter { background-color: rgb(179, 191, 255); }
     .wedding { background-color: rgb(255, 220, 220); }
@@ -29,6 +31,7 @@
     .casuals { background-color: rgb(207, 255, 226); }
     .premium { background-color: rgb(231,208,245); }
 
+    /* Login button */
     .btn-login {
       background-color: rgb(255, 63, 51);
       color: #fff;
@@ -43,6 +46,7 @@
       color: #fff;
     }
 
+    /* Social icons */
     .social-area i {
       font-size: 1.8rem;
       margin: 0 12px;
@@ -74,7 +78,7 @@
           <li class="nav-item"><a class="nav-link" href="newarrivals.html">New Arrivals</a></li>
 
           <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+            <a class="nav-link dropdown-toggle" role="button" data-bs-toggle="dropdown">
               Shop By Category
             </a>
             <ul class="dropdown-menu">
@@ -91,9 +95,8 @@
           <li class="nav-item"><a class="nav-link" href="sales.html">Sales</a></li>
         </ul>
 
-        <!-- CART ICON -->
-        <a href="cart.html" class="d-flex align-items-center gap-2 me-3"
-           style="text-decoration:none; color:#000;">
+        <!-- CART -->
+        <a href="cart.html" class="d-flex align-items-center gap-2 me-3" style="text-decoration:none; color:#000;">
           <i class="bi bi-bag-heart-fill" style="font-size:1.6rem;"></i>
           <span id="cartCount" class="badge bg-danger"></span>
         </a>
@@ -101,7 +104,7 @@
         <!-- LOGIN BUTTON -->
         <button id="loginButton" class="btn-login">Login</button>
 
-        <!-- FIXED: Only ONE accountIcon -->
+        <!-- ACCOUNT ICON (only one) -->
         <img id="accountIcon"
              src=""
              style="width:34px;height:34px;border-radius:50%;display:none;cursor:pointer;margin-left:10px;"
@@ -174,12 +177,13 @@
 
   <!-- SOCIAL ICONS -->
   <div class="container text-center py-4 social-area">
-      <i class="bi bi-instagram" onclick="window.open('https://www.instagram.com/suitsnglam/', '_blank')"></i>
-      <i class="bi bi-chat-dots" onclick="window.open('https://www.threads.net/@suitsnglam', '_blank')"></i>
-      <i class="bi bi-facebook" onclick="window.open('https://www.facebook.com/mannishan', '_blank')"></i>
-      <i class="bi bi-youtube" onclick="window.open('#', '_blank')"></i>
+    <i class="bi bi-instagram" onclick="window.open('https://www.instagram.com/suitsnglam/', '_blank')"></i>
+    <i class="bi bi-chat-dots" onclick="window.open('https://www.threads.net/@suitsnglam', '_blank')"></i>
+    <i class="bi bi-facebook" onclick="window.open('https://www.facebook.com/mannishan', '_blank')"></i>
+    <i class="bi bi-youtube" onclick="window.open('#', '_blank')"></i>
   </div>
 
+  <!-- SCRIPTS -->
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <script src="https://cdn.jsdelivr.net/npm/jwt-decode/build/jwt-decode.min.js"></script>
 
