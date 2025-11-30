@@ -12,32 +12,27 @@
     body { background-color:#f8f9fa; }
     .navbar-brand { font-weight:bold; }
 
-    .card-button { cursor:pointer; transition:.2s; border:none; }
+    .category-hero {
+      background:#cfffde;
+      border-radius:10px;
+      padding:18px;
+      margin-bottom:18px;
+    }
+
+    .card-button { cursor:pointer; border:none; transition:0.2s; }
     .card-button:hover { transform:translateY(-5px); box-shadow:0 8px 16px rgba(0,0,0,0.2); }
 
     .btn-login {
       background-color:rgb(255,63,51);
       color:#fff;
       padding:6px 14px;
-      border-radius:6px;
       border:none;
+      border-radius:6px;
     }
     .btn-login:hover { background-color:rgb(255,43,31); }
 
-    .social-area i {
-      font-size:1.7rem;
-      margin:0 12px;
-      color:#000;
-      cursor:pointer;
-    }
-    .social-area i:hover { opacity:0.7; }
-
-    .category-hero {
-      background:#dfffee;
-      border-radius:10px;
-      padding:18px;
-      margin-bottom:18px;
-    }
+    /* Prevent flicker */
+    .nav-login-area { visibility:hidden; }
   </style>
 </head>
 
@@ -46,6 +41,7 @@
   <!-- NAVBAR -->
   <nav class="navbar navbar-expand-lg" style="background-color:#e3f2fd;">
     <div class="container">
+
       <a class="navbar-brand" href="index.html">Suits N Glam</a>
 
       <button class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -55,11 +51,13 @@
       <div class="collapse navbar-collapse" id="navbarNav">
 
         <ul class="navbar-nav ms-auto me-2">
-          <li class="nav-item"><a class="nav-link" href="allproducts.html">All Products</a></li>
-          <li class="nav-item"><a class="nav-link" href="newarrivals.html">New Arrivals</a></li>
+
+          <li><a class="nav-link" href="allproducts.html">All Products</a></li>
+          <li><a class="nav-link" href="newarrivals.html">New Arrivals</a></li>
 
           <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown">Shop By Category</a>
+
             <ul class="dropdown-menu">
               <li><a class="dropdown-item" href="summer.html">Summer</a></li>
               <li><a class="dropdown-item" href="winter.html">Winter</a></li>
@@ -70,16 +68,25 @@
             </ul>
           </li>
 
-          <li class="nav-item"><a class="nav-link" href="bestdeals.html">Best Deals</a></li>
-          <li class="nav-item"><a class="nav-link" href="sales.html">Sales</a></li>
+          <li><a class="nav-link" href="bestdeals.html">Best Deals</a></li>
+          <li><a class="nav-link" href="sales.html">Sales</a></li>
         </ul>
 
-        <a href="cart.html" class="d-flex align-items-center gap-2 me-3" style="color:#000; text-decoration:none;">
+        <!-- CART -->
+        <a href="cart.html" class="d-flex align-items-center me-3" style="color:#000;text-decoration:none;">
           <i class="bi bi-bag-heart-fill" style="font-size:1.6rem;"></i>
           <span id="cartCount" class="badge bg-danger"></span>
         </a>
 
-        <button id="loginBtn" class="btn-login">Login</button>
+        <!-- LOGIN/ACCOUNT -->
+        <div class="nav-login-area d-flex align-items-center">
+          <button id="loginButton" class="btn-login">Login</button>
+
+          <img id="accountIcon"
+               src=""
+               style="width:34px;height:34px;border-radius:50%;cursor:pointer;display:none;margin-left:10px;"
+               onclick="window.location.href='account.html'">
+        </div>
 
       </div>
     </div>
@@ -89,7 +96,7 @@
   <div class="container mt-4">
     <div class="category-hero">
       <h2>Casuals</h2>
-      <p class="mb-0">Comfortable everyday wear.</p>
+      <p class="mb-0">Comfortable outfits for everyday style.</p>
     </div>
   </div>
 
@@ -98,20 +105,13 @@
     <div class="row g-4" id="productsContainer"></div>
   </div>
 
-  <!-- SOCIAL ICONS -->
-  <div class="container text-center py-4 social-area">
-    <i onclick="window.open('https://www.instagram.com/suitsnglam/', '_blank')" class="bi bi-instagram"></i>
-    <i onclick="window.open('https://www.threads.net/@suitsnglam', '_blank')" class="bi bi-chat-dots"></i>
-    <i onclick="window.open('https://www.facebook.com/mannishan', '_blank')" class="bi bi-facebook"></i>
-    <i onclick="window.open('#', '_blank')" class="bi bi-youtube"></i>
-  </div>
-
   <!-- SCRIPTS -->
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <script src="https://cdn.jsdelivr.net/npm/jwt-decode/build/jwt-decode.min.js"></script>
+
   <script src="js/google-auth.js"></script>
   <script src="js/navbar.js"></script>
-  <script src="js/products.js"></script>
+  <script src="js/products-common.js"></script>
   <script src="js/cart.js"></script>
 
   <script> loadProducts("casuals"); </script>
