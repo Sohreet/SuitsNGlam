@@ -129,7 +129,7 @@ async function editProduct(id) {
 async function deleteProduct(id) {
   if (!confirm("Delete this product?")) return;
 
-  const res = await fetch(`https://your-backend-url.com/api/products/${id}`, {
+  const res = await fetch(`https://www.suitsnglam.com/api/products/${id}`, {
     method: "DELETE",
   });
 
