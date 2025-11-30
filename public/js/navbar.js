@@ -1,70 +1,53 @@
-// ------------------------------
-// FLICKER-FREE GLOBAL NAVBAR
-// ------------------------------
+// ---------------------------------------------
+// NAVBAR UI CONTROLLER — FINAL VERSION
+// ---------------------------------------------
 
-const loginBtn = document.getElementById("loginBtn") || document.getElementById("loginButton");
+const loginBtn = document.getElementById("loginButton") || document.getElementById("loginBtn");
 const accountIcon = document.getElementById("accountIcon");
-const wrapper = document.querySelector(".nav-login-area");
 const cartBadge = document.getElementById("cartCount");
+const loginArea = document.querySelector(".nav-login-area");
 
 // Read user
 function getUser() {
-  const obj = localStorage.getItem("sg_user");
-  if (obj) return JSON.parse(obj);
-
-  const email = localStorage.getItem("userEmail");
-  if (email) {
-    return {
-      email,
-      name: localStorage.getItem("userName") || "",
-      picture: localStorage.getItem("userPic") || "",
-      token: localStorage.getItem("token") || ""
-    };
-  }
-  return null;
+  const raw = localStorage.getItem("sg_user");
+  return raw ? JSON.parse(raw) : null;
 }
 
-// Apply login/logout UI
+// Update UI
 function setupLoginUI() {
   const user = getUser();
 
-  // Hide first (prevents flicker)
-  if (wrapper) wrapper.style.visibility = "hidden";
-
-  if (loginBtn) loginBtn.style.display = "none";
-  if (accountIcon) accountIcon.style.display = "none";
-
   if (user) {
+    if (loginBtn) loginBtn.style.display = "none";
+
     if (accountIcon) {
       accountIcon.src = user.picture || "images/default-user.png";
       accountIcon.style.display = "inline-block";
     }
   } else {
     if (loginBtn) loginBtn.style.display = "inline-block";
+    if (accountIcon) accountIcon.style.display = "none";
   }
 
-  // Reveal wrapper AFTER correct UI is set
-  requestAnimationFrame(() => {
-    if (wrapper) wrapper.style.visibility = "visible";
+  // After everything is set → show area (no flicker)
+  if (loginArea) loginArea.style.visibility = "visible";
+}
+
+// Account click → always go to account.html
+if (accountIcon) {
+  accountIcon.addEventListener("click", () => {
+    window.location.href = "account.html";
   });
 }
-
-// Logout function
-function logoutUser() {
-  localStorage.clear();
-  if (google?.accounts?.id) google.accounts.id.disableAutoSelect();
-  window.location.href = "index.html";
-}
-
-window.logoutUser = logoutUser;
 
 // Cart badge
 async function updateCartBadge() {
   if (!cartBadge) return;
 
   cartBadge.textContent = "";
+
   const user = getUser();
-  if (!user || !user.token) return;
+  if (!user?.token) return;
 
   try {
     const res = await fetch("https://api.suitsnglam.com/api/cart", {
@@ -72,16 +55,14 @@ async function updateCartBadge() {
     });
 
     const data = await res.json();
-    if (data.items) cartBadge.textContent = data.items.length;
-
+    if (data.items?.length) {
+      cartBadge.textContent = data.items.length;
+    }
   } catch (err) {
     console.error("Cart badge error:", err);
   }
 }
 
-window.updateCartBadge = updateCartBadge;
-
-// On load
 document.addEventListener("DOMContentLoaded", () => {
   setupLoginUI();
   updateCartBadge();
