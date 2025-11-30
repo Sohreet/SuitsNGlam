@@ -1,9 +1,14 @@
+// --------------------------------------------------
+// GOOGLE AUTH — FINAL FIXED VERSION
+// --------------------------------------------------
+
 console.log("GOOGLE AUTH LOADED");
 
 const GOOGLE_CLIENT_ID =
   "653374521156-6retcia1fiu5dvmbjik9sq89ontrkmvt.apps.googleusercontent.com";
 
-const ADMINS = ["sohabrar10@gmail.com"]; // your admin email(s)
+// Admin email list
+const ADMINS = ["sohabrar10@gmail.com"];
 
 // Load Google SDK
 (function loadSDK() {
@@ -26,29 +31,31 @@ function saveUser(data, token) {
 
   localStorage.setItem("sg_user", JSON.stringify(user));
 
-  // admin flag
+  // Admin check
   if (ADMINS.includes(user.email)) {
+    console.log("ADMIN LOGIN DETECTED");
     localStorage.setItem("adminLoggedIn", "true");
   } else {
     localStorage.removeItem("adminLoggedIn");
   }
 }
 
-function handleCredentialResponse(res) {
+function handleCredentialResponse(response) {
   try {
-    const data = jwt_decode(res.credential);
-    saveUser(data, res.credential);
+    const data = jwt_decode(response.credential);
+    saveUser(data, response.credential);
 
     if (window.setupLoginUI) setupLoginUI();
-    if (window.updateCartBadge) updateCartBadge();
-
   } catch (err) {
     console.error("Google Auth Error:", err);
   }
 }
 
 function googleLogin() {
-  if (!google?.accounts?.id) return setTimeout(googleLogin, 200);
+  console.log("GOOGLE LOGIN CLICKED");
+
+  if (!google?.accounts?.id)
+    return setTimeout(googleLogin, 200);
 
   google.accounts.id.initialize({
     client_id: GOOGLE_CLIENT_ID,
@@ -58,7 +65,7 @@ function googleLogin() {
   google.accounts.id.prompt();
 }
 
-// Attach button click
+// Attach to login button
 document.addEventListener("DOMContentLoaded", () => {
   const btn = document.getElementById("loginBtn");
   if (btn) btn.addEventListener("click", googleLogin);
