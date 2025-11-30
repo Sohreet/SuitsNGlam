@@ -1,23 +1,47 @@
 console.log("GOOGLE AUTH LOADED!");
 
-google.accounts.id.initialize({
-  client_id: 653374521156-6retcia1fiu5dvmbjik9sq89ontrkmvt.apps.googleusercontent.com,
-  callback: function (response) {
-    const decoded = jwt_decode(response.credential);
+// ====================== GOOGLE AUTH ======================
+const GOOGLE_CLIENT_ID = "653374521156-6retcia1fiu5dvmbjik9sq89ontrkmvt.apps.googleusercontent.com";
+
+function handleCredentialResponse(response) {
+  try {
+    const data = jwt_decode(response.credential);
 
     const user = {
-      name: decoded.name,
-      email: decoded.email,
-      picture: decoded.picture
+      email: data.email,
+      name: data.name,
+      picture: data.picture,
+      token: response.credential
     };
 
-    localStorage.setItem("sng_user", JSON.stringify(user));
+    localStorage.setItem("sg_user", JSON.stringify(user));
 
-    window.location.reload();
+    if (window.setupLoginUI) setupLoginUI();
+    if (window.updateCartBadge) updateCartBadge();
+
+  } catch (err) {
+    console.error("Google Auth Error:", err);
   }
-});
+}
 
-google.accounts.id.renderButton(
-  document.getElementById("loginBtn"),
-  { theme: "filled_black", size: "medium" }
-);
+function googleLogin() {
+  if (!window.google || !google.accounts || !google.accounts.id) {
+    console.log("Google SDK not ready, retrying...");
+    return setTimeout(googleLogin, 300);
+  }
+
+  google.accounts.id.initialize({
+    client_id: GOOGLE_CLIENT_ID,
+    callback: handleCredentialResponse,
+  });
+
+  google.accounts.id.prompt();
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  const btn = document.getElementById("loginBtn");
+
+  console.log("Login button:", btn);
+
+  if (btn) btn.addEventListener("click", googleLogin);
+});
