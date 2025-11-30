@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Admin Dashboard - Suits N Glam</title>
 
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -35,7 +35,19 @@
       margin-left:10px;
     }
 
-    .product-card-admin { border-left:4px solid #c60000; }
+    .product-card-admin {
+      border-left:4px solid #c60000;
+      border-radius:8px;
+    }
+
+    .small-preview {
+      width:70px;
+      height:70px;
+      object-fit:cover;
+      border-radius:6px;
+      border:1px solid #ccc;
+      margin-right:6px;
+    }
   </style>
 </head>
 <body>
@@ -58,7 +70,7 @@
       </ul>
 
       <div class="nav-login-area d-flex align-items-center">
-        <img id="accountIcon" style="width:34px;height:34px;border-radius:50%;cursor:pointer;display:none;">
+        <img id="accountIcon" style="width:34px;height:34px;border-radius:50%;cursor:pointer;display:none;margin-left:10px;">
       </div>
 
     </div>
@@ -66,20 +78,30 @@
 </nav>
 
 
+
 <div class="container mt-4">
   <h3>Admin Dashboard</h3>
 
   <div id="adminMsg" class="alert alert-warning mt-3" style="display:none;"></div>
 
-  <!-- ADD PRODUCT -->
+  <!-- ADD PRODUCT CARD -->
   <div class="card p-3 mt-3">
     <h5>Add Product</h5>
 
-    <div class="row g-2">
-      <div class="col-md-4"><input id="p_name" class="form-control" placeholder="Name"></div>
-      <div class="col-md-2"><input id="p_price" class="form-control" placeholder="Price"></div>
+    <div class="row g-3">
+
+      <div class="col-md-4">
+        <label class="form-label">Product Name</label>
+        <input id="p_name" class="form-control" placeholder="Name">
+      </div>
+
+      <div class="col-md-2">
+        <label class="form-label">Price</label>
+        <input id="p_price" class="form-control" placeholder="Price">
+      </div>
 
       <div class="col-md-3">
+        <label class="form-label">Category</label>
         <select id="p_category" class="form-control">
           <option value="">Select Category</option>
           <option value="newarrivals">New Arrivals</option>
@@ -94,45 +116,86 @@
         </select>
       </div>
 
-      <div class="col-md-3"><input id="p_image" class="form-control" placeholder="Image URL"></div>
+      <!-- MAIN IMAGE -->
+      <div class="col-md-3">
+        <label class="form-label">Main Image (Required)</label>
+        <input id="p_main_image" type="file" accept="image/*" class="form-control">
+      </div>
+
+      <!-- EXTRA IMAGES -->
+      <div class="col-md-12">
+        <label class="form-label">Extra Images (2–5 images)</label>
+        <input id="p_extra_images" type="file" accept="image/*" multiple class="form-control">
+      </div>
+
+      <!-- VIDEO -->
+      <div class="col-md-12">
+        <label class="form-label">Optional Video</label>
+        <input id="p_video" type="file" accept="video/*" class="form-control">
+      </div>
+
+      <div class="col-md-12">
+        <label class="form-label">Description</label>
+        <textarea id="p_desc" class="form-control" placeholder="Description"></textarea>
+      </div>
+
     </div>
 
-    <textarea id="p_desc" class="form-control mt-2" placeholder="Description"></textarea>
-
-    <div class="mt-2 admin-actions">
+    <div class="mt-3 admin-actions">
       <button class="btn btn-success" onclick="adminAddProduct()">Add Product</button>
       <button class="btn btn-secondary" onclick="window.location.href='admin-orders.html'">View Orders</button>
     </div>
   </div>
 
+
   <!-- PRODUCT LIST -->
   <div class="mt-4" id="productsAdminList"></div>
+
 </div>
 
 
 <script>
-/* ------------------------
-     ADMIN LOGOUT
-------------------------- */
-function adminLogout() {
-  localStorage.removeItem("sg_user");
-  localStorage.removeItem("adminLoggedIn");
-  window.location.href = "index.html";
+/* Convert file to Base64 */
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
 }
 
 
-/* ------------------------
-     ADD PRODUCT
-------------------------- */
-function adminAddProduct() {
+/* ADD PRODUCT (with image upload) */
+async function adminAddProduct() {
   const name = p_name.value.trim();
   const price = Number(p_price.value.trim());
   const category = p_category.value.trim();
-  const image = p_image.value.trim();
   const desc = p_desc.value.trim();
 
   if (!name) return alert("Enter product name");
   if (!category) return alert("Select category");
+
+  const mainImgFile = p_main_image.files[0];
+  const extraImgFiles = p_extra_images.files;
+  const videoFile = p_video.files[0];
+
+  if (!mainImgFile) return alert("Main image is required");
+
+  if (extraImgFiles.length < 2 || extraImgFiles.length > 5) {
+    return alert("Upload 2–5 extra images");
+  }
+
+  // Convert all to base64
+  const mainImgBase64 = await fileToBase64(mainImgFile);
+
+  const extraImgBase64 = [];
+  for (let f of extraImgFiles) {
+    extraImgBase64.push(await fileToBase64(f));
+  }
+
+  let videoBase64 = "";
+  if (videoFile) videoBase64 = await fileToBase64(videoFile);
 
   const products = JSON.parse(localStorage.getItem("products") || "[]");
 
@@ -141,7 +204,8 @@ function adminAddProduct() {
     name,
     price,
     category,
-    images: [image],
+    images: [mainImgBase64, ...extraImgBase64],
+    video: videoBase64,
     description: desc
   };
 
@@ -149,27 +213,26 @@ function adminAddProduct() {
   localStorage.setItem("products", JSON.stringify(products));
 
   renderAdminProducts();
-  alert("Product Added!");
+  alert("Product Added Successfully!");
 }
 
 
-/* ------------------------
-     DELETE PRODUCT
-------------------------- */
+/* DELETE PRODUCT */
 function deleteProduct(id) {
+  if (!confirm("Delete this product permanently?")) return;
+
   const products = JSON.parse(localStorage.getItem("products") || "[]");
-  const filtered = products.filter(p => p._id !== id);
-  localStorage.setItem("products", JSON.stringify(filtered));
+  const updated = products.filter(p => p._id !== id);
+
+  localStorage.setItem("products", JSON.stringify(updated));
   renderAdminProducts();
 }
 
 
-/* ------------------------
-     RENDER ADMIN PRODUCTS
-------------------------- */
+/* RENDER ALL PRODUCTS */
 function renderAdminProducts() {
-  const out = document.getElementById("productsAdminList");
   const products = JSON.parse(localStorage.getItem("products") || "[]");
+  const out = document.getElementById("productsAdminList");
 
   if (!products.length) {
     out.innerHTML = "<p>No products yet.</p>";
@@ -177,15 +240,15 @@ function renderAdminProducts() {
   }
 
   out.innerHTML = products.map(p => `
-    <div class="card p-2 mb-2 product-card-admin">
-      <div class="d-flex align-items-center justify-content-between">
+    <div class="card p-3 mb-3 product-card-admin">
+      <div class="d-flex justify-content-between">
 
-        <div class="d-flex align-items-center">
-          <img src="${p.images?.[0] || ''}" 
-               style="width:90px;height:70px;object-fit:cover;margin-right:12px;border-radius:6px;">
+        <div class="d-flex gap-3">
+          <img src="${p.images[0]}" class="small-preview">
           <div>
             <strong>${p.name}</strong><br>
-            ₹${p.price} — <span class="text-primary">${p.category}</span>
+            ₹${p.price} — <span class="text-primary">${p.category}</span><br>
+            <small>${p.images.length} images${p.video ? " + video" : ""}</small>
           </div>
         </div>
 
@@ -199,29 +262,27 @@ function renderAdminProducts() {
 }
 
 
-/* ------------------------
-     ADMIN CHECK
-------------------------- */
+/* ADMIN CHECK */
 document.addEventListener("DOMContentLoaded", () => {
-  const user = JSON.parse(localStorage.getItem("sg_user") || "null");
+  const raw = localStorage.getItem("sg_user");
+  if (!raw) return (window.location.href = "index.html");
 
-  if (!user) return window.location.href = "index.html";
-
-  const adminEmail = "sohabrar10@gmail.com";
-  if (user.email !== adminEmail) {
+  const user = JSON.parse(raw);
+  if (user.email !== "sohabrar10@gmail.com") {
     alert("Admin access only");
     return (window.location.href = "index.html");
   }
 
-  // Show admin icon
-  accountIcon.src = user.picture;
-  accountIcon.style.display = "block";
+  if (user.picture) {
+    accountIcon.src = user.picture;
+    accountIcon.style.display = "block";
+  }
 
   renderAdminProducts();
 });
 </script>
 
-<script src="js/app.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+
 </body>
 </html>
