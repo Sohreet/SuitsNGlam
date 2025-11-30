@@ -1,446 +1,268 @@
 /******************************************************
- * SUITS N GLAM — MERGED APP.JS
- * Combines:
- * admin.js
- * cart.js
- * google-auth.js
- * navbar.js
- * order-management.js
- * orderhistory.js
- * ordertracking.js
- * payment.js
- * products-common.js
+ * SUITS N GLAM — UPDATED SMART APP.JS
+ * LocalStorage Only Version
+ * Supports:
+ * - Categories
+ * - Sales (admin toggle)
+ * - Best Deals (auto orderCount ≥ 10)
+ * - New Arrivals (added ≤ 15 days)
+ * - Order counter
+ * - Image upload base64
  ******************************************************/
 
-console.log("APP.JS LOADED");
+console.log("SMART APP.JS LOADED");
 
 /******************************************************
- * UNIVERSAL HELPERS
+ * HELPERS
  ******************************************************/
-
 function getUser() {
   const raw = localStorage.getItem("sg_user");
   if (!raw) return null;
   try { return JSON.parse(raw); } catch { return null; }
 }
 
-function escapeHtml(s) {
-  if (!s) return "";
-  return String(s)
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
+function getProducts() {
+  return JSON.parse(localStorage.getItem("products") || "[]");
+}
+
+function saveProducts(list) {
+  localStorage.setItem("products", JSON.stringify(list));
+}
+
+function escapeHtml(x) {
+  if (!x) return "";
+  return x.replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
 /******************************************************
- * CART BADGE — THE ONLY FINAL VERSION
+ * UPDATE CART BADGE
  ******************************************************/
-async function updateCartBadge() {
+function updateCartBadge() {
   const badge = document.getElementById("cartCount");
   if (!badge) return;
-
-  badge.textContent = "";
-  const user = getUser();
-
-  // Local fallback
-  const cartLocal = JSON.parse(localStorage.getItem("cart") || "[]");
-  if (cartLocal.length) {
-    badge.textContent = cartLocal.length;
-    return;
-  }
-
-  if (user?.token) {
-    try {
-      const res = await fetch("/api/cart", {
-        headers: { "auth-token": user.token },
-      });
-      if (res.ok) {
-        const data = await res.json();
-        badge.textContent = data.items?.length || "";
-        return;
-      }
-    } catch (e) {}
-  }
-
-  if (user?.email) {
-    try {
-      const res = await fetch(`/api/cart/${encodeURIComponent(user.email)}`);
-      if (res.ok) {
-        const data = await res.json();
-        badge.textContent = data.items?.length || "";
-      }
-    } catch (e) {}
-  }
+  const cart = JSON.parse(localStorage.getItem("cart") || "[]");
+  badge.textContent = cart.length || "";
 }
-
 window.updateCartBadge = updateCartBadge;
 
 /******************************************************
- * NAVBAR LOGIN UI
+ * LOGIN UI
  ******************************************************/
 function setupLoginUI() {
   const user = getUser();
   const loginBtn = document.getElementById("loginBtn");
   const accountIcon = document.getElementById("accountIcon");
   const loginArea = document.querySelector(".nav-login-area");
-
-  if (!loginBtn || !accountIcon || !loginArea) return;
+  if (!loginBtn || !accountIcon) return;
 
   if (user) {
-    accountIcon.src = user.picture || "/public/images/default-user.png";
+    accountIcon.src = user.picture || "default-user.png";
     accountIcon.style.display = "inline-block";
     loginBtn.style.display = "none";
   } else {
-    accountIcon.style.display = "none";
     loginBtn.style.display = "inline-block";
+    accountIcon.style.display = "none";
   }
 
   loginArea.style.visibility = "visible";
-
-  if (!window.location.pathname.includes("admin")) {
-    accountIcon.onclick = () => window.location.href = "/account.html";
-  }
 }
+document.addEventListener("DOMContentLoaded", setupLoginUI);
 
-document.addEventListener("DOMContentLoaded", () => {
-  setupLoginUI();
-  updateCartBadge();
-});
 
 /******************************************************
- * GOOGLE AUTH
+ * GOOGLE LOGIN
  ******************************************************/
-console.log("GOOGLE AUTH LOADED");
-
-const GOOGLE_CLIENT_ID =
-  "653374521156-6retcia1fiu5dvmbjik9sq89ontrkmvt.apps.googleusercontent.com";
-
-const ADMINS = ["sohabrar10@gmail.com", "suitsnglam01@gmail.com"];
-
-(function loadSDK() {
-  if (document.getElementById("gsi-script")) return;
-  const s = document.createElement("script");
-  s.id = "gsi-script";
-  s.src = "https://accounts.google.com/gsi/client";
-  s.async = true;
-  s.defer = true;
-  document.head.appendChild(s);
-})();
-
-function saveUser(data, token) {
-  const user = {
-    email: data.email,
-    name: data.name,
-    picture: data.picture,
-    token,
-  };
-
-  localStorage.setItem("sg_user", JSON.stringify(user));
-
-  if (ADMINS.includes(user.email)) {
-    localStorage.setItem("adminLoggedIn", "true");
-  } else {
-    localStorage.removeItem("adminLoggedIn");
-  }
-}
-
-function handleCredentialResponse(response) {
-  try {
-    const data = jwt_decode(response.credential);
-    saveUser(data, response.credential);
-    if (window.setupLoginUI) setupLoginUI();
-  } catch (err) {
-    console.error("Google Auth Error:", err);
-  }
-}
-
-function googleLogin() {
-  if (!google?.accounts?.id)
-    return setTimeout(googleLogin, 200);
-
-  google.accounts.id.initialize({
-    client_id: GOOGLE_CLIENT_ID,
-    callback: handleCredentialResponse,
-  });
-
-  google.accounts.id.prompt();
-}
+const ADMINS = ["sohabrar10@gmail.com"];
 
 document.addEventListener("DOMContentLoaded", () => {
   const btn = document.getElementById("loginBtn");
-  if (btn) btn.addEventListener("click", googleLogin);
+  if (btn) btn.onclick = () => {
+    google.accounts.id.initialize({
+      client_id: "653374521156-6retcia1fiu5dvmbjik9sq89ontrkmvt.apps.googleusercontent.com",
+      callback: (response) => {
+        const data = jwt_decode(response.credential);
+        localStorage.setItem("sg_user", JSON.stringify(data));
+
+        if (ADMINS.includes(data.email))
+          localStorage.setItem("adminLoggedIn", "true");
+        else
+          localStorage.removeItem("adminLoggedIn");
+
+        location.reload();
+      }
+    });
+    google.accounts.id.prompt();
+  };
 });
 
 /******************************************************
  * CART FUNCTIONS
  ******************************************************/
-
 function loadCartPage() {
-  const itemsContainer = document.getElementById("cartItems");
-  const emptyEl = document.getElementById("cartEmpty");
-  const summaryEl = document.getElementById("cartSummary");
+  const items = JSON.parse(localStorage.getItem("cart") || "[]");
+  const box = document.getElementById("cartItems");
+  const empty = document.getElementById("cartEmpty");
+  const summary = document.getElementById("cartSummary");
   const totalEl = document.getElementById("cartTotal");
 
-  const cart = JSON.parse(localStorage.getItem("cart") || "[]");
+  box.innerHTML = "";
 
-  itemsContainer.innerHTML = "";
-  emptyEl.style.display = cart.length ? "none" : "block";
-  summaryEl.style.display = cart.length ? "block" : "none";
+  if (!items.length) {
+    empty.style.display = "block";
+    summary.style.display = "none";
+    return;
+  }
 
-  if (!cart.length) return;
+  empty.style.display = "none";
+  summary.style.display = "block";
 
   let total = 0;
 
-  cart.forEach((p, idx) => {
-    total += Number(p.price || 0) * (Number(p.metres || 1));
-
-    const col = document.createElement("div");
-    col.className = "col-md-4";
-    col.innerHTML = `
-      <div class="card p-2">
-        <img src="${p.image || ''}" class="w-100" style="height:160px;object-fit:cover">
-        <div class="card-body">
-          <h5>${p.title}</h5>
-          <p>₹${p.price} × ${p.metres}m</p>
-          <button class="btn btn-danger btn-sm" onclick="removeItem(${idx})">Remove</button>
+  items.forEach((p, i) => {
+    total += Number(p.price) * Number(p.metres);
+    box.innerHTML += `
+      <div class="col-md-4">
+        <div class="card p-2">
+          <img src="${p.image}" class="w-100" style="height:160px;object-fit:cover">
+          <div class="card-body">
+            <h5>${p.title}</h5>
+            <p>₹${p.price} × ${p.metres}m</p>
+            <button class="btn btn-danger btn-sm" onclick="removeItem(${i})">Remove</button>
+          </div>
         </div>
-      </div>
-    `;
-    itemsContainer.appendChild(col);
+      </div>`;
   });
 
   totalEl.textContent = total;
-  updateCartBadge();
 }
+window.loadCartPage = loadCartPage;
 
-function removeItem(index) {
+function removeItem(i) {
   const cart = JSON.parse(localStorage.getItem("cart") || "[]");
-  cart.splice(index, 1);
+  cart.splice(i, 1);
   localStorage.setItem("cart", JSON.stringify(cart));
   loadCartPage();
   updateCartBadge();
 }
-
-window.loadCartPage = loadCartPage;
 window.removeItem = removeItem;
 
 /******************************************************
- * PRODUCT LOADER + ADD TO CART
+ * PRODUCTS LOADING (LOCAL STORAGE)
  ******************************************************/
 
-function meterChange(id, delta) {
-  const field = document.getElementById(`meter-${id}`);
-  let v = parseInt(field.value || "1", 10);
-  v = Math.max(1, Math.min(50, v + delta));
-  field.value = v;
-}
-window.meterChange = meterChange;
+// smart filter for categories
+function filterProducts(type) {
+  const list = getProducts();
+  const now = Date.now();
+  const days15 = 15 * 24 * 60 * 60 * 1000;
 
-async function loadProducts(category, containerId = "productsContainer") {
+  if (type === "newarrivals") {
+    return list.filter(p => now - p.addedAt <= days15);
+  }
+  if (type === "bestdeals") {
+    return list.filter(p => p.orderCount >= 10);
+  }
+  if (type === "sales") {
+    return list.filter(p => p.sales === true);
+  }
+
+  // category filter
+  return list.filter(p => p.category === type);
+}
+
+
+function loadProducts(type, containerId = "productsContainer") {
   const container = document.getElementById(containerId);
   if (!container) return;
 
-  try {
-    const res = await fetch(`/api/products/category/${encodeURIComponent(category)}`);
-    const data = await res.json();
+  const prods = filterProducts(type);
+  container.innerHTML = "";
 
-    container.innerHTML = "";
-
-    data.forEach(p => {
-      const col = document.createElement("div");
-      col.className = "col-md-4";
-
-      const id = p._id || p.id || Math.random().toString(36).slice(2);
-      const price = p.pricePerMeter || p.price;
-
-      col.innerHTML = `
+  prods.forEach(p => {
+    container.innerHTML += `
+      <div class="col-md-4 product-card">
         <div class="card shadow-sm">
-          <img src="${p.images?.[0] || ''}" class="card-img-top">
+          <img src="${p.images[0]}" class="card-img-top">
           <div class="card-body">
-            <h5>${p.name}</h5>
-            <p>${p.description || ""}</p>
-            <p class="fw-bold">₹${price} / metre</p>
+            <h5>${escapeHtml(p.name)}</h5>
+            <p>${escapeHtml(p.description)}</p>
+            <p class="fw-bold">₹${p.price} / metre</p>
 
-            <div class="d-flex mb-2">
-              <button class="btn btn-sm btn-outline-secondary" onclick="meterChange('${id}',-1)">-</button>
-              <input id="meter-${id}" class="form-control mx-2" style="width:60px;" value="2" readonly>
-              <button class="btn btn-sm btn-outline-secondary" onclick="meterChange('${id}',1)">+</button>
-            </div>
-
-            <button class="btn btn-primary w-100" onclick="addToCart('${id}','${p._id || p.id}')">Add to Cart</button>
+            <button class="btn btn-primary w-100" onclick="addToCart('${p._id}')">
+              Add to Cart
+            </button>
           </div>
         </div>
-      `;
+      </div>
+    `;
+  });
 
-      container.appendChild(col);
-    });
-
-    updateCartBadge();
-  } catch (err) {
-    console.error("Product load error:", err);
+  if (!prods.length) {
+    const msg = document.getElementById("comingSoonMsg");
+    if (msg) msg.style.display = "block";
   }
 }
 window.loadProducts = loadProducts;
 
-async function addToCart(fakeId, realId) {
-  const metres = document.getElementById(`meter-${fakeId}`).value;
+/******************************************************
+ * ADD TO CART
+ ******************************************************/
+function addToCart(productId) {
   const user = getUser();
-
   if (!user) return alert("Please login first.");
 
-  const body = { productId: realId, metres: Number(metres) };
+  const list = getProducts();
+  const p = list.find(x => x._id === productId);
+  if (!p) return alert("Product not found!");
 
-  try {
-    const res = await fetch("/api/cart/add", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        ...(user.token ? { "auth-token": user.token } : {})
-      },
-      body: JSON.stringify(body),
-    });
+  const cart = JSON.parse(localStorage.getItem("cart") || "[]");
+  cart.push({
+    productId: p._id,
+    title: p.name,
+    price: p.price,
+    image: p.images[0],
+    metres: 2
+  });
 
-    const data = await res.json();
-
-    if (res.ok) {
-      alert("Added to cart!");
-      updateCartBadge();
-    } else {
-      alert(data.message || "Error");
-    }
-  } catch (e) {
-    alert("Add to cart failed.");
-  }
+  localStorage.setItem("cart", JSON.stringify(cart));
+  updateCartBadge();
+  alert("Added to cart!");
 }
 window.addToCart = addToCart;
 
 /******************************************************
- * PAYMENT + ORDER SAVE
+ * ORDER SAVE + ORDER COUNTER
  ******************************************************/
-function loadCheckoutData() {
-  const cart = JSON.parse(localStorage.getItem("cart") || "[]");
-  const list = document.getElementById("cartList");
-  const totalEl = document.getElementById("grandTotal");
-
-  let total = 0;
-  list.innerHTML = "";
-
-  cart.forEach(item => {
-    list.innerHTML += `<li>${item.title} — ₹${item.price}</li>`;
-    total += Number(item.price || 0);
-  });
-
-  totalEl.textContent = total;
-}
-
-document.addEventListener("DOMContentLoaded", loadCheckoutData);
-
-function startPayment() {
-  const name = fullName.value.trim();
-  const phone = phone.value.trim();
-  const addressVal = address.value.trim();
-  const cityVal = city.value.trim();
-  const stateVal = state.value.trim();
-  const pincodeVal = pincode.value.trim();
-
-  if (!name || !phone || !addressVal || !cityVal || !stateVal || !pincodeVal) {
-    return alert("Fill all address fields.");
-  }
-
-  const amount = Number(document.getElementById("grandTotal").textContent);
-
-  const options = {
-    key: "rzp_test_123456789",
-    amount: amount * 100,
-    currency: "INR",
-    name: "Suits N Glam",
-    description: "Order Payment",
-    handler: function () {
-      saveOrder(amount, { name, phone, address: addressVal, city: cityVal, state: stateVal, pincode: pincodeVal });
-      window.location.href = `success.html?amount=${amount}`;
-    }
-  };
-
-  new Razorpay(options).open();
-}
-
 function saveOrder(amount, shipping) {
   const cart = JSON.parse(localStorage.getItem("cart") || "[]");
   const orders = JSON.parse(localStorage.getItem("orders") || "[]");
+  const products = getProducts();
+
+  cart.forEach(item => {
+    const p = products.find(x => x._id === item.productId);
+    if (p) p.orderCount = (p.orderCount || 0) + 1;
+  });
+
+  saveProducts(products);
 
   orders.push({
     id: "ORD" + Math.floor(Math.random() * 900000 + 100000),
-    date: new Date().toLocaleString(),
     total: amount,
-    status: "Confirmed",
+    date: new Date().toLocaleString(),
     items: cart,
+    status: "Confirmed",
     shipping
   });
 
   localStorage.setItem("orders", JSON.stringify(orders));
+  localStorage.setItem("cart", JSON.stringify([]));
 }
 
 /******************************************************
- * ORDER HISTORY / TRACKING
- ******************************************************/
-document.addEventListener("DOMContentLoaded", () => {
-  const container = document.getElementById("ordersList");
-  if (!container) return;
-
-  const orders = JSON.parse(localStorage.getItem("orders") || "[]");
-  if (!orders.length)
-    return (container.innerHTML = "<h4>No orders yet.</h4>");
-
-  container.innerHTML = orders
-    .map(
-      (o) => `
-    <div class="card p-3 mb-2">
-      <h5>Order ID: ${o.id}</h5>
-      <p>${o.date}</p>
-      <p>₹${o.total}</p>
-      <p>Status: ${o.status}</p>
-    </div>
-  `
-    )
-    .join("");
-});
-
-/******************************************************
- * ADMIN GUARD (Admin Dashboard)
+ * ADMIN GUARD
  ******************************************************/
 if (window.location.pathname.includes("admin")) {
-  const isAdmin = localStorage.getItem("adminLoggedIn");
-  if (!isAdmin) {
+  if (!localStorage.getItem("adminLoggedIn")) {
     window.location.href = "index.html";
   }
 }
-
-/******************************************************
- * ADMIN ORDER TABLE
- ******************************************************/
-document.addEventListener("DOMContentLoaded", () => {
-  const table = document.getElementById("ordersTable");
-  if (!table) return;
-
-  const orders = JSON.parse(localStorage.getItem("orders") || "[]");
-
-  if (!orders.length) {
-    table.innerHTML = "<p>No orders yet</p>";
-    return;
-  }
-
-  table.innerHTML = orders
-    .map(
-      (o) => `
-    <tr>
-      <td>${o.id}</td>
-      <td>${o.shipping?.name || ""}<br>${o.shipping?.phone || ""}</td>
-      <td>₹${o.total}</td>
-      <td>${o.status}</td>
-      <td>${o.date}</td>
-    </tr>`
-    )
-    .join("");
-});
