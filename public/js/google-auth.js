@@ -26,7 +26,7 @@ function saveUser(data, token) {
 
   localStorage.setItem("sg_user", JSON.stringify(user));
 
-  const ADMINS = ["sohabrar10@gmail.com", "suitsnglam01@gmail.com"];
+  const ADMINS = ["sohabrar10@gmail.com"];
 
   // 🔥 FIXED ADMIN LOGIC
   if (ADMINS.includes(user.email)) {
