@@ -10,12 +10,31 @@
 
   <style>
     body { background:#f8f9fa; }
-    .nav-login-area { visibility:hidden; }
+
+    /* ✔ Do NOT hide login area on account page */
+    .nav-login-area {
+      visibility: visible !important;
+    }
+
+    /* Red login style */
+    .btn-login {
+      color:#c60000 !important;
+      border:2px solid #c60000;
+      background:white;
+      padding:4px 12px;
+      border-radius:6px;
+      font-weight:600;
+    }
+
+    .btn-login:hover {
+      background:#c60000;
+      color:white !important;
+    }
   </style>
 </head>
 <body>
 
-<!-- NAVBAR (same as index) -->
+<!-- NAVBAR -->
 <nav class="navbar navbar-expand-lg" style="background-color:#e3f2fd;">
   <div class="container">
     <a class="navbar-brand" href="index.html">Suits N Glam</a>
@@ -54,8 +73,11 @@
 
       <!-- LOGIN / ACCOUNT -->
       <div class="nav-login-area d-flex align-items-center">
+
+        <!-- Login Button -->
         <button id="loginBtn" class="btn-login">Login</button>
 
+        <!-- Google Profile Icon -->
         <img id="accountIcon"
              src=""
              style="width:34px;height:34px;border-radius:50%;cursor:pointer;display:none;margin-left:10px;">
@@ -66,7 +88,7 @@
 </nav>
 
 
-<!-- CONTENT -->
+<!-- ACCOUNT CONTENT -->
 <div class="container mt-4">
   <h2 class="mb-3">My Account</h2>
 
@@ -82,10 +104,10 @@
 </div>
 
 <script>
-function logout(){
+function logout() {
   localStorage.removeItem("sg_user");
   localStorage.removeItem("adminLoggedIn");
-  window.location.href="index.html";
+  window.location.href = "index.html";
 }
 </script>
 
