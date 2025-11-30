@@ -7,6 +7,16 @@
 
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+<script>
+console.log("ADMIN DEBUG: admin.html loaded");
+console.log("adminLoggedIn =", localStorage.getItem("adminLoggedIn"));
+console.log("isAdmin =", localStorage.getItem("isAdmin"));
+console.log("sg_user =", localStorage.getItem("sg_user"));
+
+window.addEventListener("beforeunload", () => {
+  console.log("ADMIN DEBUG: redirect triggered!");
+});
+</script>
 
   <style>
     body { background:#f4f6f9; }
