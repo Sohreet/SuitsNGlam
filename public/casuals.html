@@ -31,6 +31,16 @@
     }
     .btn-login:hover { background-color:rgb(255,43,31); }
 
+    /* Coming Soon */
+    #comingSoonMsg {
+      display:none;
+      text-align:center;
+      padding:40px 0;
+      font-size:1.3rem;
+      font-weight:500;
+      color:#555;
+    }
+
     /* Prevent flicker */
     .nav-login-area { visibility:hidden; }
   </style>
@@ -38,9 +48,12 @@
 
 <body>
 
-  <!-- NAVBAR -->
+  <!-- ================= NAVBAR ================= -->
   <nav class="navbar navbar-expand-lg" style="background-color:#e3f2fd;">
     <div class="container">
+
+      <!-- Back to Home -->
+      <a href="index.html" class="btn btn-outline-primary me-3">← Home</a>
 
       <a class="navbar-brand" href="index.html">Suits N Glam</a>
 
@@ -78,7 +91,7 @@
           <span id="cartCount" class="badge bg-danger"></span>
         </a>
 
-        <!-- LOGIN/ACCOUNT -->
+        <!-- LOGIN / ACCOUNT -->
         <div class="nav-login-area d-flex align-items-center">
           <button id="loginButton" class="btn-login">Login</button>
 
@@ -100,21 +113,28 @@
     </div>
   </div>
 
+  <!-- COMING SOON -->
+  <div id="comingSoonMsg">🚧 Products Coming Soon 🚧</div>
+
   <!-- PRODUCTS -->
   <div class="container mt-3">
     <div class="row g-4" id="productsContainer"></div>
   </div>
 
-  <!-- SCRIPTS -->
+  <!-- ================= SCRIPTS ================= -->
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <script src="https://cdn.jsdelivr.net/npm/jwt-decode/build/jwt-decode.min.js"></script>
 
   <script src="js/google-auth.js"></script>
   <script src="js/navbar.js"></script>
   <script src="js/products-common.js"></script>
-  
 
-  <script> loadProducts("casuals"); </script>
+  <script>
+    loadProducts("casuals", "productsContainer", "comingSoonMsg");
+  </script>
+
+  <!-- Fix dropdown -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
 
 </body>
 </html>
