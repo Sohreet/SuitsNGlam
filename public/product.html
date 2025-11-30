@@ -11,43 +11,33 @@
   <style>
     body { background:#f8f9fa; }
 
-    .main-img {
-      width:100%;
-      height:380px;
-      object-fit:cover;
-      border-radius:12px;
+    .btn-login{
+      background:#ff3f33;color:white !important;
+      padding:6px 14px;border:none;border-radius:6px;font-weight:600;
     }
+    .btn-login:hover{ background:#ff2b1f; }
 
-    .thumb-img {
-      width:70px;
-      height:70px;
-      object-fit:cover;
-      border-radius:8px;
-      cursor:pointer;
-      border:2px solid transparent;
+    .main-img{
+      width:100%;height:380px;border-radius:12px;object-fit:cover;
     }
-
-    .thumb-img.active {
-      border:2px solid #c60000;
+    .thumb-img{
+      width:70px;height:70px;border-radius:8px;
+      cursor:pointer;object-fit:cover;border:2px solid transparent;
     }
+    .thumb-img.active{ border-color:#c60000; }
 
-    .video-box {
-      width:100%;
-      border-radius:12px;
-      margin-top:20px;
-    }
-
-    .meter-btn {
-      width:32px;
+    .video-box{
+      border-radius:12px;width:100%;margin-top:20px;
     }
   </style>
 </head>
 
 <body>
 
-<!-- NAVBAR (same on all pages) -->
+<!-- NAVBAR FIXED -->
 <nav class="navbar navbar-expand-lg" style="background-color:#e3f2fd;">
   <div class="container">
+
     <a class="navbar-brand fw-bold d-flex align-items-center" href="index.html">
       <i class="bi bi-house-fill me-2"></i> Suits N Glam
     </a>
@@ -62,27 +52,26 @@
         <li class="nav-item"><a class="nav-link" href="allproducts.html">All Products</a></li>
       </ul>
 
-      <!-- LOGIN -->
       <div class="nav-login-area d-flex align-items-center">
-        <button id="loginBtn" class="btn btn-danger">Login</button>
+        <button id="loginBtn" class="btn-login">Login</button>
         <img id="accountIcon"
              style="width:34px;height:34px;border-radius:50%;margin-left:10px;display:none;cursor:pointer;">
       </div>
+
     </div>
   </div>
 </nav>
 
-<!-- PRODUCT CONTENT -->
+<!-- PAGE CONTENT -->
 <div class="container mt-4">
 
   <div class="row">
-    
-    <!-- LEFT IMAGES -->
+
     <div class="col-md-6">
 
-      <img id="mainImage" class="main-img" src="" alt="Product">
+      <img id="mainImage" class="main-img">
 
-      <div id="thumbRow" class="d-flex mt-3 gap-2"></div>
+      <div id="thumbRow" class="d-flex gap-2 mt-2"></div>
 
       <div id="videoSection" style="display:none;">
         <video id="productVideo" class="video-box" controls></video>
@@ -90,102 +79,80 @@
 
     </div>
 
-    <!-- RIGHT DETAILS -->
     <div class="col-md-6">
 
       <h2 id="p_name"></h2>
-      <h4 class="text-danger fw-bold">₹<span id="p_price">0</span> / metre</h4>
+      <h4 class="text-danger fw-bold">₹<span id="p_price"></span> / metre</h4>
+
       <p class="text-muted">Category: <span id="p_category"></span></p>
 
-      <h6 class="mt-3 fw-bold">Description:</h6>
+      <h6 class="fw-bold mt-3">Description</h6>
       <p id="p_desc"></p>
 
-      <h6 class="mt-3 fw-bold">Select Metres:</h6>
-      <div class="d-flex align-items-center gap-2 mt-2">
-        <button class="btn btn-outline-secondary meter-btn" onclick="changeMetre(-1)">-</button>
-        <input id="metreInput" type="text" class="form-control text-center" style="width:60px;" value="1" readonly>
-        <button class="btn btn-outline-secondary meter-btn" onclick="changeMetre(1)">+</button>
+      <h6 class="fw-bold mt-3">Select Metres</h6>
+      <div class="d-flex gap-2 mt-2">
+        <button class="btn btn-outline-secondary" onclick="changeMetre(-1)">-</button>
+        <input id="metreInput" value="1" readonly class="form-control text-center" style="width:60px;">
+        <button class="btn btn-outline-secondary" onclick="changeMetre(1)">+</button>
       </div>
 
-      <button class="btn btn-danger mt-4 w-100" onclick="addToCartPage()">Add to Cart</button>
+      <button class="btn btn-danger mt-4 w-100" onclick="addToCartFromPage()">Add to Cart</button>
 
     </div>
+
   </div>
 
 </div>
 
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <script src="https://cdn.jsdelivr.net/npm/jwt-decode/build/jwt-decode.min.js"></script>
-
 <script src="js/app.js"></script>
-
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
-/******************************************************
- * PRODUCT ID FROM URL
- ******************************************************/
-const params = new URLSearchParams(window.location.search);
-const productId = params.get("id");
 
-if (!productId) {
-  alert("Invalid product link");
-  window.location.href = "index.html";
-}
+const params = new URLSearchParams(location.search);
+const id = params.get("id");
 
-/******************************************************
- * METRE SELECTOR
- ******************************************************/
-function changeMetre(delta) {
+if(!id){ alert("Invalid product."); location.href="index.html"; }
+
+function changeMetre(n){
   let v = parseInt(metreInput.value);
-  v = Math.max(1, Math.min(10, v + delta));
+  v = Math.max(1, Math.min(10, v+n));
   metreInput.value = v;
 }
 
-/******************************************************
- * LOAD PRODUCT DETAILS
- ******************************************************/
-async function loadProduct() {
-  const res = await fetch(`/api/products/${productId}`);
+async function loadProduct(){
+  const res = await fetch(`/api/products/${id}`);
   const p = await res.json();
 
-  document.getElementById("p_name").textContent = p.name;
-  document.getElementById("p_price").textContent = p.price;
-  document.getElementById("p_category").textContent = p.category;
-  document.getElementById("p_desc").textContent = p.description;
-
-  document.getElementById("mainImage").src = p.images[0];
-
-  // thumbnails
-  const thumbRow = document.getElementById("thumbRow");
-  thumbRow.innerHTML = "";
-  p.images.forEach((img, i) => {
-    thumbRow.innerHTML += `
-      <img src="${img}" class="thumb-img ${i === 0 ? "active" : ""}"
-           onclick="document.getElementById('mainImage').src='${img}';
-                    document.querySelectorAll('.thumb-img').forEach(t=>t.classList.remove('active'));
-                    this.classList.add('active');">
-    `;
-  });
-
-  // video
-  if (p.video) {
-    document.getElementById("videoSection").style.display = "block";
-    document.getElementById("productVideo").src = p.video;
-  }
+  mainImage.src = p.images[0];
+  p_name.textContent = p.name;
+  p_price.textContent = p.price;
+  p_category.textContent = p.category;
+  p_desc.textContent = p.description;
 
   window.currentProduct = p;
+
+  thumbRow.innerHTML = p.images.map((img,i)=>`
+    <img src="${img}" class="thumb-img ${i==0?"active":""}"
+      onclick="mainImage.src='${img}';
+               document.querySelectorAll('.thumb-img').forEach(t=>t.classList.remove('active'));
+               this.classList.add('active');">
+  `).join("");
+
+  if(p.video){
+    videoSection.style.display="block";
+    productVideo.src = p.video;
+  }
+}
+
+function addToCartFromPage(){
+  const m = Number(metreInput.value);
+  addToCart(window.currentProduct, m);
 }
 
 loadProduct();
-
-/******************************************************
- * ADD TO CART
- ******************************************************/
-function addToCartPage() {
-  const metres = Number(document.getElementById("metreInput").value);
-  addToCart(window.currentProduct, metres);
-}
 </script>
 
 </body>
