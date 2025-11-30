@@ -29,16 +29,6 @@
       margin-bottom: 12px;
     }
 
-    .btn-login {
-      background-color: rgb(255,63,51);
-      color: white;
-      border: none;
-      padding: 6px 14px;
-      border-radius: 6px;
-      cursor: pointer;
-    }
-    .btn-login:hover { background-color: rgb(255,43,31); }
-
     .btn-logout {
       background-color: rgb(255,63,51);
       color: white;
@@ -46,6 +36,7 @@
       padding: 8px 18px;
       border-radius: 8px;
     }
+
     .btn-logout:hover { background-color: rgb(255,43,31); }
 
     .admin-badge {
@@ -55,117 +46,143 @@
       font-size: 0.9rem;
     }
 
-    /* Flicker fix */
+    /* Prevent flicker on login/account area */
     .nav-login-area {
       visibility: hidden;
+    }
+
+    .btn-login {
+      background-color: rgb(255,63,51);
+      color: #fff;
+      padding: 6px 14px;
+      border: none;
+      border-radius: 6px;
+      transition: 0.2s;
+    }
+
+    .btn-login:hover {
+      background-color: rgb(255,43,31);
     }
   </style>
 </head>
 
 <body>
 
-  <!-- ================= NAVBAR ================= -->
-  <nav class="navbar navbar-expand-lg" style="background-color:#e3f2fd;">
-    <div class="container">
+<!-- ================= NAVBAR (same as index.html) ================= -->
+<nav class="navbar navbar-expand-lg" style="background-color:#e3f2fd;">
+  <div class="container">
+    <a class="navbar-brand" href="index.html">Suits N Glam</a>
 
-      <a class="navbar-brand" href="index.html">Suits N Glam</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
 
-      <button class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navLinks">
-        <span class="navbar-toggler-icon"></span>
-      </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
 
-      <div class="collapse navbar-collapse" id="navLinks">
+      <ul class="navbar-nav ms-auto me-2">
+        <li class="nav-item"><a class="nav-link" href="allproducts.html">All Products</a></li>
+        <li class="nav-item"><a class="nav-link" href="newarrivals.html">New Arrivals</a></li>
 
-        <ul class="navbar-nav ms-auto me-2">
-          <li class="nav-item"><a class="nav-link" href="allproducts.html">All Products</a></li>
-          <li class="nav-item"><a class="nav-link" href="newarrivals.html">New Arrivals</a></li>
-        </ul>
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Shop By Category</a>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="summer.html">Summer</a></li>
+            <li><a class="dropdown-item" href="winter.html">Winter</a></li>
+            <li><a class="dropdown-item" href="wedding.html">Wedding</a></li>
+            <li><a class="dropdown-item" href="casuals.html">Casuals</a></li>
+            <li><a class="dropdown-item" href="dailywear.html">Daily Wear</a></li>
+            <li><a class="dropdown-item" href="premiumwear.html">Premium Wear</a></li>
+          </ul>
+        </li>
 
-        <!-- CART -->
-        <a href="cart.html" class="d-flex align-items-center me-3" style="text-decoration:none;color:black;">
-          <i class="bi bi-bag-heart-fill" style="font-size:1.6rem;"></i>
-          <span id="cartCount" class="badge bg-danger"></span>
-        </a>
+        <li class="nav-item"><a class="nav-link" href="bestdeals.html">Best Deals</a></li>
+        <li class="nav-item"><a class="nav-link" href="sales.html">Sales</a></li>
+      </ul>
 
-        <!-- LOGIN + ACCOUNT (Flicker-free wrapper) -->
-        <div class="nav-login-area d-flex align-items-center">
-          <button id="loginBtn" class="btn-login">Login</button>
+      <!-- CART -->
+      <a href="cart.html" class="d-flex align-items-center gap-2 me-3" style="text-decoration:none;color:#000;">
+        <i class="bi bi-bag-heart-fill" style="font-size:1.6rem;"></i>
+        <span id="cartCount" class="badge bg-danger"></span>
+      </a>
 
-          <img id="accountIcon"
-            src=""
-            style="width:34px;height:34px;border-radius:50%;cursor:pointer;display:none;margin-left:10px;"
-            onclick="window.location.href='account.html'">
-        </div>
+      <!-- LOGIN / ACCOUNT WRAPPER -->
+      <div class="nav-login-area d-flex align-items-center">
+        <button id="loginBtn" class="btn-login">Login</button>
 
+        <img id="accountIcon"
+             src=""
+             style="width:34px;height:34px;border-radius:50%;cursor:pointer;display:none;margin-left:10px;"
+             onclick="window.location.href='account.html'">
       </div>
+
     </div>
-  </nav>
+  </div>
+</nav>
 
 
-  <!-- ================= PROFILE CARD ================= -->
-  <div class="profile-card">
+<!-- ================= PROFILE CARD ================= -->
+<div class="profile-card">
 
-    <img id="profilePic" class="profile-pic"
-      src="https://www.svgrepo.com/show/382106/profile-user.svg"
-      alt="Profile">
+  <img id="profilePic" class="profile-pic"
+       src="https://www.svgrepo.com/show/382106/profile-user.svg"
+       alt="Profile">
 
-    <h3 id="profileName">Your Name</h3>
-    <p id="profileEmail" class="text-muted">you@example.com</p>
+  <h3 id="profileName">Your Name</h3>
+  <p id="profileEmail" class="text-muted">you@example.com</p>
 
-    <!-- ADMIN AREA -->
-    <div id="adminArea" style="display:none; margin: 15px 0;">
-      <a href="admin.html" class="btn btn-outline-primary me-2">Admin Dashboard</a>
-      <span class="admin-badge">Admin</span>
-    </div>
-
-    <div class="d-flex justify-content-center mt-3 gap-3">
-      <button id="logoutBtn" class="btn-logout">Logout</button>
-      <a href="orderhistory.html" class="btn btn-outline-secondary">My Orders</a>
-    </div>
-
+  <div id="adminArea" style="display:none; margin: 15px 0;">
+    <a href="admin.html" class="btn btn-outline-primary me-2">Admin Dashboard</a>
+    <span class="admin-badge">Admin</span>
   </div>
 
+  <div class="d-flex justify-content-center mt-3 gap-3">
+    <button id="logoutBtn" class="btn-logout">Logout</button>
+    <a href="orderhistory.html" class="btn btn-outline-secondary">My Orders</a>
+  </div>
 
-  <!-- ================= SCRIPTS ================= -->
-  <script src="https://accounts.google.com/gsi/client" async defer></script>
-  <script src="https://cdn.jsdelivr.net/npm/jwt-decode/build/jwt-decode.min.js"></script>
+</div>
 
-  <script src="js/google-auth.js"></script>
-  <script src="js/navbar.js"></script>
-  <script src="js/cart.js"></script>
 
-  <!-- ACCOUNT PAGE LOGIC -->
-  <script>
-    window.onload = function () {
-      const userData = localStorage.getItem("sg_user");
+<!-- ================= SCRIPTS ================= -->
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="https://cdn.jsdelivr.net/npm/jwt-decode/build/jwt-decode.min.js"></script>
 
-      if (!userData) {
-        alert("Please login first");
-        window.location.href = "index.html";
-        return;
-      }
+<script src="js/google-auth.js"></script>
+<script src="js/navbar.js"></script>
+<script src="js/cart.js"></script>
 
-      const user = JSON.parse(userData);
+<!-- ACCOUNT LOGIC -->
+<script>
+  window.onload = function () {
 
-      document.getElementById("profileName").textContent = user.name || "User";
-      document.getElementById("profileEmail").textContent = user.email;
-      document.getElementById("profilePic").src =
-        user.picture || "https://www.svgrepo.com/show/382106/profile-user.svg";
+    const userData = localStorage.getItem("sg_user");
 
-      // Admin UI
-      if (localStorage.getItem("isAdmin") === "true") {
-        document.getElementById("adminArea").style.display = "block";
-      }
-    };
-
-    document.getElementById("logoutBtn").onclick = function () {
-      localStorage.clear();
-      if (google?.accounts?.id) google.accounts.id.disableAutoSelect();
+    if (!userData) {
+      alert("Please login first");
       window.location.href = "index.html";
-    };
-  </script>
+      return;
+    }
 
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+    const user = JSON.parse(userData);
+
+    document.getElementById("profileName").textContent = user.name || "User";
+    document.getElementById("profileEmail").textContent = user.email;
+    document.getElementById("profilePic").src =
+      user.picture || "https://www.svgrepo.com/show/382106/profile-user.svg";
+
+    if (localStorage.getItem("isAdmin") === "true") {
+      document.getElementById("adminArea").style.display = "block";
+    }
+  };
+
+  document.getElementById("logoutBtn").onclick = function () {
+    localStorage.clear();
+    if (google?.accounts?.id) google.accounts.id.disableAutoSelect();
+    window.location.href = "index.html";
+  };
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
 
 </body>
 </html>
