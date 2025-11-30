@@ -25,6 +25,13 @@
 </head>
 
 <body>
+<script>
+  // Disable account icon redirect on admin page
+  document.addEventListener("DOMContentLoaded", () => {
+    const acc = document.getElementById("accountIcon");
+    if (acc) acc.onclick = (e) => e.stopPropagation();
+  });
+</script>
 
   <!-- Navbar -->
   <nav class="navbar navbar-expand-lg" style="background-color:#e3f2fd;">
