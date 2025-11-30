@@ -31,16 +31,18 @@
     .casuals { background-color: rgb(207, 255, 226); }
     .premium { background-color: rgb(231,208,245); }
 
-    /* Login button */
-    .btn-login {
-      background-color: rgb(255, 63, 51);
-      color: #fff;
-      border: none;
-      padding: 6px 14px;
-      border-radius: 6px;
-      text-decoration: none !important;
-      transition: background-color 0.2s;
-    }
+/* FIX FLICKER: hide login area until JS sets correct UI */
+.nav-login-area {
+  visibility: hidden;
+}
+
+.btn-login {
+  background-color: rgb(255,63,51);
+  color: #fff;
+  padding: 6px 14px;
+  border-radius: 6px;
+  border: none;
+}
     .btn-login:hover {
       background-color: rgb(255, 43, 31);
       color: #fff;
