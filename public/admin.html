@@ -12,18 +12,18 @@
     body { background:#f8f9fa; }
     .nav-login-area { visibility: visible !important; }
 
-    .img-preview {
-      width: 80px;
-      height: 80px;
-      object-fit: cover;
-      border-radius: 10px;
-      margin-right: 5px;
-    }
+    .img-preview { width:80px; height:80px; object-fit:cover; border-radius:10px; margin-right:5px; }
+    .video-preview { width:120px; border-radius:10px; }
 
-    .video-preview {
-      width: 120px;
-      border-radius: 10px;
+    .btn-login {
+      background:#ff3f33 !important;
+      color:white !important;
+      padding:6px 14px;
+      border:none;
+      border-radius:6px;
+      font-weight:600;
     }
+    .btn-login:hover { background:#ff2b1f !important; }
   </style>
 </head>
 <body>
@@ -31,45 +31,32 @@
 <!-- NAVBAR -->
 <nav class="navbar navbar-expand-lg" style="background-color:#e3f2fd;">
   <div class="container">
-
-    <!-- HOME ICON -->
-    <a class="navbar-brand fw-bold d-flex align-items-center" href="index.html">
-      <i class="bi bi-house-fill me-2"></i> Suits N Glam
-    </a>
+    <a class="navbar-brand fw-bold" href="index.html">Suits N Glam</a>
 
     <div class="ms-auto d-flex align-items-center">
       <span class="badge bg-danger me-3">ADMIN</span>
-
-      <img id="accountIcon"
-           style="width:34px;height:34px;border-radius:50%;cursor:pointer;">
+      <img id="accountIcon" src="" style="width:34px;height:34px;border-radius:50%;cursor:pointer;">
     </div>
   </div>
 </nav>
 
-
 <div class="container mt-4">
-
   <h2>Admin Dashboard</h2>
   <hr>
 
   <!-- ADD PRODUCT CARD -->
   <div class="card p-4 shadow-sm">
-
     <h4>Add Product</h4>
     <hr>
-
     <div class="row g-3">
-
       <div class="col-md-4">
         <label class="form-label">Product Name</label>
         <input id="p_name" class="form-control" placeholder="Name">
       </div>
-
       <div class="col-md-4">
         <label class="form-label">Price Per Metre (₹)</label>
         <input id="p_price" type="number" class="form-control" placeholder="Price">
       </div>
-
       <div class="col-md-4">
         <label class="form-label">Stock</label>
         <input id="p_stock" type="number" class="form-control" placeholder="Stock quantity">
@@ -96,20 +83,16 @@
         <textarea id="p_desc" class="form-control" rows="3" placeholder="Short product details"></textarea>
       </div>
 
-      <!-- IMAGE UPLOAD -->
       <div class="col-12">
         <label class="form-label">Upload Images (2–5)</label>
         <input id="p_images" type="file" class="form-control" accept="image/*" multiple>
         <small class="text-muted">Select 2–5 images</small>
-
         <div id="imgPreview" class="d-flex mt-2"></div>
       </div>
 
-      <!-- VIDEO UPLOAD -->
       <div class="col-12">
         <label class="form-label">Upload Video (optional)</label>
         <input id="p_video" type="file" class="form-control" accept="video/*">
-
         <div id="vidPreview" class="mt-2"></div>
       </div>
 
@@ -119,37 +102,53 @@
           <span class="form-check-label fw-bold">Put this product on SALE</span>
         </label>
       </div>
-
     </div>
 
     <button class="btn btn-success mt-4" onclick="adminAddProduct()">Add Product</button>
     <button class="btn btn-secondary mt-4 ms-2" onclick="window.location.href='admin-orders.html'">View Orders</button>
     <button class="btn btn-danger mt-4 ms-2" onclick="adminLogout()">Logout</button>
-
   </div>
 
-  <!-- PRODUCT LIST (WITH DELETE BUTTON) -->
+  <!-- PRODUCT LIST -->
   <div class="mt-4">
     <h4>All Products</h4>
     <div id="productsAdminList"></div>
   </div>
-
 </div>
 
+<!-- LOGIN + MODALS (shared) -->
+<div class="modal fade" id="emailLoginModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered"><div class="modal-content p-3">
+    <h5 class="mb-3">Login with Email</h5>
+    <input id="loginEmail" type="email" class="form-control my-2" placeholder="Email">
+    <input id="loginPass" type="password" class="form-control my-2" placeholder="Password">
+    <button class="btn btn-primary w-100 my-2" onclick="emailLogin()">Login</button>
+    <div class="text-center"><small>or</small></div>
+    <button class="btn btn-outline-secondary w-100 mt-2" onclick="triggerGoogleLogin()">Continue with Google</button>
+    <p class="text-center mt-3">Don't have an account? <a href="#" onclick="openRegister()">Register</a></p>
+  </div></div>
+</div>
+
+<div class="modal fade" id="registerModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered"><div class="modal-content p-3">
+    <h5 class="mb-3">Create Account</h5>
+    <input id="regName" type="text" class="form-control my-2" placeholder="Name">
+    <input id="regEmail" type="email" class="form-control my-2" placeholder="Email">
+    <input id="regPass" type="password" class="form-control my-2" placeholder="Password">
+    <button class="btn btn-success w-100 my-2" onclick="emailRegister()">Register</button>
+  </div></div>
+</div>
 
 <script>
-/******************************************************
- * ADMIN LOGOUT
- ******************************************************/
+/* helper functions used by admin.html are already in js/app.js,
+   this file implements previews and admin-specific actions. */
+
 function adminLogout() {
   localStorage.removeItem("adminLoggedIn");
   localStorage.removeItem("sg_user");
   window.location.href = "index.html";
 }
 
-/******************************************************
- * BASE64 CONVERSION
- ******************************************************/
 function fileToBase64(file) {
   return new Promise(resolve => {
     const reader = new FileReader();
@@ -158,146 +157,81 @@ function fileToBase64(file) {
   });
 }
 
-/******************************************************
- * IMAGE PREVIEW
- ******************************************************/
-document.getElementById("p_images").addEventListener("change", function() {
+document.getElementById("p_images").addEventListener("change", function(){
   const preview = document.getElementById("imgPreview");
   preview.innerHTML = "";
-
   [...this.files].forEach(file => {
     const reader = new FileReader();
-    reader.onload = e => {
-      preview.innerHTML += `<img src="${e.target.result}" class="img-preview">`;
-    };
+    reader.onload = e => preview.innerHTML += `<img src="${e.target.result}" class="img-preview">`;
     reader.readAsDataURL(file);
   });
 });
 
-/******************************************************
- * VIDEO PREVIEW
- ******************************************************/
-document.getElementById("p_video").addEventListener("change", function() {
+document.getElementById("p_video").addEventListener("change", function(){
   const preview = document.getElementById("vidPreview");
   preview.innerHTML = "";
-
   if (this.files.length > 0) {
     const reader = new FileReader();
-    reader.onload = e => {
-      preview.innerHTML = `
-        <video class="video-preview" controls>
-          <source src="${e.target.result}">
-        </video>`;
-    };
+    reader.onload = e => preview.innerHTML = `<video class="video-preview" controls><source src="${e.target.result}"></video>`;
     reader.readAsDataURL(this.files[0]);
   }
 });
 
-/******************************************************
- * ADD PRODUCT
- ******************************************************/
 async function adminAddProduct() {
-
   const name = p_name.value.trim();
   const price = Number(p_price.value);
   const stock = Number(p_stock.value);
   const category = p_category.value.trim().toLowerCase();
   const desc = p_desc.value.trim();
   const sale = p_sale.checked;
-
-  if (!name || !price || !category) {
-    return alert("Please fill all required fields!");
-  }
-
+  if (!name || !price || !category) return alert("Please fill all required fields!");
   let images = [];
-  for (let file of p_images.files) {
-    images.push(await fileToBase64(file));
-  }
-
+  for (let file of p_images.files) images.push(await fileToBase64(file));
   let video = "";
-  if (p_video.files.length > 0) {
-    video = await fileToBase64(p_video.files[0]);
-  }
-
+  if (p_video.files.length > 0) video = await fileToBase64(p_video.files[0]);
   const body = { name, price, category, description: desc, stock, images, video, sale };
-
-  const res = await fetch("/api/admin/products", {
-    method: "POST",
-    headers: { "Content-Type":"application/json" },
-    body: JSON.stringify(body),
-  });
-
+  const res = await fetch("/api/admin/products", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify(body)});
   const data = await res.json();
-
-  if (data.success) {
-    alert("Product added successfully!");
-    renderAdminProducts();
-  } else {
-    alert("Error adding product");
-  }
+  if (data.success) { alert("Product added successfully!"); renderAdminProducts(); } else alert("Error adding product");
 }
 
-/******************************************************
- * DELETE PRODUCT  ⭐ NEW ⭐
- ******************************************************/
 async function deleteProduct(id) {
   if (!confirm("Delete this product permanently?")) return;
-
   const res = await fetch(`/api/admin/products/${id}`, { method: "DELETE" });
   const data = await res.json();
-
-  if (data.success) {
-    alert("Product deleted");
-    renderAdminProducts();
-  } else {
-    alert("Failed to delete");
-  }
+  if (data.success) { alert("Product deleted"); renderAdminProducts(); } else alert("Failed to delete");
 }
 
-/******************************************************
- * RENDER ALL PRODUCTS
- ******************************************************/
 async function renderAdminProducts() {
   const out = document.getElementById("productsAdminList");
   const res = await fetch("/api/products/category/all");
   const products = await res.json();
-
   out.innerHTML = products.map(p => `
     <div class="card p-2 mb-2">
       <div class="d-flex align-items-center justify-content-between">
-
         <div class="d-flex align-items-center">
           <img src="${p.images?.[0]}" class="img-preview">
-
           <div class="ms-2">
-            <strong>${p.name}</strong>
-            <br>
-            ₹${p.price} — ${p.category}
+            <strong>${p.name}</strong><br>₹${p.price} — ${p.category}
             ${p.sale ? `<span class="badge bg-primary ms-2">SALE</span>` : ""}
             ${p.stock === 0 ? `<span class="badge bg-danger ms-2">OUT OF STOCK</span>` : ""}
           </div>
         </div>
-
-        <button class="btn btn-danger btn-sm" onclick="deleteProduct('${p._id}')">
-          <i class="bi bi-trash"></i>
-        </button>
-
+        <button class="btn btn-danger btn-sm" onclick="deleteProduct('${p._id}')"><i class="bi bi-trash"></i></button>
       </div>
     </div>
   `).join("");
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  if (!localStorage.getItem("adminLoggedIn")) {
-    window.location.href = "index.html";
-  }
-
+  if (!localStorage.getItem("adminLoggedIn")) window.location.href = "index.html";
   renderAdminProducts();
 });
 </script>
 
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="https://cdn.jsdelivr.net/npm/jwt-decode/build/jwt-decode.min.js"></script>
 <script src="js/app.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
-
 </body>
 </html>
