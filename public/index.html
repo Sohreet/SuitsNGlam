@@ -184,6 +184,19 @@
 <!-- ===================== SCRIPTS ====================== -->
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <script src="https://cdn.jsdelivr.net/npm/jwt-decode/build/jwt-decode.min.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const btn = document.getElementById("loginBtn");
+  console.log("Login button found?", btn);
+
+  if (btn) {
+    btn.addEventListener("click", () => {
+      console.log("Login button clicked");
+      googleLogin();
+    });
+  }
+});
+</script>
 
 <script src="js/google-auth.js"></script>
 <script src="js/navbar.js"></script>
