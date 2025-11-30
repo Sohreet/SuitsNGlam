@@ -1,161 +1,289 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Admin Orders - Suits N Glam</title>
 
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 
   <style>
-    body { background:#f8f9fa; }
+    body{background:#f8f9fa;}
     .nav-login-area { visibility:visible !important; }
-    .home-icon { font-size:1.6rem; cursor:pointer; margin-right:12px; }
-    .admin-badge { background:#c60000; color:#fff; padding:4px 8px; border-radius:6px; font-weight:700; }
+
+    .admin-badge {
+      background:#c60000;
+      color:#fff;
+      padding:4px 8px;
+      border-radius:6px;
+      font-weight:700;
+      margin-left:8px;
+    }
+
+    table td, table th { vertical-align: middle; }
+
+    .status-badge {
+      padding:6px 10px;
+      border-radius:999px;
+      font-weight:600;
+    }
+
+    .status-pending   { background:#fff3cd; color:#856404; }
+    .status-shipped   { background:#cfe9ff; color:#055160; }
+    .status-delivered { background:#d4edda; color:#155724; }
+    .status-cancelled { background:#f8d7da; color:#721c24; }
   </style>
 </head>
+
 <body>
 
+<!-- NAVBAR -->
 <nav class="navbar navbar-expand-lg" style="background-color:#e3f2fd;">
   <div class="container">
-    <a class="navbar-brand fw-bold" href="index.html">Suits N Glam</a>
 
-    <div class="ms-auto d-flex align-items-center nav-login-area">
-      <i class="bi bi-house-fill home-icon" onclick="location.href='index.html'"></i>
-      <span class="admin-badge me-3">ADMIN</span>
-      <img id="accountIcon" style="width:34px;height:34px;border-radius:50%;display:none;">
+    <!-- HOME ICON -->
+    <a class="navbar-brand fw-bold d-flex align-items-center" href="index.html">
+      <i class="bi bi-house-fill me-2"></i> Suits N Glam
+    </a>
+
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarNav">
+
+      <ul class="navbar-nav ms-auto me-2">
+        <li class="nav-item"><a class="nav-link" href="admin.html">Dashboard</a></li>
+      </ul>
+
+      <div class="nav-login-area d-flex align-items-center">
+        <span id="adminBadge" class="admin-badge" style="display:none">ADMIN</span>
+        <img id="accountIcon"
+             style="width:34px;height:34px;border-radius:50%;display:none;margin-left:10px;">
+      </div>
+
     </div>
   </div>
 </nav>
 
+
+
 <div class="container mt-4">
   <div class="d-flex justify-content-between align-items-center">
     <h3>Orders Management</h3>
-    <button class="btn btn-danger" onclick="clearOrders()">Clear All</button>
+
+    <button class="btn btn-danger" onclick="clearOrders()">
+      Clear All Orders
+    </button>
   </div>
 
-  <div class="mt-3">
+  <div id="ordersTableWrapper" class="mt-3">
     <table class="table table-bordered">
       <thead>
-        <tr><th>Order ID</th><th>Customer</th><th>Amount</th><th>Status</th><th>Date</th><th>Actions</th></tr>
+        <tr>
+          <th style="width:140px">Order ID</th>
+          <th>Customer</th>
+          <th style="width:120px">Amount</th>
+          <th style="width:150px">Status</th>
+          <th style="width:160px">Date</th>
+          <th style="width:250px">Actions</th>
+        </tr>
       </thead>
+
       <tbody id="ordersTable"></tbody>
     </table>
   </div>
 </div>
 
-<!-- Modal -->
-<div class="modal fade" id="orderModal" tabindex="-1">
-  <div class="modal-dialog modal-lg">
+
+<!-- ORDER DETAILS MODAL -->
+<div class="modal fade" id="orderModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
     <div class="modal-content">
+
       <div class="modal-header">
-        <h5 class="modal-title">Order — <span id="modalOrderId"></span></h5>
+        <h5 class="modal-title">Order Details — <span id="modalOrderId"></span></h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
-      <div class="modal-body" id="modalBodyContent"></div>
+
+      <div class="modal-body">
+        <div id="modalBodyContent"></div>
+      </div>
+
       <div class="modal-footer">
         <button id="modalMarkShipped" class="btn btn-success">Mark Shipped</button>
         <button id="modalMarkDelivered" class="btn btn-primary">Mark Delivered</button>
-        <button id="modalCancelOrder" class="btn btn-danger">Cancel</button>
+        <button id="modalCancelOrder" class="btn btn-danger">Cancel Order</button>
         <button class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
       </div>
+
     </div>
   </div>
 </div>
 
+
+
 <script>
-function requireAdminOrRedirect(){
-  const raw = localStorage.getItem("sg_user");
-  if (!raw) { alert("Please login"); location.href = "index.html"; return null; }
-  const user = JSON.parse(raw);
-  if (user.email !== "sohabrar10@gmail.com") { alert("Admin only"); location.href = "index.html"; return null; }
-  document.getElementById("accountIcon").src = user.picture || "";
-  document.getElementById("accountIcon").style.display = "block";
-  return user;
+/* UTILS */
+function ₹(v){ return Number(v||0).toLocaleString("en-IN"); }
+
+function statusClass(status) {
+  status = String(status).toLowerCase();
+  if (status.includes("pending")) return "status-pending";
+  if (status.includes("ship")) return "status-shipped";
+  if (status.includes("deliver")) return "status-delivered";
+  if (status.includes("cancel")) return "status-cancelled";
+  return "status-pending";
 }
 
-function formatINR(n){ return Number(n||0).toLocaleString("en-IN"); }
+/* ADMIN PROTECT */
+function guardAdmin() {
+  const user = JSON.parse(localStorage.getItem("sg_user") || "null");
+  if (!user || user.email !== "sohabrar10@gmail.com") {
+    alert("Admin access only!");
+    window.location.href = "index.html";
+    return;
+  }
 
-function statusClass(status){
-  if (!status) return "badge bg-warning";
-  const s = status.toLowerCase();
-  if (s.includes("ship")) return "badge bg-info text-dark";
-  if (s.includes("deliver")) return "badge bg-success";
-  if (s.includes("cancel")) return "badge bg-danger";
-  return "badge bg-warning";
+  document.getElementById("adminBadge").style.display = "inline-block";
+
+  const acc = document.getElementById("accountIcon");
+  acc.src = user.picture;
+  acc.style.display = "block";
 }
 
-function renderOrdersAdmin(){
+/* LOAD ORDERS */
+function renderOrdersAdmin() {
   const tbody = document.getElementById("ordersTable");
   const orders = JSON.parse(localStorage.getItem("orders") || "[]");
-  if (!orders.length) { tbody.innerHTML = '<tr><td colspan="6" class="text-center">No orders yet.</td></tr>'; return; }
 
-  tbody.innerHTML = orders.map((o, idx) => `
+  if (!orders.length) {
+    tbody.innerHTML = `<tr><td colspan="6" class="text-center">No orders found.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = orders.map((o, i) => `
     <tr>
       <td><strong>${o.id}</strong></td>
-      <td>${o.shipping?.name || o.user?.name || '—'}<br><small class="text-muted">${o.user?.email || ''}</small></td>
-      <td>₹${formatINR(o.total)}</td>
-      <td><span id="status-${idx}" class="${statusClass(o.status)}">${o.status || 'Pending'}</span></td>
-      <td>${o.date || ''}</td>
+
       <td>
-        <button class="btn btn-sm btn-outline-primary" onclick="viewOrder(${idx})"><i class="bi bi-eye"></i></button>
-        <button class="btn btn-sm btn-success" onclick="changeStatus(${idx}, 'Shipped')">Ship</button>
-        <button class="btn btn-sm btn-primary" onclick="changeStatus(${idx}, 'Delivered')">Deliver</button>
-        <button class="btn btn-sm btn-danger" onclick="changeStatus(${idx}, 'Cancelled')">Cancel</button>
-        <button class="btn btn-sm btn-outline-danger" onclick="deleteOrder(${idx})"><i class="bi bi-trash"></i></button>
+        ${o.shipping?.name || o.user?.name || "—"}
+        <br>
+        <small class="text-muted">${o.user?.email || ""}</small>
+      </td>
+
+      <td>₹${₹(o.total)}</td>
+
+      <td>
+        <span class="status-badge ${statusClass(o.status)}">
+          ${o.status}
+        </span>
+      </td>
+
+      <td>${o.date || ""}</td>
+
+      <td>
+        <button class="btn btn-sm btn-outline-primary" onclick="viewOrder(${i})">
+          <i class="bi bi-eye"></i> View
+        </button>
+
+        <button class="btn btn-sm btn-success" onclick="changeStatus(${i}, 'Shipped')">Shipped</button>
+        <button class="btn btn-sm btn-primary" onclick="changeStatus(${i}, 'Delivered')">Delivered</button>
+        <button class="btn btn-sm btn-danger" onclick="changeStatus(${i}, 'Cancelled')">Cancel</button>
+
+        <button class="btn btn-sm btn-outline-danger" onclick="deleteOrder(${i})">
+          <i class="bi bi-trash"></i>
+        </button>
       </td>
     </tr>
   `).join("");
 }
 
-function changeStatus(index, status){
+/* CHANGE STATUS */
+function changeStatus(i, status) {
   const orders = JSON.parse(localStorage.getItem("orders") || "[]");
-  if (!orders[index]) return alert("Order not found");
-  orders[index].status = status;
+  if (!orders[i]) return;
+
+  orders[i].status = status;
+  localStorage.setItem("orders", JSON.stringify(orders));
+
+  renderOrdersAdmin();
+}
+
+/* DELETE ORDER */
+function deleteOrder(i) {
+  if (!confirm("Delete this order permanently?")) return;
+
+  const orders = JSON.parse(localStorage.getItem("orders") || "[]");
+  orders.splice(i, 1);
+
   localStorage.setItem("orders", JSON.stringify(orders));
   renderOrdersAdmin();
 }
 
-function deleteOrder(index){
-  if (!confirm("Delete order?")) return;
-  const orders = JSON.parse(localStorage.getItem("orders") || "[]");
-  orders.splice(index,1);
-  localStorage.setItem("orders", JSON.stringify(orders));
-  renderOrdersAdmin();
-}
+/* CLEAR ALL ORDERS */
+function clearOrders() {
+  if (!confirm("Delete ALL orders? This cannot be undone.")) return;
 
-function clearOrders(){
-  if (!confirm("Clear ALL orders?")) return;
   localStorage.removeItem("orders");
   renderOrdersAdmin();
 }
 
-function viewOrder(index){
+/* MODAL VIEW */
+function viewOrder(i) {
   const orders = JSON.parse(localStorage.getItem("orders") || "[]");
-  const order = orders[index];
-  if (!order) return alert("Not found");
+  const o = orders[i];
+
+  if (!o) return;
+
   const modal = new bootstrap.Modal(document.getElementById("orderModal"));
-  document.getElementById("modalOrderId").textContent = order.id;
-  let html = `<h6>Customer</h6><p><strong>${order.shipping?.name || order.user?.name || 'N/A'}</strong><br>${order.shipping?.phone||''}<br><small class="text-muted">${order.user?.email||''}</small></p>`;
-  html += `<h6>Address</h6><p>${order.shipping?.address || order.shipping?.line1 || 'N/A'}</p>`;
-  html += `<h6>Items</h6><ul class="list-group mb-2">`;
-  (order.items||[]).forEach(it => {
-    html += `<li class="list-group-item d-flex justify-content-between"><div><strong>${it.title||it.name}</strong><br><small class="text-muted">${it.variant||''}</small></div><div>₹${formatINR(it.price)} × ${it.metres||it.qty||1}</div></li>`;
+  document.getElementById("modalOrderId").textContent = o.id;
+
+  let html = `
+    <h6>Customer</h6>
+    <p><strong>${o.shipping?.name || o.user?.name}</strong><br>
+    ${o.shipping?.phone || ""}<br>
+    <small class="text-muted">${o.user?.email || ""}</small></p>
+
+    <h6>Shipping Address</h6>
+    <p>${o.shipping?.address || o.shipping?.line1 || "N/A"}</p>
+
+    <h6>Items</h6>
+    <ul class="list-group mb-3">
+  `;
+
+  (o.items || []).forEach(it => {
+    html += `
+      <li class="list-group-item d-flex justify-content-between align-items-center">
+        <div>
+          <strong>${it.name}</strong><br>
+          <small>${it.variant || ""}</small>
+        </div>
+        <span>₹${₹(it.price)} × ${it.qty}</span>
+      </li>
+    `;
   });
-  html += `</ul><h6>Summary</h6><p>Total: <strong>₹${formatINR(order.total)}</strong></p><p>Status: <span class="${statusClass(order.status)}">${order.status}</span></p>`;
+
+  html += `
+    </ul>
+    <h6>Total</h6>
+    <p><strong>₹${₹(o.total)}</strong></p>
+  `;
+
   document.getElementById("modalBodyContent").innerHTML = html;
 
-  document.getElementById("modalMarkShipped").onclick = () => { changeStatus(index, "Shipped"); modal.hide(); };
-  document.getElementById("modalMarkDelivered").onclick = () => { changeStatus(index, "Delivered"); modal.hide(); };
-  document.getElementById("modalCancelOrder").onclick = () => { changeStatus(index, "Cancelled"); modal.hide(); };
+  // Button action binding
+  document.getElementById("modalMarkShipped").onclick = () => { changeStatus(i, "Shipped"); modal.hide(); };
+  document.getElementById("modalMarkDelivered").onclick = () => { changeStatus(i, "Delivered"); modal.hide(); };
+  document.getElementById("modalCancelOrder").onclick = () => { changeStatus(i, "Cancelled"); modal.hide(); };
 
   modal.show();
 }
 
+/* INIT */
 document.addEventListener("DOMContentLoaded", () => {
-  const user = requireAdminOrRedirect();
-  if (!user) return;
+  guardAdmin();
   renderOrdersAdmin();
 });
 </script>
