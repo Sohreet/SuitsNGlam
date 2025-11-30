@@ -1,23 +1,23 @@
 const mongoose = require("mongoose");
 
 const productSchema = new mongoose.Schema({
-  name: String,
-  price: Number,
-  pricePerMeter: Number,
-  category: String,
-  
-  description: String,
+  name: { type: String, required: true },
 
-  stock: { type: Number, default: 10 },
+  price: { type: Number, required: true },     // price per metre
+  category: { type: String, required: true },
 
-  images: { type: [String], default: [] },
-  video: { type: String, default: "" },
+  description: { type: String, default: "" },
 
-  sale: { type: Boolean, default: false },
+  stock: { type: Number, default: 10 },        // 0 = out of stock
 
-  orderCount: { type: Number, default: 0 },
+  images: { type: [String], default: [] },     // base64 images (2–5)
+  video: { type: String, default: "" },        // optional base64 video
 
-  addedAt: { type: Date, default: Date.now }
+  sale: { type: Boolean, default: false },     // admin toggle
+
+  orderCount: { type: Number, default: 0 },    // used for Best Deals
+
+  addedAt: { type: Date, default: Date.now }   // used for New Arrivals
 });
 
 module.exports = mongoose.model("Product", productSchema);
