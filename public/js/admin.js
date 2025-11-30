@@ -50,8 +50,8 @@ form.addEventListener("submit", async (e) => {
   }
 
   const url = productId
-    ? `https://your-backend-url.com/api/products/${productId}`
-    : "https://your-backend-url.com/api/products";
+    ? `https://www.suitsnglam.com/api/products/${productId}`
+    : "https://www.suitsnglam.com/api/products";
 
   const method = productId ? "PUT" : "POST";
 
@@ -73,7 +73,7 @@ form.addEventListener("submit", async (e) => {
    LOAD ALL PRODUCTS
 ------------------------------------------------------- */
 async function loadProducts() {
-  const res = await fetch("https://your-backend-url.com/api/products");
+  const res = await fetch("https://www.suitsnglam.com/api/products");
   const data = await res.json();
 
   const tbody = document.getElementById("productsTable");
@@ -106,7 +106,7 @@ async function loadProducts() {
    EDIT PRODUCT (AUTO-FILL FORM)
 ------------------------------------------------------- */
 async function editProduct(id) {
-  const res = await fetch(`https://your-backend-url.com/api/products/${id}`);
+  const res = await fetch(`https://www.suitsnglam.com/api/products/${id}`);
   const p = await res.json();
 
   document.getElementById("productId").value = p._id;
