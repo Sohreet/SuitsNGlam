@@ -53,38 +53,18 @@ router.post("/", upload.any(), async (req, res) => {
 router.put("/:id", upload.any(), async (req, res) => {
   const p = await Product.findById(req.params.id);
 
-  if (!p) return res.json({ message: "Not found" });
-
-  const {
-    title, price, description, category,
-    isBestDeal, isSale, minMetres, maxMetres, stock
-  } = req.body;
-
   let images = p.images;
   let video = p.video;
 
-  // Add new files
   if (req.files) {
     req.files.forEach(file => {
-      if (file.mimetype.startsWith("image/")) {
-        images.push("/uploads/images/" + file.filename);
-      }
-      if (file.mimetype.startsWith("video/")) {
-        video = "/uploads/videos/" + file.filename;
-      }
+      if (file.mimetype.startsWith("image/")) images.push("/uploads/images/" + file.filename);
+      if (file.mimetype.startsWith("video/")) video = "/uploads/videos/" + file.filename;
     });
   }
 
   await Product.findByIdAndUpdate(req.params.id, {
-    title,
-    price,
-    description,
-    category,
-    isBestDeal,
-    isSale,
-    minMetres,
-    maxMetres,
-    stock,
+    ...req.body,
     images,
     video
   });
