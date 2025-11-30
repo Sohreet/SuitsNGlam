@@ -11,10 +11,37 @@
   <style>
     body { background:#f8f9fa; }
     .navbar-brand { font-weight:bold; }
-    .category-hero { background:#ffd9d9; padding:18px; border-radius:10px; margin-bottom:18px; }
+
+    .category-hero { 
+      background:#ffd9d9; 
+      padding:18px; 
+      border-radius:10px; 
+      margin-bottom:18px;
+    }
+
     .card-button { cursor:pointer; transition:.2s; border:none; }
     .card-button:hover { transform:translateY(-5px); box-shadow:0 8px 16px rgba(0,0,0,0.2); }
-    .btn-login { background:rgb(255,63,51); color:white; padding:6px 14px; border-radius:6px; border:none; }
+
+    .btn-login { 
+      background:rgb(255,63,51); 
+      color:white; 
+      padding:6px 14px; 
+      border-radius:6px; 
+      border:none; 
+    }
+
+    /* Flicker fix */
+    .nav-login-area { visibility:hidden; }
+
+    /* Coming Soon message */
+    #comingSoonMsg {
+      display:none;
+      text-align:center;
+      font-size:1.3rem;
+      padding:40px 0;
+      color:#444;
+      font-weight:500;
+    }
   </style>
 </head>
 
@@ -23,6 +50,9 @@
   <!-- NAVBAR -->
   <nav class="navbar navbar-expand-lg" style="background-color:#e3f2fd;">
     <div class="container">
+
+      <!-- Back Home -->
+      <a href="index.html" class="btn btn-outline-primary me-3">← Home</a>
 
       <a class="navbar-brand" href="index.html">Suits N Glam</a>
 
@@ -35,8 +65,10 @@
         <ul class="navbar-nav ms-auto me-2">
           <li class="nav-item"><a class="nav-link" href="allproducts.html">All Products</a></li>
           <li class="nav-item"><a class="nav-link" href="newarrivals.html">New Arrivals</a></li>
+
           <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown">Shop by Category</a>
+
             <ul class="dropdown-menu">
               <li><a class="dropdown-item" href="summer.html">Summer</a></li>
               <li><a class="dropdown-item" href="winter.html">Winter</a></li>
@@ -51,20 +83,25 @@
           <li class="nav-item"><a class="nav-link active" href="sales.html">Sales</a></li>
         </ul>
 
+        <!-- CART -->
         <a href="cart.html" class="d-flex align-items-center me-3 gap-2" style="color:#000;text-decoration:none;">
           <i class="bi bi-bag-heart-fill" style="font-size:1.6rem;"></i>
           <span id="cartCount" class="badge bg-danger"></span>
         </a>
 
-        <button id="loginButton" class="btn-login">Login</button>
+        <!-- LOGIN / ACCOUNT -->
+        <div class="nav-login-area d-flex align-items-center">
+          <button id="loginButton" class="btn-login">Login</button>
 
-        <img id="accountIcon" src="" 
-             style="width:34px;height:34px;border-radius:50%;cursor:pointer;display:none;margin-left:10px;"
-             onclick="window.location.href='account.html'">
+          <img id="accountIcon" src="" 
+               style="width:34px;height:34px;border-radius:50%;cursor:pointer;display:none;margin-left:10px;"
+               onclick="window.location.href='account.html'">
+        </div>
 
       </div>
     </div>
   </nav>
+
 
   <!-- HERO -->
   <div class="container mt-4">
@@ -74,19 +111,28 @@
     </div>
   </div>
 
+  <!-- Coming Soon -->
+  <div id="comingSoonMsg">🚧 Products Coming Soon 🚧</div>
+
+  <!-- PRODUCTS -->
   <div class="container mt-3">
     <div class="row g-4" id="productsContainer"></div>
   </div>
 
+
   <!-- SCRIPTS -->
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <script src="https://cdn.jsdelivr.net/npm/jwt-decode/build/jwt-decode.min.js"></script>
+
   <script src="js/google-auth.js"></script>
   <script src="js/navbar.js"></script>
   <script src="js/products-common.js"></script>
-  
 
-  <script> loadProducts("sales"); </script>
+  <script>
+    loadProducts("sales", "productsContainer", "comingSoonMsg");
+  </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
 
 </body>
 </html>
