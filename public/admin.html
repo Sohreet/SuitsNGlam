@@ -26,7 +26,7 @@
 
 <body>
 
-  <!-- Navbar (same as site) -->
+  <!-- Navbar -->
   <nav class="navbar navbar-expand-lg" style="background-color:#e3f2fd;">
     <div class="container">
       <a class="navbar-brand" href="index.html">Suits N Glam</a>
@@ -45,6 +45,7 @@
     </div>
   </nav>
 
+
   <!-- MAIN ADMIN AREA -->
   <div class="container">
 
@@ -60,6 +61,7 @@
         <input type="hidden" id="productId">
 
         <div class="row mt-3">
+          
           <div class="col-md-6 mb-3">
             <label class="form-label">Product Title</label>
             <input type="text" id="title" class="form-control" required>
@@ -75,7 +77,6 @@
             <textarea id="description" class="form-control" rows="2"></textarea>
           </div>
 
-          <!-- CATEGORY -->
           <div class="col-md-6 mb-3">
             <label class="form-label">Category</label>
             <select id="category" class="form-control" required>
@@ -89,7 +90,6 @@
             </select>
           </div>
 
-          <!-- BEST DEALS / SALES -->
           <div class="col-md-6 mb-3">
             <label class="form-label">Tags</label>
             <div class="d-flex gap-3">
@@ -104,7 +104,6 @@
             </div>
           </div>
 
-          <!-- FABRIC METRES -->
           <div class="col-md-6 mb-3">
             <label class="form-label">Min Metres</label>
             <input type="number" id="minMetres" class="form-control" value="1">
@@ -115,29 +114,28 @@
             <input type="number" id="maxMetres" class="form-control" value="6">
           </div>
 
-          <!-- STOCK -->
           <div class="col-md-6 mb-3">
             <label class="form-label">Stock</label>
             <input type="number" id="stock" class="form-control" value="0">
           </div>
 
-          <!-- IMAGES -->
           <div class="col-md-6 mb-3">
             <label class="form-label">Images (max 5)</label>
             <input type="file" id="images" class="form-control" multiple accept="image/*">
           </div>
 
-          <!-- VIDEO -->
           <div class="col-md-6 mb-3">
             <label class="form-label">Video (optional)</label>
             <input type="file" id="video" class="form-control" accept="video/*">
           </div>
+
         </div>
 
         <button type="submit" class="btn btn-primary mt-3">Save Product</button>
       </form>
 
     </div>
+
 
     <!-- ALL PRODUCTS TABLE -->
     <div class="admin-box mt-4">
@@ -160,12 +158,19 @@
 
   </div>
 
+
+  <!-- SCRIPTS (VERY IMPORTANT ORDER) -->
+
+  <!-- Google Auth -->
   <script src="https://accounts.google.com/gsi/client" async defer></script>
-<script src="https://cdn.jsdelivr.net/npm/jwt-decode/build/jwt-decode.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jwt-decode/build/jwt-decode.min.js"></script>
+  <script src="js/google-auth.js"></script>
 
-<script src="js/google-auth.js"></script>
-<script src="js/navbar.js"></script>
-
+  <!-- ADMIN CHECK MUST RUN BEFORE NAVBAR -->
   <script src="js/admin.js"></script>
+
+  <!-- Navbar runs LAST (so it cannot override admin login) -->
+  <script src="js/navbar.js"></script>
+
 </body>
 </html>
