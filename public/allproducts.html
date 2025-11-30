@@ -22,19 +22,22 @@
     }
     .btn-login:hover { background:#ff2b1f; }
 
-    /* Flicker Fix */
+    /* Fix flicker */
     .nav-login-area { visibility:visible !important; }
 
     /* Home icon */
     .home-icon {
-      font-size:1.6rem; cursor:pointer; color:black; margin-right:15px;
+      font-size:1.6rem;
+      cursor:pointer;
+      color:black;
+      margin-right:15px;
     }
     .home-icon:hover { opacity:0.7; }
 
     .product-card { cursor:pointer; }
   </style>
-</head>
 
+</head>
 <body>
 
 <!-- NAVBAR -->
@@ -49,7 +52,7 @@
 
     <div class="collapse navbar-collapse" id="navbarNav">
 
-      <!-- Home icon -->
+      <!-- HOME ICON -->
       <i class="bi bi-house-fill home-icon" onclick="window.location.href='index.html'"></i>
 
       <ul class="navbar-nav ms-auto me-2">
@@ -58,9 +61,7 @@
         <li class="nav-item"><a class="nav-link" href="newarrivals.html">New Arrivals</a></li>
 
         <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
-            Shop By Category
-          </a>
+          <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Shop By Category</a>
           <ul class="dropdown-menu">
             <li><a class="dropdown-item" href="summer.html">Summer</a></li>
             <li><a class="dropdown-item" href="winter.html">Winter</a></li>
@@ -73,25 +74,30 @@
 
         <li class="nav-item"><a class="nav-link" href="bestdeals.html">Best Deals</a></li>
         <li class="nav-item"><a class="nav-link" href="sales.html">Sales</a></li>
+
       </ul>
 
       <!-- CART -->
-      <a href="cart.html" class="d-flex align-items-center gap-2 me-3 text-decoration-none text-dark">
+      <a href="cart.html"
+         class="d-flex align-items-center gap-2 me-3 text-decoration-none text-dark">
         <i class="bi bi-bag-heart-fill" style="font-size:1.6rem;"></i>
         <span id="cartCount" class="badge bg-danger"></span>
       </a>
 
       <!-- LOGIN / ACCOUNT -->
       <div class="nav-login-area d-flex align-items-center">
+
         <button id="loginBtn" class="btn-login">Login</button>
 
         <img id="accountIcon"
+             src=""
              style="width:34px;height:34px;border-radius:50%;display:none;cursor:pointer;margin-left:10px;">
 
         <span id="adminBadgeNav"
               style="background:#c60000;color:white;padding:4px 10px;border-radius:6px;font-weight:700;display:none;margin-left:10px;">
           ADMIN
         </span>
+
       </div>
 
     </div>
@@ -101,25 +107,26 @@
 
 <!-- PAGE CONTENT -->
 <div class="container mt-4">
+
   <h2 class="fw-bold">All Products</h2>
 
-  <p id="comingSoonMsg" class="text-muted" style="display:none;font-weight:600;">
+  <p id="comingSoonMsg" class="text-muted fw-bold" style="display:none;">
     Coming soon...
   </p>
 
   <div id="productsContainer" class="row g-4 mt-3"></div>
+
 </div>
+
 
 <!-- LOAD PRODUCTS -->
 <script>
 document.addEventListener("DOMContentLoaded", () => {
 
-  // 👇 load all products (backend route)
   loadProducts("all");
 
   setTimeout(() => {
-    const cards = document.querySelectorAll(".product-card");
-    if (cards.length === 0) {
+    if (document.querySelectorAll(".product-card").length === 0) {
       document.getElementById("comingSoonMsg").style.display = "block";
     }
   }, 800);
@@ -127,7 +134,8 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 </script>
 
-<!-- Scripts -->
+
+<!-- GOOGLE + APP.JS -->
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <script src="https://cdn.jsdelivr.net/npm/jwt-decode/build/jwt-decode.min.js"></script>
 <script src="js/app.js"></script>
