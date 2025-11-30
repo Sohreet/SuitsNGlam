@@ -150,52 +150,68 @@ async function updateCartBadge() {
 window.updateCartBadge = updateCartBadge;
 
 /******************************************************
- * LOAD PRODUCTS + TAGS (NEW ARRIVALS + BEST DEALS)
+ * LOAD PRODUCTS — FIXED (API + ADMIN-ADDED PRODUCTS)
  ******************************************************/
 async function loadProducts(category, containerId = "productsContainer") {
   const container = document.getElementById(containerId);
   if (!container) return;
 
+  container.innerHTML = `<p class="text-muted">Loading...</p>`;
+
+  let products = [];
+
+  /* 1️⃣ Load from API (if working) */
   try {
     const res = await fetch(`/api/products/category/${category}`);
-    const data = await res.json();
+    if (res.ok) {
+      const apiProducts = await res.json();
+      products = [...products, ...apiProducts];
+    }
+  } catch (e) {
+    console.warn("API not available, loading only local products.");
+  }
 
-    container.innerHTML = "";
+  /* 2️⃣ Load admin-added local products */
+  const localProducts = JSON.parse(localStorage.getItem("products") || "[]");
 
-    if (!data.length) return;
+  // filter local products by category
+  const localFiltered = localProducts.filter(p => {
+    return p.category?.toLowerCase() === category.toLowerCase() ||
+           category === "all";
+  });
 
-    data.forEach(p => {
-      const ageDays = p?.addedAt
-        ? (Date.now() - new Date(p.addedAt)) / (1000 * 60 * 60 * 24)
-        : 999;
+  products = [...products, ...localFiltered];
 
-      const isNew = ageDays <= 15;
-      const bestDeal = (p.orderCount || 0) >= 10;
+  /* 3️⃣ Display */
+  if (!products.length) {
+    container.innerHTML = `
+      <p class="text-muted fw-bold">Coming Soon...</p>
+    `;
+    return;
+  }
 
-      const outOfStock = p.stock === 0;
+  container.innerHTML = "";
 
-      container.innerHTML += `
-        <div class="col-md-4">
-          <div class="card product-card shadow-sm" onclick="openProduct('${p._id}')">
-            <img src="${p.images?.[0] || ''}" class="card-img-top" style="height:250px;object-fit:cover">
+  products.forEach(p => {
+    const outOfStock = p.stock === 0;
 
-            ${isNew ? `<span class="badge bg-success m-2">New Arrival</span>` : ""}
-            ${bestDeal ? `<span class="badge bg-warning m-2">Best Deal</span>` : ""}
-            ${outOfStock ? `<span class="badge bg-danger m-2">Out of Stock</span>` : ""}
+    container.innerHTML += `
+      <div class="col-md-4 product-card">
+        <div class="card shadow-sm" onclick="openProduct('${p._id || p.id}')">
+          <img src="${p.images?.[0] || ''}" class="card-img-top" 
+               style="height:250px;object-fit:cover">
 
-            <div class="card-body">
-              <h5>${p.name}</h5>
-              <p>₹${p.pricePerMeter || p.price}/m</p>
-            </div>
+          ${outOfStock ? `<span class="badge bg-danger m-2">Out of Stock</span>` : ""}
+
+          <div class="card-body">
+            <h5>${p.name}</h5>
+            <p>₹${p.pricePerMeter || p.price}/m</p>
           </div>
         </div>
-      `;
-    });
-  } catch (e) {
-    console.error("Product load failed:", e);
-  }
+      </div>
+    `;
+  });
 }
-
 window.loadProducts = loadProducts;
 
 /******************************************************
