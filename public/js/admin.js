@@ -1,40 +1,116 @@
-console.log("ADMIN JS RUNNING");
-console.log("adminLoggedIn =", localStorage.getItem("adminLoggedIn"));
+// admin.js
 
-/* -------------------------------------------------------
-   ADMIN AUTH CHECK — FINAL MATCHED VERSION
-------------------------------------------------------- */
+const API_BASE = "https://api.suitsnglam.com/api";
+
+// ADMIN EMAILS
+const ADMIN_EMAILS = ["sohabrar10@gmail.com", "suitsnglam01@gmail.com"];
+
+// ---------------------------------------------
+// CHECK ADMIN ACCESS
+// ---------------------------------------------
 document.addEventListener("DOMContentLoaded", () => {
-  const admin = localStorage.getItem("adminLoggedIn"); // SAME as google-auth.js
+  const user = JSON.parse(localStorage.getItem("sg_user"));
 
-  if (admin !== "true") {
-    alert("Admin access denied!");
+  if (!user || !ADMIN_EMAILS.includes(user.email)) {
+    alert("Access denied. Admins only.");
     window.location.href = "index.html";
     return;
   }
 
   loadProducts();
-
-  document.getElementById("logoutBtn").addEventListener("click", () => {
-    localStorage.removeItem("adminLoggedIn"); // logout admin
-    localStorage.removeItem("sg_user"); // optional
-    window.location.href = "index.html";
-  });
 });
 
-// BACKEND ON SAME SERVER
-const BASE_URL = "";
+// LOGOUT
+document.getElementById("logoutBtn").addEventListener("click", () => {
+  localStorage.clear();
+  window.location.href = "index.html";
+});
 
 
-/* -------------------------------------------------------
-   FORM SUBMIT (ADD or UPDATE PRODUCT)
-------------------------------------------------------- */
-const form = document.getElementById("productForm");
+// ---------------------------------------------
+// LOAD ALL PRODUCTS IN TABLE
+// ---------------------------------------------
+async function loadProducts() {
+  try {
+    const res = await fetch(`${API_BASE}/products`);
+    const products = await res.json();
 
-form.addEventListener("submit", async (e) => {
+    const table = document.getElementById("productsTable");
+    table.innerHTML = "";
+
+    products.forEach((p) => {
+      const row = document.createElement("tr");
+
+      row.innerHTML = `
+        <td><img src="https://api.suitsnglam.com/${p.images[0]}" /></td>
+        <td>${p.title}</td>
+        <td>₹${p.price}</td>
+        <td>${p.category || "-"}</td>
+        <td>${p.isBestDeal ? "✔" : "—"}</td>
+        <td>${p.isSale ? "✔" : "—"}</td>
+
+        <td>
+          <button class="btn btn-sm btn-primary me-2" onclick="editProduct('${p._id}')">Edit</button>
+          <button class="btn btn-sm btn-danger" onclick="deleteProduct('${p._id}')">Delete</button>
+        </td>
+      `;
+
+      table.appendChild(row);
+    });
+
+  } catch (err) {
+    console.error("Product Load Error:", err);
+  }
+}
+
+
+// ---------------------------------------------
+// EDIT PRODUCT — Load in form
+// ---------------------------------------------
+async function editProduct(id) {
+  const res = await fetch(`${API_BASE}/products/${id}`);
+  const p = await res.json();
+
+  document.getElementById("productId").value = p._id;
+  document.getElementById("title").value = p.title;
+  document.getElementById("price").value = p.price;
+  document.getElementById("description").value = p.description;
+  document.getElementById("category").value = p.category || "";
+  document.getElementById("isBestDeal").checked = p.isBestDeal;
+  document.getElementById("isSale").checked = p.isSale;
+  document.getElementById("minMetres").value = p.minMetres;
+  document.getElementById("maxMetres").value = p.maxMetres;
+  document.getElementById("stock").value = p.stock;
+
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+
+// ---------------------------------------------
+// DELETE PRODUCT
+// ---------------------------------------------
+async function deleteProduct(id) {
+  if (!confirm("Delete this product?")) return;
+
+  const user = JSON.parse(localStorage.getItem("sg_user"));
+
+  await fetch(`${API_BASE}/products/${id}`, {
+    method: "DELETE",
+    headers: { "auth-token": user.token }
+  });
+
+  loadProducts();
+}
+
+
+// ---------------------------------------------
+// CREATE / UPDATE PRODUCT
+// ---------------------------------------------
+document.getElementById("productForm").addEventListener("submit", async (e) => {
   e.preventDefault();
 
-  const productId = document.getElementById("productId").value;
+  const id = document.getElementById("productId").value;
+  const user = JSON.parse(localStorage.getItem("sg_user"));
 
   const formData = new FormData();
   formData.append("title", document.getElementById("title").value);
@@ -55,101 +131,30 @@ form.addEventListener("submit", async (e) => {
 
   // Video
   const video = document.getElementById("video").files[0];
-  if (video) formData.append("video", video);
+  if (video) {
+    formData.append("video", video);
+  }
 
-  const url = productId
-    ? `/api/products/${productId}`
-    : `/api/products`;
+  let method = "POST";
+  let url = `${API_BASE}/products`;
 
-  const method = productId ? "PUT" : "POST";
+  if (id) {
+    method = "PUT";
+    url = `${API_BASE}/products/${id}`;
+  }
 
-  const response = await fetch(url, {
+  const res = await fetch(url, {
     method,
-    body: formData,
+    headers: {
+      "auth-token": user.token
+    },
+    body: formData
   });
 
-  const result = await response.json();
-  alert(result.message || "Saved!");
+  await res.json();
 
-  form.reset();
+  alert("Product saved successfully!");
+  document.getElementById("productForm").reset();
   document.getElementById("productId").value = "";
-
   loadProducts();
 });
-
-
-/* -------------------------------------------------------
-   LOAD ALL PRODUCTS
-------------------------------------------------------- */
-async function loadProducts() {
-  const res = await fetch(`/api/products`);
-  const data = await res.json();
-
-  const tbody = document.getElementById("productsTable");
-  tbody.innerHTML = "";
-
-  data.forEach((p) => {
-    const imageUrl = p.images?.[0]
-      ? `${p.images[0]}`
-      : "img/noimg.png";
-
-    tbody.innerHTML += `
-      <tr>
-        <td><img src="${imageUrl}" style="width:60px;height:60px;object-fit:cover;border-radius:6px;"></td>
-        <td>${p.title}</td>
-        <td>₹${p.price}</td>
-        <td>${p.category}</td>
-        <td>${p.isBestDeal ? "✔" : "✖"}</td>
-        <td>${p.isSale ? "✔" : "✖"}</td>
-        <td>
-          <button onclick="editProduct('${p._id}')" class="btn btn-sm btn-primary">
-            <i class="bi bi-pencil-square"></i>
-          </button>
-
-          <button onclick="deleteProduct('${p._id}')" class="btn btn-sm btn-danger">
-            <i class="bi bi-trash"></i>
-          </button>
-        </td>
-      </tr>
-    `;
-  });
-}
-
-
-/* -------------------------------------------------------
-   EDIT PRODUCT
-------------------------------------------------------- */
-async function editProduct(id) {
-  const res = await fetch(`/api/products/${id}`);
-  const p = await res.json();
-
-  document.getElementById("productId").value = p._id;
-  document.getElementById("title").value = p.title;
-  document.getElementById("price").value = p.price;
-  document.getElementById("description").value = p.description;
-  document.getElementById("category").value = p.category;
-  document.getElementById("isBestDeal").checked = p.isBestDeal;
-  document.getElementById("isSale").checked = p.isSale;
-  document.getElementById("minMetres").value = p.minMetres;
-  document.getElementById("maxMetres").value = p.maxMetres;
-  document.getElementById("stock").value = p.stock;
-
-  window.scrollTo({ top: 0, behavior: "smooth" });
-}
-
-
-/* -------------------------------------------------------
-   DELETE PRODUCT
-------------------------------------------------------- */
-async function deleteProduct(id) {
-  if (!confirm("Delete this product?")) return;
-
-  const res = await fetch(`/api/products/${id}`, {
-    method: "DELETE",
-  });
-
-  const result = await res.json();
-  alert(result.message || "Deleted!");
-
-  loadProducts();
-}
