@@ -1,12 +1,5 @@
 /******************************************************
- * SUITS N GLAM — FINAL MASTER APP.JS 
- * Includes:
- * - Google Login (Popup fixed)
- * - Cart system fixed
- * - Product add/delete (Admin)
- * - Category loading
- * - Navbar login across all pages
- * - Coming soon fix
+ * SUITS N GLAM — FINAL MASTER APP.JS (CLEAN & FIXED)
  ******************************************************/
 
 console.log("APP.JS LOADED");
@@ -16,8 +9,6 @@ console.log("APP.JS LOADED");
  ******************************************************/
 const ADMINS = ["sohabrar10@gmail.com"];
 const GOOGLE_CLIENT_ID = "653374521156-6retcia1fiu5dvmbjik9sq89ontrkmvt.apps.googleusercontent.com";
-
-let _gsiInitialized = false;
 
 /******************************************************
  * HELPERS
@@ -76,10 +67,8 @@ function setupLoginUI() {
 }
 
 /******************************************************
- * GOOGLE LOGIN — REDIRECT MODE (FAST & RELIABLE)
+ * GOOGLE LOGIN — REDIRECT MODE
  ******************************************************/
-
-const GOOGLE_CLIENT_ID = "653374521156-6retcia1fiu5dvmbjik9sq89ontrkmvt.apps.googleusercontent.com";
 
 function saveUser(data, token) {
   const user = {
@@ -103,18 +92,20 @@ function handleCredentialResponse(response) {
   try {
     const data = jwt_decode(response.credential);
     saveUser(data, response.credential);
+
     setupLoginUI();
     updateCartBadge();
+
     window.location.reload();
   } catch (err) {
     console.error("Google Auth Error:", err);
   }
 }
 
-// --- Initialize with redirect ---
-function initGoogleRedirect() {
+// FAST redirect login
+function initGoogleLogin() {
   google.accounts.id.initialize({
-    client_id: "653374521156-6retcia1fiu5dvmbjik9sq89ontrkmvt.apps.googleusercontent.com",
+    client_id: GOOGLE_CLIENT_ID,
     callback: handleCredentialResponse,
     ux_mode: "redirect",
     auto_select: false
@@ -123,26 +114,17 @@ function initGoogleRedirect() {
   google.accounts.id.prompt();
 }
 
-// Attach click
 function attachLoginButton() {
-  const loginBtn = document.getElementById("loginBtn");
-  if (loginBtn) {
-    loginBtn.onclick = () => {
-      initGoogleRedirect();
-    };
-  }
+  const btn = document.getElementById("loginBtn");
+  if (btn) btn.onclick = () => initGoogleLogin();
 }
 
 /******************************************************
  * INITIALIZE ALL
  ******************************************************/
-document.addEventListener("DOMContentLoaded", async () => {
+document.addEventListener("DOMContentLoaded", () => {
   setupLoginUI();
   updateCartBadge();
-
-  if (window.google) initGSI();
-  else await waitForGSI();
-
   attachLoginButton();
 });
 
@@ -170,7 +152,6 @@ function addToCart(product, metres = 1) {
   updateCartBadge();
   alert("Added to cart!");
 }
-
 window.addToCart = addToCart;
 
 function loadCartPage() {
@@ -243,9 +224,10 @@ async function loadSingleProduct() {
 
   const thumbRow = document.getElementById("thumbRow");
   thumbRow.innerHTML = "";
+
   p.images.forEach((img, i) => {
     thumbRow.innerHTML += `
-      <img src="${img}" class="thumb-img ${i === 0 ? "active" : ""}" 
+      <img src="${img}" class="thumb-img ${i === 0 ? "active" : ""}"
            onclick="document.getElementById('mainImage').src='${img}'">
     `;
   });
@@ -255,8 +237,8 @@ async function loadSingleProduct() {
 window.loadSingleProduct = loadSingleProduct;
 
 function addToCartPage() {
-  const metres = Number(document.getElementById("metreInput").value);
-  addToCart(window.currentProduct, metres);
+  const m = Number(document.getElementById("metreInput").value);
+  addToCart(window.currentProduct, m);
 }
 
 /******************************************************
@@ -348,6 +330,6 @@ window.renderAdminProducts = renderAdminProducts;
  * ADMIN GUARD
  ******************************************************/
 if (window.location.pathname.includes("admin")) {
-  const admin = localStorage.getItem("adminLoggedIn");
-  if (!admin) window.location.href = "index.html";
+  if (!localStorage.getItem("adminLoggedIn"))
+    window.location.href = "index.html";
 }
