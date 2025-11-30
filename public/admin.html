@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Admin Dashboard - Suits N Glam</title>
 
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -10,66 +10,48 @@
 
   <style>
     body { background:#f8f9fa; }
-    .nav-login-area { visibility: visible !important; }
-
-    .img-preview {
-      width: 80px;
-      height: 80px;
-      object-fit: cover;
-      border-radius: 10px;
-      margin-right: 5px;
-    }
-
-    .video-preview {
-      width: 120px;
-      border-radius: 10px;
-    }
+    .nav-login-area { visibility:visible !important; }
+    .img-preview { width:80px; height:80px; object-fit:cover; border-radius:10px; margin-right:6px; }
+    .video-preview { width:160px; border-radius:10px; }
+    .home-icon { font-size:1.6rem; cursor:pointer; margin-right:12px; }
+    .btn-login { background:#ff3f33; color:#fff; border-radius:6px; padding:6px 14px; border:none; font-weight:600; }
+    .btn-login:hover { background:#ff2b1f; }
   </style>
 </head>
 <body>
 
-<!-- NAVBAR -->
 <nav class="navbar navbar-expand-lg" style="background-color:#e3f2fd;">
   <div class="container">
     <a class="navbar-brand fw-bold" href="index.html">Suits N Glam</a>
 
     <div class="ms-auto d-flex align-items-center">
-      <!-- Admin badge -->
+      <i class="bi bi-house-fill home-icon" title="Home" onclick="location.href='index.html'"></i>
       <span class="badge bg-danger me-3">ADMIN</span>
-
-      <!-- Account icon -->
       <img id="accountIcon" style="width:34px;height:34px;border-radius:50%;cursor:pointer;">
     </div>
   </div>
 </nav>
 
-
 <div class="container mt-4">
-
   <h2>Admin Dashboard</h2>
-  <hr>
 
-  <!-- ADD PRODUCT CARD -->
-  <div class="card p-4 shadow-sm">
-
-    <h4>Add Product</h4>
-    <hr>
-
-    <div class="row g-3">
+  <div class="card p-4 mt-3">
+    <h5>Add Product</h5>
+    <div class="row g-3 mt-2">
 
       <div class="col-md-4">
-        <label class="form-label">Product Name</label>
-        <input id="p_name" class="form-control" placeholder="Name">
+        <label class="form-label">Name</label>
+        <input id="p_name" class="form-control" placeholder="Product name">
       </div>
 
-      <div class="col-md-4">
-        <label class="form-label">Price Per Metre (₹)</label>
-        <input id="p_price" type="number" class="form-control" placeholder="Price">
+      <div class="col-md-2">
+        <label class="form-label">Price (₹ / metre)</label>
+        <input id="p_price" type="number" class="form-control" placeholder="Price only numbers">
       </div>
 
-      <div class="col-md-4">
+      <div class="col-md-2">
         <label class="form-label">Stock</label>
-        <input id="p_stock" type="number" class="form-control" placeholder="Stock quantity">
+        <input id="p_stock" type="number" class="form-control" placeholder="Quantity">
       </div>
 
       <div class="col-md-4">
@@ -81,191 +63,225 @@
           <option value="casuals">Casuals</option>
           <option value="dailywear">Daily Wear</option>
           <option value="premiumwear">Premium Wear</option>
-          <option value="sales">Sales</option>
           <option value="bestdeals">Best Deals</option>
+          <option value="sales">Sales</option>
         </select>
       </div>
 
       <div class="col-12">
         <label class="form-label">Description</label>
-        <textarea id="p_desc" class="form-control" rows="3" placeholder="Short product details"></textarea>
+        <textarea id="p_desc" class="form-control" rows="3"></textarea>
       </div>
 
-      <!-- IMAGE UPLOAD -->
       <div class="col-12">
-        <label class="form-label">Upload Images (2–5)</label>
+        <label class="form-label">Images (2–5) — upload from gallery</label>
         <input id="p_images" type="file" class="form-control" accept="image/*" multiple>
-        <small class="text-muted">Select 2–5 images</small>
-
+        <small class="text-muted">Select 2–5 images. Images will be saved as base64 for demo/local hosting.</small>
         <div id="imgPreview" class="d-flex mt-2"></div>
       </div>
 
-      <!-- VIDEO UPLOAD -->
       <div class="col-12">
-        <label class="form-label">Upload Video (optional)</label>
+        <label class="form-label">Video (optional)</label>
         <input id="p_video" type="file" class="form-control" accept="video/*">
-
         <div id="vidPreview" class="mt-2"></div>
       </div>
 
-      <!-- SALE TOGGLE -->
       <div class="col-12">
         <label class="form-check">
-          <input class="form-check-input" type="checkbox" id="p_sale">
-          <span class="form-check-label fw-bold">Put this product on SALE</span>
+          <input id="p_sale" type="checkbox" class="form-check-input">
+          <span class="form-check-label">Put on SALE</span>
         </label>
       </div>
 
     </div>
 
-    <button class="btn btn-success mt-4" onclick="adminAddProduct()">Add Product</button>
-    <button class="btn btn-secondary mt-4 ms-2" onclick="window.location.href='admin-orders.html'">View Orders</button>
-    <button class="btn btn-danger mt-4 ms-2" onclick="adminLogout()">Logout</button>
-
+    <div class="mt-3">
+      <button class="btn btn-success" onclick="adminAddProduct()">Add Product</button>
+      <button class="btn btn-secondary ms-2" onclick="renderAdminProducts()">Refresh List</button>
+      <button class="btn btn-danger ms-2" onclick="adminLogout()">Logout</button>
+    </div>
   </div>
 
-  <!-- PRODUCT LIST PREVIEW -->
   <div class="mt-4">
-    <h4>All Products</h4>
+    <h5>All Products</h5>
     <div id="productsAdminList"></div>
   </div>
-
 </div>
 
-
 <script>
-/******************************************************
- * ADMIN LOGOUT
- ******************************************************/
+/* helpers for inline previews */
+function fileToBase64(file){ return new Promise(resolve => { const r = new FileReader(); r.onload = ()=>resolve(r.result); r.readAsDataURL(file); }); }
+
+document.getElementById("p_images").addEventListener("change", async function(){
+  const preview = document.getElementById("imgPreview");
+  preview.innerHTML = "";
+  const files = [...this.files].slice(0,5);
+  for (const f of files){
+    const b = await fileToBase64(f);
+    const img = document.createElement("img");
+    img.src = b;
+    img.className = "img-preview";
+    preview.appendChild(img);
+  }
+});
+
+document.getElementById("p_video").addEventListener("change", async function(){
+  const preview = document.getElementById("vidPreview");
+  preview.innerHTML = "";
+  if (this.files.length){
+    const b = await fileToBase64(this.files[0]);
+    preview.innerHTML = `<video class="video-preview" controls><source src="${b}"></video>`;
+  }
+});
+
+/* ADMIN ACTIONS (call server, fallback to local if server rejects) */
+async function adminAddProduct(){
+  const name = document.getElementById("p_name").value.trim();
+  const price = Number(document.getElementById("p_price").value);
+  const stock = Number(document.getElementById("p_stock").value || 0);
+  const category = document.getElementById("p_category").value;
+  const description = document.getElementById("p_desc").value.trim();
+  const sale = document.getElementById("p_sale").checked;
+
+  if (!name || !price || !category){
+    return alert("Please fill name, price and category");
+  }
+
+  // images -> base64
+  const images = [];
+  for (let f of document.getElementById("p_images").files) {
+    images.push(await fileToBase64(f));
+  }
+  if (images.length < 2) {
+    if (!confirm("Less than 2 images selected. Continue?")) return;
+  }
+
+  let video = "";
+  if (document.getElementById("p_video").files.length) {
+    video = await fileToBase64(document.getElementById("p_video").files[0]);
+  }
+
+  const body = { name, price, stock, category, description, images, video, sale };
+
+  try {
+    const res = await fetch("/api/admin/products", { method:"POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify(body) });
+    const data = await res.json();
+    if (data.success) {
+      alert("Product added successfully");
+      renderAdminProducts();
+      // clear inputs
+      document.getElementById("p_name").value = "";
+      document.getElementById("p_price").value = "";
+      document.getElementById("p_stock").value = "";
+      document.getElementById("p_desc").value = "";
+      document.getElementById("p_images").value = "";
+      document.getElementById("imgPreview").innerHTML = "";
+      document.getElementById("p_video").value = "";
+      document.getElementById("vidPreview").innerHTML = "";
+      document.getElementById("p_sale").checked = false;
+      return;
+    } else {
+      throw new Error("Server returned failure");
+    }
+  } catch (err) {
+    // fallback: add to localStorage (for testing / static demo)
+    const products = JSON.parse(localStorage.getItem("products") || "[]");
+    const newP = { _id: "local_"+Date.now(), name, price, stock, category, description, images, video, sale, createdAt:new Date().toISOString() };
+    products.unshift(newP);
+    localStorage.setItem("products", JSON.stringify(products));
+    alert("Product saved locally (server failed).");
+    renderAdminProducts();
+  }
+}
+
+/* delete product - attempt server then local fallback */
+async function deleteProduct(id){
+  if (!confirm("Delete product permanently?")) return;
+  try {
+    const res = await fetch(`/api/admin/products/${encodeURIComponent(id)}`, { method: "DELETE" });
+    if (res.ok) {
+      alert("Deleted from server");
+      renderAdminProducts();
+      return;
+    }
+  } catch (e) { /* ignore */ }
+
+  // fallback local deletion
+  const products = JSON.parse(localStorage.getItem("products") || "[]");
+  const idx = products.findIndex(p => p._id === id);
+  if (idx >= 0) {
+    products.splice(idx,1);
+    localStorage.setItem("products", JSON.stringify(products));
+    alert("Deleted locally");
+    renderAdminProducts();
+  } else {
+    alert("Delete failed");
+  }
+}
+
+/* render admin list */
+async function renderAdminProducts(){
+  const out = document.getElementById("productsAdminList");
+  out.innerHTML = "Loading...";
+  try {
+    const res = await fetch("/api/products/category/all");
+    if (!res.ok) throw new Error("no server list");
+    const products = await res.json();
+    out.innerHTML = products.map(p => `
+      <div class="card p-2 mb-2">
+        <div class="d-flex align-items-center">
+          <img src="${p.images?.[0]||''}" class="img-preview" />
+          <div class="ms-2 flex-grow-1">
+            <strong>${p.name}</strong><br>₹${p.price} — ${p.category}
+            ${p.sale ? `<span class="badge bg-primary ms-2">SALE</span>` : ""}
+            ${p.stock === 0 ? `<span class="badge bg-danger ms-2">OUT</span>` : ""}
+          </div>
+          <div>
+            <button class="btn btn-sm btn-outline-primary mb-1" onclick="window.location.href='product.html?id=${p._id}'">Open</button>
+            <button class="btn btn-sm btn-danger" onclick="deleteProduct('${p._id}')"><i class="bi bi-trash"></i></button>
+          </div>
+        </div>
+      </div>
+    `).join("");
+    return;
+  } catch (err) {
+    // fallback: localStorage products (demo)
+    const products = JSON.parse(localStorage.getItem("products") || "[]");
+    if (!products.length) { out.innerHTML = "<p>No products found.</p>"; return; }
+    out.innerHTML = products.map(p => `
+      <div class="card p-2 mb-2">
+        <div class="d-flex align-items-center">
+          <img src="${p.images?.[0]||''}" class="img-preview" />
+          <div class="ms-2 flex-grow-1">
+            <strong>${p.name}</strong><br>₹${p.price} — ${p.category}
+          </div>
+          <div>
+            <button class="btn btn-sm btn-outline-primary mb-1" onclick="window.location.href='product.html?id=${p._id}'">Open</button>
+            <button class="btn btn-sm btn-danger" onclick="deleteProduct('${p._id}')"><i class="bi bi-trash"></i></button>
+          </div>
+        </div>
+      </div>
+    `).join("");
+  }
+}
+
+/* admin guard & init */
 function adminLogout() {
   localStorage.removeItem("adminLoggedIn");
   localStorage.removeItem("sg_user");
   window.location.href = "index.html";
 }
 
-/******************************************************
- * BASE64 CONVERSION
- ******************************************************/
-function fileToBase64(file) {
-  return new Promise(resolve => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result);
-    reader.readAsDataURL(file);
-  });
-}
-
-/******************************************************
- * IMAGE PREVIEW
- ******************************************************/
-document.getElementById("p_images").addEventListener("change", function() {
-  const preview = document.getElementById("imgPreview");
-  preview.innerHTML = "";
-
-  [...this.files].forEach(file => {
-    const reader = new FileReader();
-    reader.onload = e => {
-      preview.innerHTML += `<img src="${e.target.result}" class="img-preview">`;
-    };
-    reader.readAsDataURL(file);
-  });
-});
-
-/******************************************************
- * VIDEO PREVIEW
- ******************************************************/
-document.getElementById("p_video").addEventListener("change", function() {
-  const preview = document.getElementById("vidPreview");
-  preview.innerHTML = "";
-
-  if (this.files.length > 0) {
-    const reader = new FileReader();
-    reader.onload = e => {
-      preview.innerHTML = `
-        <video class="video-preview" controls>
-          <source src="${e.target.result}">
-        </video>`;
-    };
-    reader.readAsDataURL(this.files[0]);
-  }
-});
-
-/******************************************************
- * ADD PRODUCT
- ******************************************************/
-async function adminAddProduct() {
-
-  const name = p_name.value.trim();
-  const price = Number(p_price.value);
-  const stock = Number(p_stock.value);
-  const category = p_category.value.trim().toLowerCase();
-  const desc = p_desc.value.trim();
-  const sale = p_sale.checked;
-
-  if (!name || !price || !category) {
-    return alert("Please fill all required fields!");
-  }
-
-  // Convert IMAGES to base64
-  let images = [];
-  for (let file of p_images.files) {
-    images.push(await fileToBase64(file));
-  }
-
-  // Convert VIDEO to base64 (optional)
-  let video = "";
-  if (p_video.files.length > 0) {
-    video = await fileToBase64(p_video.files[0]);
-  }
-
-  const body = { name, price, category, description: desc, stock, images, video, sale };
-
-  const res = await fetch("/api/admin/products", {
-    method: "POST",
-    headers: { "Content-Type":"application/json" },
-    body: JSON.stringify(body),
-  });
-
-  const data = await res.json();
-
-  if (data.success) {
-    alert("Product added successfully!");
-    renderAdminProducts();
-  } else {
-    alert("Error adding product");
-  }
-}
-
-/******************************************************
- * RENDER ALL PRODUCTS (PREVIEW ONLY)
- ******************************************************/
-async function renderAdminProducts() {
-  const out = document.getElementById("productsAdminList");
-  const res = await fetch("/api/products/category/all");
-  const products = await res.json();
-
-  out.innerHTML = products.map(p => `
-    <div class="card p-2 mb-2">
-      <div class="d-flex align-items-center">
-
-        <img src="${p.images?.[0]}" class="img-preview">
-
-        <div class="ms-2">
-          <strong>${p.name}</strong>  
-          <br>
-          ₹${p.price} — ${p.category}
-          ${p.sale ? `<span class="badge bg-primary ms-2">SALE</span>` : ""}
-          ${p.stock === 0 ? `<span class="badge bg-danger ms-2">OUT OF STOCK</span>` : ""}
-        </div>
-
-      </div>
-    </div>
-  `).join("");
-}
-
 document.addEventListener("DOMContentLoaded", () => {
-  if (!localStorage.getItem("adminLoggedIn")) {
-    window.location.href = "index.html";
-  }
+  const raw = localStorage.getItem("sg_user");
+  if (!raw) return location.href = "index.html";
+  const user = JSON.parse(raw);
+  if (user.email !== "sohabrar10@gmail.com") return location.href = "index.html";
+
+  // show user pic
+  const acc = document.getElementById("accountIcon");
+  acc.src = user.picture || "";
+  acc.style.display = acc.src ? "block" : "none";
 
   renderAdminProducts();
 });
@@ -273,6 +289,5 @@ document.addEventListener("DOMContentLoaded", () => {
 
 <script src="js/app.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
-
 </body>
 </html>
