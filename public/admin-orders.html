@@ -2,50 +2,55 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Admin Orders - Suits N Glam</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Account - Suits N Glam</title>
 
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 
   <style>
-    body{background:#f8f9fa;}
+    body { background:#f8f9fa; }
+
+    /* LOGIN BUTTON — SAME AS INDEX */
+    .btn-login {
+      background:#ff3f33 !important;
+      color:white !important;
+      padding:6px 14px;
+      border:none;
+      border-radius:6px;
+      font-weight:600;
+    }
+    .btn-login:hover { background:#ff2b1f !important; }
+
     .nav-login-area { visibility:visible !important; }
 
+    /* Admin badge */
     .admin-badge {
       background:#c60000;
-      color:#fff;
+      color:white;
       padding:4px 8px;
       border-radius:6px;
       font-weight:700;
       margin-left:8px;
     }
 
-    table td, table th { vertical-align: middle; }
-
-    .status-badge {
-      padding:6px 10px;
-      border-radius:999px;
-      font-weight:600;
+    /* Account card */
+    .acc-card {
+      border-radius:12px;
+      padding:25px;
+      background:white;
+      box-shadow:0 2px 8px rgba(0,0,0,0.08);
     }
-
-    .status-pending   { background:#fff3cd; color:#856404; }
-    .status-shipped   { background:#cfe9ff; color:#055160; }
-    .status-delivered { background:#d4edda; color:#155724; }
-    .status-cancelled { background:#f8d7da; color:#721c24; }
   </style>
 </head>
 
 <body>
 
-<!-- NAVBAR -->
+<!-- NAVBAR (EXACT COPY FROM INDEX.HTML) -->
 <nav class="navbar navbar-expand-lg" style="background-color:#e3f2fd;">
   <div class="container">
 
-    <!-- HOME ICON -->
-    <a class="navbar-brand fw-bold d-flex align-items-center" href="index.html">
-      <i class="bi bi-house-fill me-2"></i> Suits N Glam
-    </a>
+    <a class="navbar-brand fw-bold" href="index.html">Suits N Glam</a>
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
       <span class="navbar-toggler-icon"></span>
@@ -53,14 +58,45 @@
 
     <div class="collapse navbar-collapse" id="navbarNav">
 
+      <i class="bi bi-house-fill home-icon" onclick="window.location.href='index.html'"
+         style="font-size:1.6rem;cursor:pointer;margin-right:15px;color:black;"></i>
+
       <ul class="navbar-nav ms-auto me-2">
-        <li class="nav-item"><a class="nav-link" href="admin.html">Dashboard</a></li>
+
+        <li class="nav-item"><a class="nav-link" href="allproducts.html">All Products</a></li>
+        <li class="nav-item"><a class="nav-link" href="newarrivals.html">New Arrivals</a></li>
+
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Shop By Category</a>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="summer.html">Summer</a></li>
+            <li><a class="dropdown-item" href="winter.html">Winter</a></li>
+            <li><a class="dropdown-item" href="wedding.html">Wedding</a></li>
+            <li><a class="dropdown-item" href="casuals.html">Casuals</a></li>
+            <li><a class="dropdown-item" href="dailywear.html">Daily Wear</a></li>
+            <li><a class="dropdown-item" href="premiumwear.html">Premium Wear</a></li>
+          </ul>
+        </li>
+
+        <li class="nav-item"><a class="nav-link" href="bestdeals.html">Best Deals</a></li>
+        <li class="nav-item"><a class="nav-link" href="sales.html">Sales</a></li>
+
       </ul>
 
+      <!-- CART -->
+      <a href="cart.html" class="d-flex align-items-center gap-2 me-3 text-dark text-decoration-none">
+        <i class="bi bi-bag-heart-fill" style="font-size:1.6rem;"></i>
+        <span id="cartCount" class="badge bg-danger"></span>
+      </a>
+
+      <!-- LOGIN / ACCOUNT -->
       <div class="nav-login-area d-flex align-items-center">
-        <span id="adminBadge" class="admin-badge" style="display:none">ADMIN</span>
+        <button id="loginBtn" class="btn-login">Login</button>
+
         <img id="accountIcon"
-             style="width:34px;height:34px;border-radius:50%;display:none;margin-left:10px;">
+             style="width:34px;height:34px;border-radius:50%;cursor:pointer;display:none;margin-left:10px;">
+
+        <span id="adminBadgeNav" class="admin-badge" style="display:none;">ADMIN</span>
       </div>
 
     </div>
@@ -68,227 +104,124 @@
 </nav>
 
 
-
+<!-- PAGE CONTENT -->
 <div class="container mt-4">
-  <div class="d-flex justify-content-between align-items-center">
-    <h3>Orders Management</h3>
+  <h2 class="d-flex align-items-center fw-bold">My Account
+    <span id="adminBadgePage" class="admin-badge" style="display:none;margin-left:10px;">ADMIN</span>
+  </h2>
 
-    <button class="btn btn-danger" onclick="clearOrders()">
-      Clear All Orders
-    </button>
+  <div id="accountCard" class="acc-card mt-3">
+    <div id="notLoggedIn" style="display:none;">
+      <p>You are not logged in.</p>
+      <button class="btn btn-primary" id="loginBtnFallback">Login</button>
+    </div>
   </div>
 
-  <div id="ordersTableWrapper" class="mt-3">
-    <table class="table table-bordered">
-      <thead>
-        <tr>
-          <th style="width:140px">Order ID</th>
-          <th>Customer</th>
-          <th style="width:120px">Amount</th>
-          <th style="width:150px">Status</th>
-          <th style="width:160px">Date</th>
-          <th style="width:250px">Actions</th>
-        </tr>
-      </thead>
+  <!-- Actions -->
+  <div class="mt-4">
+    <a href="orderhistory.html" class="btn btn-primary">Order History</a>
+    <a href="ordertracking.html" class="btn btn-secondary">Track Orders</a>
+    <button class="btn btn-danger" onclick="logout()">Logout</button>
 
-      <tbody id="ordersTable"></tbody>
-    </table>
+    <a id="adminDashboardBtn" href="admin.html" class="btn btn-outline-danger ms-2" style="display:none;">
+      Admin Dashboard
+    </a>
   </div>
 </div>
 
 
-<!-- ORDER DETAILS MODAL -->
-<div class="modal fade" id="orderModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-lg modal-dialog-scrollable">
-    <div class="modal-content">
+<!-- LOGIN MODAL -->
+<div class="modal fade" id="emailLoginModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content p-3">
+      <h5 class="mb-3">Login with Email</h5>
+      <input id="loginEmail" type="email" class="form-control my-2" placeholder="Email">
+      <input id="loginPass" type="password" class="form-control my-2" placeholder="Password">
+      <button class="btn btn-primary w-100 my-2" onclick="emailLogin()">Login</button>
 
-      <div class="modal-header">
-        <h5 class="modal-title">Order Details — <span id="modalOrderId"></span></h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
+      <div class="text-center"><small>or</small></div>
 
-      <div class="modal-body">
-        <div id="modalBodyContent"></div>
-      </div>
+      <button class="btn btn-outline-secondary w-100 mt-2" onclick="triggerGoogleLogin()">
+        Continue with Google
+      </button>
 
-      <div class="modal-footer">
-        <button id="modalMarkShipped" class="btn btn-success">Mark Shipped</button>
-        <button id="modalMarkDelivered" class="btn btn-primary">Mark Delivered</button>
-        <button id="modalCancelOrder" class="btn btn-danger">Cancel Order</button>
-        <button class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-      </div>
+      <p class="text-center mt-3">
+        Don't have an account?
+        <a href="#" onclick="openRegister()">Register</a>
+      </p>
+    </div>
+  </div>
+</div>
 
+<!-- REGISTER MODAL -->
+<div class="modal fade" id="registerModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content p-3">
+      <h5 class="mb-3">Create Account</h5>
+      <input id="regName" type="text" class="form-control my-2" placeholder="Name">
+      <input id="regEmail" type="email" class="form-control my-2" placeholder="Email">
+      <input id="regPass" type="password" class="form-control my-2" placeholder="Password">
+      <button class="btn btn-success w-100 my-2" onclick="emailRegister()">Register</button>
     </div>
   </div>
 </div>
 
 
-
 <script>
-/* UTILS */
-function ₹(v){ return Number(v||0).toLocaleString("en-IN"); }
-
-function statusClass(status) {
-  status = String(status).toLowerCase();
-  if (status.includes("pending")) return "status-pending";
-  if (status.includes("ship")) return "status-shipped";
-  if (status.includes("deliver")) return "status-delivered";
-  if (status.includes("cancel")) return "status-cancelled";
-  return "status-pending";
+function logout() {
+  localStorage.removeItem("sg_user");
+  localStorage.removeItem("adminLoggedIn");
+  window.location.href = "index.html";
 }
 
-/* ADMIN PROTECT */
-function guardAdmin() {
-  const user = JSON.parse(localStorage.getItem("sg_user") || "null");
-  if (!user || user.email !== "sohabrar10@gmail.com") {
-    alert("Admin access only!");
-    window.location.href = "index.html";
-    return;
-  }
-
-  document.getElementById("adminBadge").style.display = "inline-block";
-
-  const acc = document.getElementById("accountIcon");
-  acc.src = user.picture;
-  acc.style.display = "block";
-}
-
-/* LOAD ORDERS */
-function renderOrdersAdmin() {
-  const tbody = document.getElementById("ordersTable");
-  const orders = JSON.parse(localStorage.getItem("orders") || "[]");
-
-  if (!orders.length) {
-    tbody.innerHTML = `<tr><td colspan="6" class="text-center">No orders found.</td></tr>`;
-    return;
-  }
-
-  tbody.innerHTML = orders.map((o, i) => `
-    <tr>
-      <td><strong>${o.id}</strong></td>
-
-      <td>
-        ${o.shipping?.name || o.user?.name || "—"}
-        <br>
-        <small class="text-muted">${o.user?.email || ""}</small>
-      </td>
-
-      <td>₹${₹(o.total)}</td>
-
-      <td>
-        <span class="status-badge ${statusClass(o.status)}">
-          ${o.status}
-        </span>
-      </td>
-
-      <td>${o.date || ""}</td>
-
-      <td>
-        <button class="btn btn-sm btn-outline-primary" onclick="viewOrder(${i})">
-          <i class="bi bi-eye"></i> View
-        </button>
-
-        <button class="btn btn-sm btn-success" onclick="changeStatus(${i}, 'Shipped')">Shipped</button>
-        <button class="btn btn-sm btn-primary" onclick="changeStatus(${i}, 'Delivered')">Delivered</button>
-        <button class="btn btn-sm btn-danger" onclick="changeStatus(${i}, 'Cancelled')">Cancel</button>
-
-        <button class="btn btn-sm btn-outline-danger" onclick="deleteOrder(${i})">
-          <i class="bi bi-trash"></i>
-        </button>
-      </td>
-    </tr>
-  `).join("");
-}
-
-/* CHANGE STATUS */
-function changeStatus(i, status) {
-  const orders = JSON.parse(localStorage.getItem("orders") || "[]");
-  if (!orders[i]) return;
-
-  orders[i].status = status;
-  localStorage.setItem("orders", JSON.stringify(orders));
-
-  renderOrdersAdmin();
-}
-
-/* DELETE ORDER */
-function deleteOrder(i) {
-  if (!confirm("Delete this order permanently?")) return;
-
-  const orders = JSON.parse(localStorage.getItem("orders") || "[]");
-  orders.splice(i, 1);
-
-  localStorage.setItem("orders", JSON.stringify(orders));
-  renderOrdersAdmin();
-}
-
-/* CLEAR ALL ORDERS */
-function clearOrders() {
-  if (!confirm("Delete ALL orders? This cannot be undone.")) return;
-
-  localStorage.removeItem("orders");
-  renderOrdersAdmin();
-}
-
-/* MODAL VIEW */
-function viewOrder(i) {
-  const orders = JSON.parse(localStorage.getItem("orders") || "[]");
-  const o = orders[i];
-
-  if (!o) return;
-
-  const modal = new bootstrap.Modal(document.getElementById("orderModal"));
-  document.getElementById("modalOrderId").textContent = o.id;
-
-  let html = `
-    <h6>Customer</h6>
-    <p><strong>${o.shipping?.name || o.user?.name}</strong><br>
-    ${o.shipping?.phone || ""}<br>
-    <small class="text-muted">${o.user?.email || ""}</small></p>
-
-    <h6>Shipping Address</h6>
-    <p>${o.shipping?.address || o.shipping?.line1 || "N/A"}</p>
-
-    <h6>Items</h6>
-    <ul class="list-group mb-3">
-  `;
-
-  (o.items || []).forEach(it => {
-    html += `
-      <li class="list-group-item d-flex justify-content-between align-items-center">
-        <div>
-          <strong>${it.name}</strong><br>
-          <small>${it.variant || ""}</small>
-        </div>
-        <span>₹${₹(it.price)} × ${it.qty}</span>
-      </li>
-    `;
-  });
-
-  html += `
-    </ul>
-    <h6>Total</h6>
-    <p><strong>₹${₹(o.total)}</strong></p>
-  `;
-
-  document.getElementById("modalBodyContent").innerHTML = html;
-
-  // Button action binding
-  document.getElementById("modalMarkShipped").onclick = () => { changeStatus(i, "Shipped"); modal.hide(); };
-  document.getElementById("modalMarkDelivered").onclick = () => { changeStatus(i, "Delivered"); modal.hide(); };
-  document.getElementById("modalCancelOrder").onclick = () => { changeStatus(i, "Cancelled"); modal.hide(); };
-
-  modal.show();
-}
-
-/* INIT */
 document.addEventListener("DOMContentLoaded", () => {
-  guardAdmin();
-  renderOrdersAdmin();
+  const raw = localStorage.getItem("sg_user");
+
+  const accCard = document.getElementById("accountCard");
+  const notLogged = document.getElementById("notLoggedIn");
+  const loginBtnFallback = document.getElementById("loginBtnFallback");
+
+  const loginBtn = document.getElementById("loginBtn");
+  const accIcon = document.getElementById("accountIcon");
+
+  const adminBadgeNav = document.getElementById("adminBadgeNav");
+  const adminBadgePage = document.getElementById("adminBadgePage");
+  const adminBtn = document.getElementById("adminDashboardBtn");
+
+  if (!raw) {
+    notLogged.style.display = "block";
+    loginBtnFallback.onclick = () => loginBtn.click();
+    return;
+  }
+
+  const user = JSON.parse(raw);
+
+  accCard.innerHTML = `
+    <div class="d-flex align-items-center gap-3">
+      <img src="${user.picture}" style="width:80px;height:80px;border-radius:50%;object-fit:cover;">
+      <div>
+        <h5 class="mb-1">${user.name}</h5>
+        <p class="text-muted mb-0">${user.email}</p>
+      </div>
+    </div>
+  `;
+
+  loginBtn.style.display = "none";
+  accIcon.src = user.picture;
+  accIcon.style.display = "block";
+
+  if (["sohabrar10@gmail.com", "suitsnglam01@gmail.com"].includes(user.email)) {
+    adminBadgeNav.style.display = "inline-block";
+    adminBadgePage.style.display = "inline-block";
+    adminBtn.style.display = "inline-block";
+  }
 });
 </script>
 
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="https://cdn.jsdelivr.net/npm/jwt-decode/build/jwt-decode.min.js"></script>
 <script src="js/app.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+
 </body>
 </html>
