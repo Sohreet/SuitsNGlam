@@ -29,9 +29,6 @@ function setupLoginUI() {
 
     if (loginBtn) loginBtn.style.display = "none";
 
-  } else {
-    if (loginBtn) loginBtn.style.display = "inline-block";
-    if (accountIcon) accountIcon.style.display = "none";
   }
 
   if (loginArea) loginArea.style.visibility = "visible";
