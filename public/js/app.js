@@ -1,5 +1,5 @@
 /******************************************************
- * SUITS N GLAM — ROBUST APP.JS (DEBUG + POPUP SAFE)
+ * SUITS N GLAM — ROBUST APP.JS (POPUP SAFE + EMAIL AUTH)
  ******************************************************/
 
 console.log("APP.JS LOADED");
@@ -40,7 +40,7 @@ function setupLoginUI() {
   }
 
   loginBtn.style.display = "none";
-  icon.src = user.picture || "/public/images/default-user.png";
+  icon.src = user.picture || "/images/default-user.png";
   icon.style.display = "inline-block";
 
   if (ADMINS.includes(user.email)) {
@@ -53,25 +53,16 @@ function setupLoginUI() {
 }
 
 /* ------------------ SAVE / LOGOUT ------------------ */
-function saveUser(data, token) {
-  const user = {
-    email: data.email,
-    name: data.name,
-    picture: data.picture,
-    token,
-    joined: new Date().toLocaleDateString(),
-  };
-  localStorage.setItem("sg_user", JSON.stringify(user));
-  if (ADMINS.includes(user.email)) localStorage.setItem("adminLoggedIn", "true");
-  else localStorage.removeItem("adminLoggedIn");
+function saveUserToLocal(userObj) {
+  localStorage.setItem("sg_user", JSON.stringify(userObj));
 }
 window.logout = function() {
   localStorage.removeItem("sg_user");
   localStorage.removeItem("adminLoggedIn");
-  // NOTE: This does NOT clear Google cookies; it logs the user out locally.
-  console.log("Local logout done. To fully sign out, clear Google cookie/site data.");
+  console.log("Local logout done.");
   setupLoginUI();
   updateCartBadge();
+  window.location.href = "index.html";
 };
 
 /* ------------------ GOOGLE HANDLER (EXPOSED) ------------------ */
@@ -79,27 +70,34 @@ window.handleCredentialResponse = function(response) {
   console.log("handleCredentialResponse called", response);
   try {
     const data = jwt_decode(response.credential);
-    console.log("Decoded token:", data);
-    saveUser(data, response.credential);
+    const user = {
+      email: data.email,
+      name: data.name,
+      picture: data.picture || "/images/default-user.png",
+      token: response.credential,
+      joined: new Date().toLocaleDateString()
+    };
+    saveUserToLocal(user);
+    if (ADMINS.includes(user.email)) localStorage.setItem("adminLoggedIn", "true");
+    else localStorage.removeItem("adminLoggedIn");
     setupLoginUI();
     updateCartBadge();
-    // optional: close any UI modals or notify user
-    alert(`Welcome ${data.name || data.email}`);
-    // reload to reflect role changes (admin badge etc.)
+    // Close modals if open
+    const loginModalEl = document.getElementById("emailLoginModal");
+    if (loginModalEl) {
+      const m = bootstrap.Modal.getInstance(loginModalEl);
+      if (m) m.hide();
+    }
+    alert(`Welcome ${user.name || user.email}`);
     window.location.reload();
   } catch (err) {
-    console.error("Google Auth error decoding token:", err);
-    alert("Login failed (check console).");
+    console.error("Google Auth Error:", err);
+    alert("Google login failed (check console).");
   }
 };
 
 /* ------------------ GOOGLE INITIALIZATION (ROBUST) ------------------ */
-/*
- * initGoogleLogin() is invoked from the login button click.
- * It waits for google.accounts to be available and then initializes
- * in popup mode and calls prompt() as a result of a user gesture.
- */
-async function waitForGoogle(timeoutMs = 5000) {
+async function waitForGoogle(timeoutMs = 8000) {
   const start = Date.now();
   while (Date.now() - start < timeoutMs) {
     if (window.google && google.accounts && google.accounts.id) return true;
@@ -110,15 +108,14 @@ async function waitForGoogle(timeoutMs = 5000) {
 
 async function initGoogleLogin() {
   console.log("initGoogleLogin called");
-  const ready = await waitForGoogle(8000); // wait up to 8s
+  const ready = await waitForGoogle(8000);
   if (!ready) {
-    console.error("Google Identity library not loaded (accounts.google.com/gsi).");
-    alert("Google login is not ready. Try reloading the page or check console.");
+    console.error("Google Identity library not loaded.");
+    alert("Google login not ready. Try reloading the page.");
     return;
   }
 
   try {
-    // Initialize only once (guard)
     if (!window.__sg_google_initialized) {
       google.accounts.id.initialize({
         client_id: GOOGLE_CLIENT_ID,
@@ -133,33 +130,33 @@ async function initGoogleLogin() {
       console.log("Google Identity already initialized.");
     }
 
-    // Must be called as a result of user gesture (click). We call prompt()
-    // which will open account chooser in popup mode.
+    // prompt() must be called from a user gesture — we call it inside click handlers
     google.accounts.id.prompt((notification) => {
-      // NOTE: in popup mode prompt() is used to trigger the flow. We still
-      // pass a small callback for logging useful info.
       console.log("google.accounts.id.prompt() callback:", notification);
     });
-
   } catch (err) {
     console.error("Error initializing Google Identity:", err);
-    alert("Login init failed (see console).");
   }
 }
 
-/* Attach login button to call initGoogleLogin (user gesture) */
+/* Exposed helper to trigger Google login from modal button (user gesture) */
+function triggerGoogleLogin() {
+  // As this is user-triggered (button click), this should open Google popup
+  initGoogleLogin();
+}
+
+/* Attach login button to open email modal by default (fallback first) */
 function attachLoginButton() {
   const btn = document.getElementById("loginBtn");
   if (!btn) return;
-  btn.onclick = (e) => {
-    // prevent accidental double click
-    btn.disabled = true;
-    setTimeout(() => (btn.disabled = false), 1200);
-    initGoogleLogin();
+  btn.onclick = () => {
+    // show email login modal by default
+    const modal = new bootstrap.Modal(document.getElementById("emailLoginModal"));
+    modal.show();
   };
 }
 
-/* ------------------ CART + PRODUCTS (unchanged) ------------------ */
+/* ------------------ CART + PRODUCTS ------------------ */
 function updateCartBadge() {
   const badge = document.getElementById("cartCount");
   if (!badge) return;
@@ -187,6 +184,7 @@ function loadCartPage() {
   const cont = document.getElementById("cartItems");
   const empty = document.getElementById("cartEmpty");
   const summary = document.getElementById("cartSummary");
+
   const cart = JSON.parse(localStorage.getItem("cart") || "[]");
 
   if (!cart.length) {
@@ -233,23 +231,29 @@ function removeItem(i) {
 }
 window.removeItem = removeItem;
 
-/* PRODUCT & ADMIN (unchanged) */
+/* ------------------ PRODUCT PAGE ------------------ */
 async function loadSingleProduct() {
   const id = new URLSearchParams(window.location.search).get("id");
   if (!id) return;
   const res = await fetch(`/api/products/${id}`);
   const p = await res.json();
-  document.getElementById("p_name").textContent = p.name;
-  document.getElementById("p_price").textContent = p.price;
-  document.getElementById("p_desc").textContent = p.description;
-  document.getElementById("p_category").textContent = p.category;
-  document.getElementById("mainImage").src = p.images[0];
+  const elName = document.getElementById("p_name");
+  if (elName) elName.textContent = p.name;
+  const elPrice = document.getElementById("p_price");
+  if (elPrice) elPrice.textContent = p.price;
+  const elDesc = document.getElementById("p_desc");
+  if (elDesc) elDesc.textContent = p.description;
+  const elCat = document.getElementById("p_category");
+  if (elCat) elCat.textContent = p.category;
+  const mainImage = document.getElementById("mainImage");
+  if (mainImage) mainImage.src = p.images[0];
   const thumbRow = document.getElementById("thumbRow");
   if (thumbRow) {
     thumbRow.innerHTML = "";
     p.images.forEach((img, i) => {
       thumbRow.innerHTML += `
-        <img src="${img}" class="thumb-img ${i === 0 ? "active" : ""}"
+        <img src="${img}" class="thumb-img ${i===0?'active':''}"
+             style="height:60px;width:60px;object-fit:cover;margin-right:8px;cursor:pointer;"
              onclick="document.getElementById('mainImage').src='${img}'">
       `;
     });
@@ -259,10 +263,11 @@ async function loadSingleProduct() {
 window.loadSingleProduct = loadSingleProduct;
 
 function addToCartPage() {
-  const m = Number(document.getElementById("metreInput").value);
+  const m = Number(document.getElementById("metreInput").value) || 1;
   addToCart(window.currentProduct, m);
 }
 
+/* ------------------ LOAD PRODUCTS ------------------ */
 async function loadProducts(cat, containerId = "productsContainer") {
   const box = document.getElementById(containerId);
   if (box) box.innerHTML = "Loading...";
@@ -294,6 +299,7 @@ function openProduct(id) {
   window.location.href = `product.html?id=${id}`;
 }
 
+/* ------------------ ADMIN ------------------ */
 async function adminDeleteProduct(id) {
   if (!confirm("Delete this product permanently?")) return;
   const res = await fetch(`/api/admin/products/${id}`, { method: "DELETE" });
@@ -305,9 +311,9 @@ window.adminDeleteProduct = adminDeleteProduct;
 
 async function renderAdminProducts() {
   const out = document.getElementById("productsAdminList");
+  if (!out) return;
   const res = await fetch("/api/products/category/all");
   const products = await res.json();
-  if (!out) return;
   out.innerHTML = products
     .map((p) => `
       <div class="card p-2 mb-2">
@@ -323,12 +329,57 @@ async function renderAdminProducts() {
 }
 window.renderAdminProducts = renderAdminProducts;
 
-/* ADMIN GUARD */
+/* ------------------ EMAIL LOGIN & REGISTER ------------------ */
+async function emailLogin() {
+  const email = document.getElementById("loginEmail").value;
+  const pass = document.getElementById("loginPass").value;
+  if (!email || !pass) return alert("Please enter email and password.");
+  const res = await fetch("/api/auth/login", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, password: pass })
+  });
+  const data = await res.json();
+  if (!data.success) return alert(data.message || "Login failed");
+  const user = data.user;
+  saveUserToLocal(user);
+  if (ADMINS.includes(user.email)) localStorage.setItem("adminLoggedIn", "true");
+  else localStorage.removeItem("adminLoggedIn");
+  // close modal
+  const modalEl = document.getElementById("emailLoginModal");
+  const m = bootstrap.Modal.getInstance(modalEl);
+  if (m) m.hide();
+  setupLoginUI();
+  updateCartBadge();
+  window.location.reload();
+}
+
+async function emailRegister() {
+  const name = document.getElementById("regName").value;
+  const email = document.getElementById("regEmail").value;
+  const pass = document.getElementById("regPass").value;
+  if (!email || !pass) return alert("Please enter email and password.");
+  const res = await fetch("/api/auth/register", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name, email, password: pass })
+  });
+  const data = await res.json();
+  if (!data.success) return alert(data.message || "Register failed");
+  alert("Account created! Please login.");
+  // open login modal
+  const rm = bootstrap.Modal.getInstance(document.getElementById("registerModal"));
+  if (rm) rm.hide();
+  const lm = new bootstrap.Modal(document.getElementById("emailLoginModal"));
+  lm.show();
+}
+
+/* ------------------ ADMIN GUARD ------------------ */
 if (window.location.pathname.includes("admin")) {
   if (!localStorage.getItem("adminLoggedIn")) window.location.href = "index.html";
 }
 
-/* INITIALIZE UI */
+/* ------------------ INITIALIZE UI ------------------ */
 document.addEventListener("DOMContentLoaded", () => {
   setupLoginUI();
   updateCartBadge();
