@@ -1,29 +1,40 @@
 // ------------------------------------------------------
 // SUITS N GLAM — FULL BACKEND (MERGED INTO ONE FILE)
-// Google Login Compatible — NO "*" catch-all breaking GSI
+// Google Login Compatible + Email/Password Fallback
 // ------------------------------------------------------
 
 const express = require("express");
 const path = require("path");
 const mongoose = require("mongoose");
+const bcrypt = require("bcrypt");
 require("dotenv").config();
 
 const app = express();
 
 // ------------------------------------------------------
-// 1) DATABASE SETUP
+// DATABASE
 // ------------------------------------------------------
+const MONGO_URI = process.env.MONGO_URI || "mongodb://127.0.0.1:27017/suitsnglam";
 mongoose
-  .connect(process.env.MONGO_URI, {
+  .connect(MONGO_URI, {
     useNewUrlParser: true,
-    useUnifiedTopology: true
+    useUnifiedTopology: true,
   })
   .then(() => console.log("✅ MongoDB Connected"))
   .catch((err) => console.log("❌ MongoDB Error:", err.message));
 
 // ------------------------------------------------------
-// 2) PRODUCT MODEL (MERGED)
+// SCHEMAS / MODELS
 // ------------------------------------------------------
+const UserSchema = new mongoose.Schema({
+  name: String,
+  email: { type: String, unique: true, index: true },
+  password: String, // hashed
+  picture: String,
+  createdAt: Date,
+});
+const User = mongoose.model("User", UserSchema);
+
 const ProductSchema = new mongoose.Schema({
   name: String,
   price: Number,
@@ -33,43 +44,92 @@ const ProductSchema = new mongoose.Schema({
   images: [String],
   video: String,
   sale: Number,
-  createdAt: Date
+  createdAt: Date,
 });
-
 const Product = mongoose.model("Product", ProductSchema);
 
 // ------------------------------------------------------
-// 3) MIDDLEWARE
+// MIDDLEWARE
 // ------------------------------------------------------
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 
-// Serve frontend
+// Serve static frontend files
 app.use(express.static(path.join(__dirname, "public")));
 
 // ------------------------------------------------------
-// 4) GOOGLE SAFE ROUTES (DO NOT CATCH THESE)
+// GOOGLE SAFE ROUTES (don't accidentally serve index.html for these)
 // ------------------------------------------------------
-const googleSafe = ["/.well-known", "/_", "/gsi", "/google", "/oauth2"];
-
+const googleSafe = ["/.well-known", "/_", "/gsi", "/google", "/oauth2", "/signin", "/auth"];
 app.use((req, res, next) => {
   if (googleSafe.some((p) => req.path.startsWith(p))) return next();
   next();
 });
 
 // ------------------------------------------------------
-// 5) ADMIN — ADD PRODUCT
+// AUTH: Register (email+password)
+// ------------------------------------------------------
+app.post("/api/auth/register", async (req, res) => {
+  try {
+    const { name, email, password } = req.body;
+    if (!email || !password) return res.json({ success: false, message: "Missing fields" });
+
+    const exists = await User.findOne({ email });
+    if (exists) return res.json({ success: false, message: "Email already registered" });
+
+    const hashed = await bcrypt.hash(password, 10);
+    const newUser = new User({
+      name: name || email.split("@")[0],
+      email,
+      password: hashed,
+      picture: "/images/default-user.png",
+      createdAt: new Date(),
+    });
+    await newUser.save();
+    return res.json({ success: true });
+  } catch (err) {
+    console.error("Register error:", err);
+    return res.json({ success: false, message: "Server error" });
+  }
+});
+
+// ------------------------------------------------------
+// AUTH: Login (email+password)
+// ------------------------------------------------------
+app.post("/api/auth/login", async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    if (!email || !password) return res.json({ success: false, message: "Missing fields" });
+
+    const user = await User.findOne({ email });
+    if (!user) return res.json({ success: false, message: "User not found" });
+
+    const ok = await bcrypt.compare(password, user.password);
+    if (!ok) return res.json({ success: false, message: "Incorrect password" });
+
+    return res.json({
+      success: true,
+      user: {
+        email: user.email,
+        name: user.name,
+        picture: user.picture || "/images/default-user.png",
+      },
+    });
+  } catch (err) {
+    console.error("Login error:", err);
+    return res.json({ success: false, message: "Server error" });
+  }
+});
+
+// ------------------------------------------------------
+// ADMIN — ADD PRODUCT
 // ------------------------------------------------------
 app.post("/api/admin/products", async (req, res) => {
   try {
-    const { name, price, category, description, stock, images, video, sale } =
-      req.body;
+    const { name, price, category, description, stock, images, video, sale } = req.body;
+    if (!name || !price || !category) return res.json({ success: false, message: "Missing fields" });
 
-    if (!name || !price || !category) {
-      return res.json({ success: false, message: "Missing fields" });
-    }
-
-    const newP = new Product({
+    const newProduct = new Product({
       name,
       price,
       category,
@@ -78,32 +138,32 @@ app.post("/api/admin/products", async (req, res) => {
       images,
       video,
       sale,
-      createdAt: new Date()
+      createdAt: new Date(),
     });
 
-    await newP.save();
-
-    res.json({ success: true, product: newP });
+    await newProduct.save();
+    res.json({ success: true, product: newProduct });
   } catch (err) {
-    console.log(err);
+    console.error("Add product error:", err);
     res.json({ success: false, message: "Server error" });
   }
 });
 
 // ------------------------------------------------------
-// 6) ADMIN — DELETE PRODUCT
+// ADMIN — DELETE PRODUCT
 // ------------------------------------------------------
 app.delete("/api/admin/products/:id", async (req, res) => {
   try {
     await Product.findByIdAndDelete(req.params.id);
     res.json({ success: true });
   } catch (err) {
+    console.error("Delete product error:", err);
     res.json({ success: false, message: "Delete failed" });
   }
 });
 
 // ------------------------------------------------------
-// 7) GET ALL PRODUCTS
+// PRODUCTS: GET ALL
 // ------------------------------------------------------
 app.get("/api/products/category/all", async (req, res) => {
   const products = await Product.find().sort({ createdAt: -1 });
@@ -111,17 +171,15 @@ app.get("/api/products/category/all", async (req, res) => {
 });
 
 // ------------------------------------------------------
-// 8) GET CATEGORY PRODUCTS
+// PRODUCTS: BY CATEGORY
 // ------------------------------------------------------
 app.get("/api/products/category/:cat", async (req, res) => {
-  const products = await Product.find({ category: req.params.cat }).sort({
-    createdAt: -1
-  });
+  const products = await Product.find({ category: req.params.cat }).sort({ createdAt: -1 });
   res.json(products);
 });
 
 // ------------------------------------------------------
-// 9) GET SINGLE PRODUCT
+// PRODUCTS: SINGLE
 // ------------------------------------------------------
 app.get("/api/products/:id", async (req, res) => {
   const p = await Product.findById(req.params.id);
@@ -129,8 +187,12 @@ app.get("/api/products/:id", async (req, res) => {
 });
 
 // ------------------------------------------------------
-// 10) FRONTEND ROUTES ONLY
-// (We do not catch everything to avoid breaking Google login)
+// UPLOADS: Serve uploads folder if present (already served via static)
+// ------------------------------------------------------
+// public/uploads, public/images are available via express.static
+
+// ------------------------------------------------------
+// FRONTEND PAGES (explicit list — avoid catch-all that breaks GSI)
 // ------------------------------------------------------
 const pages = [
   "/",
@@ -143,24 +205,24 @@ const pages = [
   "/casuals.html",
   "/dailywear.html",
   "/premiumwear.html",
-  "/sales.html",
   "/bestdeals.html",
+  "/sales.html",
   "/cart.html",
   "/product.html",
   "/account.html",
-  "/admin.html"
+  "/admin.html",
+  "/admin-orders.html",
+  "/orderhistory.html",
+  "/ordertracking.html",
+  "/checkout.html",
+  "/success.html"
 ];
-
 pages.forEach((r) => {
-  app.get(r, (req, res) => {
-    res.sendFile(path.join(__dirname, "public", "index.html"));
-  });
+  app.get(r, (req, res) => res.sendFile(path.join(__dirname, "public", "index.html")));
 });
 
 // ------------------------------------------------------
-// 11) START SERVER
+// START
 // ------------------------------------------------------
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () =>
-  console.log(`🚀 Suits N Glam Backend Running on port ${PORT}`)
-);
+app.listen(PORT, () => console.log(`🚀 Suits N Glam Backend Running on port ${PORT}`));
