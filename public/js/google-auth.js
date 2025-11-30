@@ -1,11 +1,11 @@
 // --------------------------------------------------
-// GOOGLE AUTH — FINAL NON-FLICKER VERSION
+// GOOGLE AUTH — FINAL VERSION
 // --------------------------------------------------
 
 const GOOGLE_CLIENT_ID =
   "653374521156-6retcia1fiu5dvmbjik9sq89ontrkmvt.apps.googleusercontent.com";
 
-// Load SDK once
+// Load Google SDK
 (function loadSDK() {
   if (document.getElementById("gsi-script")) return;
   const s = document.createElement("script");
@@ -16,7 +16,7 @@ const GOOGLE_CLIENT_ID =
   document.head.appendChild(s);
 })();
 
-// Save user
+// Save user in localStorage
 function saveUser(data, token) {
   const user = {
     email: data.email,
@@ -37,7 +37,6 @@ function handleCredentialResponse(response) {
     const data = jwt_decode(response.credential);
     saveUser(data, response.credential);
 
-    // Update UI instantly
     if (window.setupLoginUI) setupLoginUI();
     if (window.updateCartBadge) updateCartBadge();
   } catch (err) {
