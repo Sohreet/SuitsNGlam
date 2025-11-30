@@ -9,26 +9,19 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 
   <style>
-    body { background:white; }
+    body { background:white !important; }
     .nav-login-area { visibility:visible !important; }
 
-    /* LOGIN BUTTON */
     .btn-login {
-      color:#c60000 !important;
-      border:2px solid #c60000;
-      background:white;
-      padding:4px 12px;
+      background:#ff3f33 !important;
+      color:white !important;
+      padding:6px 14px;
+      border:none;
       border-radius:6px;
       font-weight:600;
-      transition:0.3s;
     }
-    .btn-login:hover { background:#c60000; color:white !important; }
+    .btn-login:hover { background:#ff2b1f !important; }
 
-    nav.navbar {
-      background-color:#e3f2fd !important;
-    }
-
-    /* EMPTY CART BOX */
     #cartEmptyBox {
       background:#f1f1f1;
       border-radius:10px;
@@ -44,15 +37,12 @@
 <body>
 
 <!-- NAVBAR -->
-<nav class="navbar navbar-expand-lg">
+<nav class="navbar navbar-expand-lg" style="background-color:#e3f2fd;">
   <div class="container">
 
-    <!-- Home Icon -->
-    <a class="navbar-brand fw-bold d-flex align-items-center" href="index.html">
-      <i class="bi bi-house-fill me-2"></i> Suits N Glam
-    </a>
+    <a class="navbar-brand fw-bold" href="index.html">Suits N Glam</a>
 
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+    <button class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbarNav">
       <span class="navbar-toggler-icon"></span>
     </button>
 
@@ -64,21 +54,22 @@
 
       <div class="nav-login-area d-flex align-items-center">
         <button id="loginBtn" class="btn-login">Login</button>
-        <img id="accountIcon"
-             style="width:34px;height:34px;border-radius:50%;cursor:pointer;display:none;margin-left:10px;">
+        <img id="accountIcon" style="width:34px;height:34px;border-radius:50%;display:none;margin-left:10px;">
+        <span id="adminBadgeNav"
+              style="display:none;background:#c60000;color:white;padding:4px 10px;border-radius:6px;font-weight:700;margin-left:8px;">
+          ADMIN
+        </span>
       </div>
 
     </div>
   </div>
 </nav>
 
-
-<!-- CART PAGE CONTENT -->
+<!-- CART CONTENT -->
 <div class="container mt-4">
+  <h3>Your Cart</h3>
 
-  <h3 class="mb-4">Your Cart</h3>
-
-  <!-- EMPTY CART -->
+  <!-- Empty cart -->
   <div id="cartEmpty" class="text-center my-5" style="display:none;">
     <div id="cartEmptyBox">
       <i class="bi bi-cart-x-fill empty-cart-icon"></i>
@@ -88,24 +79,47 @@
     </div>
   </div>
 
-  <!-- CART ITEMS -->
+  <!-- Items -->
   <div class="row" id="cartItems"></div>
 
-  <!-- CART SUMMARY -->
+  <!-- Summary -->
   <div id="cartSummary" class="card p-3 mt-4" style="display:none;">
     <h5>Total: ₹<span id="cartTotal">0</span></h5>
     <a href="checkout.html" class="btn btn-success mt-2 w-100">Proceed to Checkout</a>
   </div>
-
 </div>
 
-<!-- SCRIPTS -->
+<script>
+loadCartPage();
+</script>
+
+<!-- LOGIN + MODALS -->
+<div class="modal fade" id="emailLoginModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered"><div class="modal-content p-3">
+    <h5>Login with Email</h5>
+    <input id="loginEmail" class="form-control my-2" placeholder="Email">
+    <input id="loginPass" type="password" class="form-control my-2" placeholder="Password">
+    <button class="btn btn-primary w-100" onclick="emailLogin()">Login</button>
+    <div class="text-center"><small>or</small></div>
+    <button class="btn btn-outline-secondary w-100 mt-2" onclick="triggerGoogleLogin()">Continue with Google</button>
+    <p class="text-center mt-3">Don't have an account? <a href="#" onclick="openRegister()">Register</a></p>
+  </div></div>
+</div>
+
+<div class="modal fade" id="registerModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered"><div class="modal-content p-3">
+    <h5>Create Account</h5>
+    <input id="regName" class="form-control my-2" placeholder="Name">
+    <input id="regEmail" class="form-control my-2" placeholder="Email">
+    <input id="regPass" type="password" class="form-control my-2" placeholder="Password">
+    <button class="btn btn-success w-100" onclick="emailRegister()">Register</button>
+  </div></div>
+</div>
+
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="https://cdn.jsdelivr.net/npm/jwt-decode/build/jwt-decode.min.js"></script>
 <script src="js/app.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
-
-<script>
-  loadCartPage();
-</script>
 
 </body>
 </html>
