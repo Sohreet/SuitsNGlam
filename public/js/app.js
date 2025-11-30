@@ -8,7 +8,8 @@ console.log("APP.JS LOADED");
  * GLOBALS
  ******************************************************/
 const ADMINS = ["sohabrar10@gmail.com"];
-const GOOGLE_CLIENT_ID = "653374521156-6retcia1fiu5dvmbjik9sq89ontrkmvt.apps.googleusercontent.com";
+const GOOGLE_CLIENT_ID =
+  "653374521156-6retcia1fiu5dvmbjik9sq89ontrkmvt.apps.googleusercontent.com";
 
 /******************************************************
  * HELPERS
@@ -16,7 +17,11 @@ const GOOGLE_CLIENT_ID = "653374521156-6retcia1fiu5dvmbjik9sq89ontrkmvt.apps.goo
 function getUser() {
   const raw = localStorage.getItem("sg_user");
   if (!raw) return null;
-  try { return JSON.parse(raw); } catch { return null; }
+  try {
+    return JSON.parse(raw);
+  } catch {
+    return null;
+  }
 }
 
 function escapeHtml(str) {
@@ -25,8 +30,8 @@ function escapeHtml(str) {
       "&": "&amp;",
       "<": "&lt;",
       ">": "&gt;",
-      "\"": "&quot;",
-      "'": "&#039;"
+      '"': "&quot;",
+      "'": "&#039;",
     }[m])
   );
 }
@@ -59,9 +64,9 @@ function setupLoginUI() {
 
   if (ADMINS.includes(user.email)) {
     if (adminBadge) adminBadge.style.display = "inline-block";
-    icon.onclick = () => window.location.href = "admin.html";
+    icon.onclick = () => (window.location.href = "admin.html");
   } else {
-    icon.onclick = () => window.location.href = "account.html";
+    icon.onclick = () => (window.location.href = "account.html");
     if (adminBadge) adminBadge.style.display = "none";
   }
 }
@@ -76,7 +81,7 @@ function saveUser(data, token) {
     name: data.name,
     picture: data.picture,
     token,
-    joined: new Date().toLocaleDateString()
+    joined: new Date().toLocaleDateString(),
   };
 
   localStorage.setItem("sg_user", JSON.stringify(user));
@@ -105,10 +110,10 @@ function handleCredentialResponse(response) {
 // FAST redirect login
 function initGoogleLogin() {
   google.accounts.id.initialize({
-    client_id: "653374521156-6retcia1fiu5dvmbjik9sq89ontrkmvt.apps.googleusercontent.com",
+    client_id: GOOGLE_CLIENT_ID,
     callback: handleCredentialResponse,
     ux_mode: "redirect",
-    auto_select: false
+    auto_select: false,
   });
 
   google.accounts.id.prompt();
@@ -125,12 +130,8 @@ function attachLoginButton() {
 document.addEventListener("DOMContentLoaded", () => {
   setupLoginUI();
   updateCartBadge();
-
-  // REMOVE initGSI + waitForGSI — not needed in redirect mode
-  // Attach login button directly
-  attachLoginButton();
+  attachLoginButton(); // login button now works instantly
 });
-
 
 /******************************************************
  * CART SYSTEM
@@ -150,7 +151,7 @@ function addToCart(product, metres = 1) {
     name: product.name,
     price: product.price,
     image: product.images[0],
-    metres
+    metres,
   });
   localStorage.setItem("cart", JSON.stringify(cart));
   updateCartBadge();
@@ -289,7 +290,7 @@ async function adminDeleteProduct(id) {
   if (!confirm("Delete this product permanently?")) return;
 
   const res = await fetch(`/api/admin/products/${id}`, {
-    method: "DELETE"
+    method: "DELETE",
   });
 
   const data = await res.json();
@@ -311,7 +312,8 @@ async function renderAdminProducts() {
   const products = await res.json();
 
   out.innerHTML = products
-    .map((p) => `
+    .map(
+      (p) => `
       <div class="card p-2 mb-2">
         <div class="d-flex align-items-center">
           <img src="${p.images[0]}" style="width:70px;height:70px;border-radius:8px;object-fit:cover;">
@@ -325,7 +327,8 @@ async function renderAdminProducts() {
           </button>
         </div>
       </div>
-    `)
+    `
+    )
     .join("");
 }
 window.renderAdminProducts = renderAdminProducts;
