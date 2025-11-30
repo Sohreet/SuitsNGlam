@@ -12,16 +12,14 @@
     body { background:white !important; }
 
     .btn-login {
-      background:#ff3f33;
+      background:#ff3f33 !important;
       color:white !important;
       padding:6px 14px;
       border:none;
       border-radius:6px;
       font-weight:600;
     }
-    .btn-login:hover { background:#ff2b1f; }
-
-    .nav-login-area { visibility:visible !important; }
+    .btn-login:hover { background:#ff2b1f !important; }
 
     .home-icon {
       font-size:1.6rem;
@@ -30,19 +28,18 @@
       margin-right:15px;
     }
     .home-icon:hover { opacity:0.7; }
-
-    .product-card { cursor:pointer; }
   </style>
 </head>
 
 <body>
 
+<!-- NAVBAR -->
 <nav class="navbar navbar-expand-lg" style="background-color:#e3f2fd;">
   <div class="container">
 
     <a class="navbar-brand fw-bold" href="index.html">Suits N Glam</a>
 
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+    <button class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbarNav">
       <span class="navbar-toggler-icon"></span>
     </button>
 
@@ -51,7 +48,6 @@
       <i class="bi bi-house-fill home-icon" onclick="window.location.href='index.html'"></i>
 
       <ul class="navbar-nav ms-auto me-2">
-
         <li class="nav-item"><a class="nav-link" href="allproducts.html">All Products</a></li>
         <li class="nav-item"><a class="nav-link" href="newarrivals.html">New Arrivals</a></li>
 
@@ -69,40 +65,34 @@
 
         <li class="nav-item"><a class="nav-link" href="bestdeals.html">Best Deals</a></li>
         <li class="nav-item"><a class="nav-link" href="sales.html">Sales</a></li>
-
       </ul>
 
-      <a href="cart.html" class="d-flex align-items-center gap-2 me-3 text-decoration-none text-dark">
+      <!-- CART -->
+      <a href="cart.html" class="d-flex align-items-center me-3 text-decoration-none text-dark">
         <i class="bi bi-bag-heart-fill" style="font-size:1.6rem;"></i>
         <span id="cartCount" class="badge bg-danger"></span>
       </a>
 
+      <!-- LOGIN -->
       <div class="nav-login-area d-flex align-items-center">
-
         <button id="loginBtn" class="btn-login">Login</button>
 
         <img id="accountIcon"
-             style="width:34px;height:34px;border-radius:50%;display:none;cursor:pointer;margin-left:10px;">
+             style="width:34px;height:34px;border-radius:50%;display:none;margin-left:10px;cursor:pointer;">
 
         <span id="adminBadgeNav"
               style="background:#c60000;color:white;padding:4px 10px;border-radius:6px;
-                     font-weight:700;display:none;margin-left:10px;">
-          ADMIN
-        </span>
-
+                     font-weight:700;display:none;margin-left:10px;">ADMIN</span>
       </div>
 
     </div>
+
   </div>
 </nav>
 
 <div class="container mt-4">
-
   <h2 class="fw-bold">Daily Wear</h2>
-
-  <!-- ONLY THE PRODUCTS CONTAINER -->
   <div id="productsContainer" class="row g-4 mt-3"></div>
-
 </div>
 
 <script>
@@ -110,6 +100,37 @@ document.addEventListener("DOMContentLoaded", () => {
   loadProducts("dailywear");
 });
 </script>
+
+<!-- LOGIN MODALS -->
+<div class="modal fade" id="emailLoginModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered"><div class="modal-content p-3">
+
+    <h5>Email Login</h5>
+    <input id="loginEmail" class="form-control my-2" placeholder="Email">
+    <input id="loginPass" type="password" class="form-control my-2" placeholder="Password">
+    <button class="btn btn-primary w-100" onclick="emailLogin()">Login</button>
+
+    <div class="text-center my-2"><small>or</small></div>
+
+    <button class="btn btn-outline-secondary w-100" onclick="triggerGoogleLogin()">Continue with Google</button>
+
+    <p class="text-center mt-3">Don't have an account? <a href="#" onclick="openRegister()">Register</a></p>
+
+  </div></div>
+</div>
+
+<div class="modal fade" id="registerModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered"><div class="modal-content p-3">
+
+    <h5>Create Account</h5>
+    <input id="regName" class="form-control my-2" placeholder="Name">
+    <input id="regEmail" class="form-control my-2" placeholder="Email">
+    <input id="regPass" type="password" class="form-control my-2" placeholder="Password">
+
+    <button class="btn btn-success w-100" onclick="emailRegister()">Register</button>
+
+  </div></div>
+</div>
 
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <script src="https://cdn.jsdelivr.net/npm/jwt-decode/build/jwt-decode.min.js"></script>
