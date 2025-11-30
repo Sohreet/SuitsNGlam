@@ -1,5 +1,5 @@
 /******************************************************
- * SUITS N GLAM — FINAL MASTER APP.JS (CLEAN & FIXED)
+ * SUITS N GLAM — FINAL MASTER APP.JS (POPUP FIXED)
  ******************************************************/
 
 console.log("APP.JS LOADED");
@@ -26,13 +26,7 @@ function getUser() {
 
 function escapeHtml(str) {
   return str?.replace(/[&<>"']/g, (m) =>
-    ({
-      "&": "&amp;",
-      "<": "&lt;",
-      ">": "&gt;",
-      '"': "&quot;",
-      "'": "&#039;",
-    }[m])
+    ({"&": "&amp;","<": "&lt;",">": "&gt;",'"': "&quot;","'": "&#039;"}[m])
   );
 }
 
@@ -72,7 +66,7 @@ function setupLoginUI() {
 }
 
 /******************************************************
- * GOOGLE LOGIN — REDIRECT MODE
+ * GOOGLE LOGIN — POPUP MODE (FIXED)
  ******************************************************/
 
 function saveUser(data, token) {
@@ -107,15 +101,16 @@ function handleCredentialResponse(response) {
   }
 }
 
-// FAST redirect login
+// FIXED POPUP LOGIN (NO AUTO LOGIN PROBLEMS)
 function initGoogleLogin() {
   google.accounts.id.initialize({
     client_id: GOOGLE_CLIENT_ID,
     callback: handleCredentialResponse,
-    ux_mode: "redirect",
+    ux_mode: "popup",     // POPUP FIX
     auto_select: false,
   });
 
+  google.accounts.id.disableAutoSelect();   // IMPORTANT FIX
   google.accounts.id.prompt();
 }
 
@@ -125,12 +120,12 @@ function attachLoginButton() {
 }
 
 /******************************************************
- * INITIALIZE ALL
+ * INITIALIZE EVERYTHING
  ******************************************************/
 document.addEventListener("DOMContentLoaded", () => {
   setupLoginUI();
   updateCartBadge();
-  attachLoginButton(); // login button now works instantly
+  attachLoginButton();
 });
 
 /******************************************************
@@ -289,9 +284,7 @@ function openProduct(id) {
 async function adminDeleteProduct(id) {
   if (!confirm("Delete this product permanently?")) return;
 
-  const res = await fetch(`/api/admin/products/${id}`, {
-    method: "DELETE",
-  });
+  const res = await fetch(`/api/admin/products/${id}`, { method: "DELETE" });
 
   const data = await res.json();
   if (data.success) {
