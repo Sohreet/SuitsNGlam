@@ -1,3 +1,5 @@
+console.log("GOOGLE AUTH LOADED!");
+
 google.accounts.id.initialize({
   client_id: 653374521156-6retcia1fiu5dvmbjik9sq89ontrkmvt.apps.googleusercontent.com,
   callback: function (response) {
