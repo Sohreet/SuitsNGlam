@@ -1,179 +1,140 @@
-// --------------------------
-// ADMIN PRODUCT SYSTEM
-// --------------------------
-
+/* -------------------------------------------------------
+   ADMIN AUTH CHECK
+------------------------------------------------------- */
 document.addEventListener("DOMContentLoaded", () => {
-    loadProducts();
-    setupImageLimit();
+  const admin = localStorage.getItem("adminLoggedIn");
+  if (!admin) {
+    alert("Admin access denied!");
+    window.location.href = "index.html";
+  }
+
+  loadProducts();
+
+  document.getElementById("logoutBtn").addEventListener("click", () => {
+    localStorage.removeItem("adminLoggedIn");
+    window.location.href = "index.html";
+  });
 });
 
-// LIMIT MAX 5 IMAGES
-function setupImageLimit() {
-    const imageInput = document.getElementById("images");
-    imageInput.addEventListener("change", () => {
-        if (imageInput.files.length > 5) {
-            alert("You can upload a maximum of 5 images.");
-            imageInput.value = ""; // reset
-        }
-    });
-}
+/* -------------------------------------------------------
+   FORM SUBMIT (ADD or UPDATE PRODUCT)
+------------------------------------------------------- */
+const form = document.getElementById("productForm");
 
-// LOAD PRODUCTS FROM localStorage
-function loadProducts() {
-    const products = JSON.parse(localStorage.getItem("products")) || [];
-    const table = document.getElementById("productsTable");
-    table.innerHTML = "";
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
 
-    products.forEach((p, i) => {
-        table.innerHTML += `
-        <tr>
-            <td><img src="${p.images[0] || ""}" /></td>
-            <td>${p.title}</td>
-            <td>₹${p.price}</td>
-            <td>${p.category}</td>
-            <td>${p.isBestDeal ? "✔️" : "❌"}</td>
-            <td>${p.isSale ? "✔️" : "❌"}</td>
-            <td>
-              <button class="btn btn-sm btn-danger" onclick="deleteProduct(${i})">
-                Delete
-              </button>
-            </td>
-        </tr>`;
-    });
-}
+  const productId = document.getElementById("productId").value;
 
-// DELETE PRODUCT
-function deleteProduct(index) {
-    let products = JSON.parse(localStorage.getItem("products")) || [];
-    products.splice(index, 1);
+  const formData = new FormData();
+  formData.append("title", document.getElementById("title").value);
+  formData.append("price", document.getElementById("price").value);
+  formData.append("description", document.getElementById("description").value);
+  formData.append("category", document.getElementById("category").value);
+  formData.append("isBestDeal", document.getElementById("isBestDeal").checked);
+  formData.append("isSale", document.getElementById("isSale").checked);
+  formData.append("minMetres", document.getElementById("minMetres").value);
+  formData.append("maxMetres", document.getElementById("maxMetres").value);
+  formData.append("stock", document.getElementById("stock").value);
 
-    localStorage.setItem("products", JSON.stringify(products));
-    loadProducts();
-}
+  // Images
+  const images = document.getElementById("images").files;
+  for (let i = 0; i < images.length; i++) {
+    formData.append("images", images[i]);
+  }
 
-// SAVE PRODUCT
-document.getElementById("productForm").addEventListener("submit", function (e) {
-    e.preventDefault();
+  // Video
+  const video = document.getElementById("video").files[0];
+  if (video) {
+    formData.append("video", video);
+  }
 
-    let products = JSON.parse(localStorage.getItem("products")) || [];
+  const url = productId
+    ? `https://your-backend-url.com/api/products/${productId}`
+    : "https://your-backend-url.com/api/products";
 
-    // COLLECT DATA
-    const title = document.getElementById("title").value;
-    const price = document.getElementById("price").value;
-    const desc = document.getElementById("description").value;
-    const category = document.getElementById("category").value;
-    const isBestDeal = document.getElementById("isBestDeal").checked;
-    const isSale = document.getElementById("isSale").checked;
-    const minMetres = document.getElementById("minMetres").value;
-    const maxMetres = document.getElementById("maxMetres").value;
-    const stock = document.getElementById("stock").value;
+  const method = productId ? "PUT" : "POST";
 
-    const imageFiles = document.getElementById("images").files;
-    const videoFile = document.getElementById("video").files[0];
+  const response = await fetch(url, {
+    method: method,
+    body: formData,
+  });
 
-    // IMAGE LIMIT CHECK
-    if (imageFiles.length > 5) {
-        alert("Maximum 5 images allowed.");
-        return;
-    }
+  const result = await response.json();
+  alert(result.message || "Saved!");
 
-    // CONVERT IMAGES TO BASE64
-    const imagePromises = [];
-    for (let img of imageFiles) {
-        imagePromises.push(convertToBase64(img));
-    }
+  form.reset();
+  document.getElementById("productId").value = "";
 
-    Promise.all(imagePromises).then((imageBase64List) => {
-        // CONVERT VIDEO
-        if (videoFile) {
-            convertToBase64(videoFile).then((videoBase64) => {
-                saveFinal(
-                    imageBase64List,
-                    videoBase64
-                );
-            });
-        } else {
-            saveFinal(imageBase64List, null);
-        }
-    });
-
-    function saveFinal(imageList, video) {
-        const product = {
-            id: Date.now(),
-            title,
-            price,
-            description: desc,
-            category,
-            isBestDeal,
-            isSale,
-            minMetres,
-            maxMetres,
-            stock,
-            images: imageList,
-            video
-        };
-
-        products.push(product);
-
-        // SAVE TO storage
-        localStorage.setItem("products", JSON.stringify(products));
-
-        alert("Product saved successfully!");
-        document.getElementById("productForm").reset();
-
-        loadProducts();
-        updateCategoryPages(product);
-    }
+  loadProducts();
 });
 
-// Convert File → Base64
-function convertToBase64(file) {
-    return new Promise((resolve) => {
-        let reader = new FileReader();
-        reader.onload = () => resolve(reader.result);
-        reader.readAsDataURL(file);
-    });
+/* -------------------------------------------------------
+   LOAD ALL PRODUCTS
+------------------------------------------------------- */
+async function loadProducts() {
+  const res = await fetch("https://your-backend-url.com/api/products");
+  const data = await res.json();
+
+  const tbody = document.getElementById("productsTable");
+  tbody.innerHTML = "";
+
+  data.forEach((p) => {
+    tbody.innerHTML += `
+      <tr>
+        <td><img src="${p.images?.[0] || 'img/noimg.png'}"></td>
+        <td>${p.title}</td>
+        <td>₹${p.price}</td>
+        <td>${p.category}</td>
+        <td>${p.isBestDeal ? "✔" : "✖"}</td>
+        <td>${p.isSale ? "✔" : "✖"}</td>
+        <td>
+          <button onclick="editProduct('${p._id}')" class="btn btn-sm btn-primary">
+            <i class="bi bi-pencil-square"></i>
+          </button>
+
+          <button onclick="deleteProduct('${p._id}')" class="btn btn-sm btn-danger">
+            <i class="bi bi-trash"></i>
+          </button>
+        </td>
+      </tr>
+    `;
+  });
 }
 
-// ------------------------------
-// ADD PRODUCT TO CATEGORY PAGE
-// ------------------------------
-function updateCategoryPages(product) {
-    const pageName = `${product.category}.html`;
+/* -------------------------------------------------------
+   EDIT PRODUCT (AUTO-FILL FORM)
+------------------------------------------------------- */
+async function editProduct(id) {
+  const res = await fetch(`https://your-backend-url.com/api/products/${id}`);
+  const p = await res.json();
 
-    fetch(pageName)
-        .then(res => res.text())
-        .then(html => {
-            let parser = new DOMParser();
-            let doc = parser.parseFromString(html, "text/html");
+  document.getElementById("productId").value = p._id;
+  document.getElementById("title").value = p.title;
+  document.getElementById("price").value = p.price;
+  document.getElementById("description").value = p.description;
+  document.getElementById("category").value = p.category;
+  document.getElementById("isBestDeal").checked = p.isBestDeal;
+  document.getElementById("isSale").checked = p.isSale;
+  document.getElementById("minMetres").value = p.minMetres;
+  document.getElementById("maxMetres").value = p.maxMetres;
+  document.getElementById("stock").value = p.stock;
 
-            let container = doc.querySelector("#productList");
-
-            if (!container) return;
-
-            container.innerHTML += `
-              <div class="col-md-4 mb-4">
-                <div class="card">
-                  <img src="${product.images[0]}" class="card-img-top"/>
-                  <div class="card-body">
-                    <h5>${product.title}</h5>
-                    <p>₹${product.price}</p>
-                  </div>
-                </div>
-              </div>
-            `;
-
-            let updatedHTML = "<!DOCTYPE html>\n" + doc.documentElement.outerHTML;
-
-            downloadFile(pageName, updatedHTML);
-        });
+  window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
-function downloadFile(filename, content) {
-    const blob = new Blob([content], { type: "text/html" });
-    const a = document.createElement("a");
+/* -------------------------------------------------------
+   DELETE PRODUCT
+------------------------------------------------------- */
+async function deleteProduct(id) {
+  if (!confirm("Delete this product?")) return;
 
-    a.href = URL.createObjectURL(blob);
-    a.download = filename;
-    a.click();
+  const res = await fetch(`https://your-backend-url.com/api/products/${id}`, {
+    method: "DELETE",
+  });
+
+  const result = await res.json();
+  alert(result.message || "Deleted!");
+
+  loadProducts();
 }
