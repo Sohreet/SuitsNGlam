@@ -22,7 +22,7 @@
     }
     .btn-login:hover { background:#ff2b1f; }
 
-    /* Fix flicker */
+    /* flicker fix */
     .nav-login-area { visibility:visible !important; }
 
     /* Home icon */
@@ -52,11 +52,10 @@
 
     <div class="collapse navbar-collapse" id="navbarNav">
 
-      <!-- HOME ICON -->
+      <!-- Home -->
       <i class="bi bi-house-fill home-icon" onclick="window.location.href='index.html'"></i>
 
       <ul class="navbar-nav ms-auto me-2">
-
         <li class="nav-item"><a class="nav-link active" href="allproducts.html">All Products</a></li>
         <li class="nav-item"><a class="nav-link" href="newarrivals.html">New Arrivals</a></li>
 
@@ -74,7 +73,6 @@
 
         <li class="nav-item"><a class="nav-link" href="bestdeals.html">Best Deals</a></li>
         <li class="nav-item"><a class="nav-link" href="sales.html">Sales</a></li>
-
       </ul>
 
       <!-- CART -->
@@ -84,20 +82,18 @@
         <span id="cartCount" class="badge bg-danger"></span>
       </a>
 
-      <!-- LOGIN / ACCOUNT -->
+      <!-- LOGIN -->
       <div class="nav-login-area d-flex align-items-center">
-
         <button id="loginBtn" class="btn-login">Login</button>
 
         <img id="accountIcon"
-             src=""
              style="width:34px;height:34px;border-radius:50%;display:none;cursor:pointer;margin-left:10px;">
 
         <span id="adminBadgeNav"
-              style="background:#c60000;color:white;padding:4px 10px;border-radius:6px;font-weight:700;display:none;margin-left:10px;">
+              style="background:#c60000;color:white;padding:4px 10px;border-radius:6px;font-weight:700;
+                     display:none;margin-left:10px;">
           ADMIN
         </span>
-
       </div>
 
     </div>
@@ -105,16 +101,18 @@
 </nav>
 
 
-<!-- PAGE CONTENT -->
+<!-- PAGE BODY -->
 <div class="container mt-4">
 
   <h2 class="fw-bold">All Products</h2>
 
-  <p id="comingSoonMsg" class="text-muted fw-bold" style="display:none;">
-    Coming soon...
-  </p>
-
   <div id="productsContainer" class="row g-4 mt-3"></div>
+
+  <p id="comingSoonMsg"
+     class="text-muted fw-bold text-center mt-4"
+     style="display:none;">
+    Coming Soon...
+  </p>
 
 </div>
 
@@ -122,20 +120,12 @@
 <!-- LOAD PRODUCTS -->
 <script>
 document.addEventListener("DOMContentLoaded", () => {
-
   loadProducts("all");
-
-  setTimeout(() => {
-    if (document.querySelectorAll(".product-card").length === 0) {
-      document.getElementById("comingSoonMsg").style.display = "block";
-    }
-  }, 800);
-
 });
 </script>
 
 
-<!-- GOOGLE + APP.JS -->
+<!-- SCRIPTS -->
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <script src="https://cdn.jsdelivr.net/npm/jwt-decode/build/jwt-decode.min.js"></script>
 <script src="js/app.js"></script>
