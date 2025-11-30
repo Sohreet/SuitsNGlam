@@ -3,13 +3,15 @@
 const API_BASE = "https://api.suitsnglam.com/api";
 
 // ADMIN EMAILS
-const ADMIN_EMAILS = ["sohabrar10@gmail.com"];
+const ADMIN_EMAILS = ["sohabrar10@gmail.com", "suitsnglam01@gmail.com"];
 
-// Check Admin Access
+// ---------------------------------------------
+// CHECK ADMIN ACCESS
+// ---------------------------------------------
 document.addEventListener("DOMContentLoaded", () => {
-  const email = localStorage.getItem("userEmail");
+  const user = JSON.parse(localStorage.getItem("sg_user"));
 
-  if (!email || !ADMIN_EMAILS.includes(email)) {
+  if (!user || !ADMIN_EMAILS.includes(user.email)) {
     alert("Access denied. Admins only.");
     window.location.href = "index.html";
     return;
@@ -25,9 +27,9 @@ document.getElementById("logoutBtn").addEventListener("click", () => {
 });
 
 
-// -------------------------------
-// LOAD PRODUCTS INTO TABLE
-// -------------------------------
+// ---------------------------------------------
+// LOAD ALL PRODUCTS IN TABLE
+// ---------------------------------------------
 async function loadProducts() {
   try {
     const res = await fetch(`${API_BASE}/products`);
@@ -36,7 +38,7 @@ async function loadProducts() {
     const table = document.getElementById("productsTable");
     table.innerHTML = "";
 
-    products.forEach(p => {
+    products.forEach((p) => {
       const row = document.createElement("tr");
 
       row.innerHTML = `
@@ -48,12 +50,8 @@ async function loadProducts() {
         <td>${p.isSale ? "✔" : "—"}</td>
 
         <td>
-          <button class="btn btn-sm btn-primary me-2" onclick="editProduct('${p._id}')">
-            Edit
-          </button>
-          <button class="btn btn-sm btn-danger" onclick="deleteProduct('${p._id}')">
-            Delete
-          </button>
+          <button class="btn btn-sm btn-primary me-2" onclick="editProduct('${p._id}')">Edit</button>
+          <button class="btn btn-sm btn-danger" onclick="deleteProduct('${p._id}')">Delete</button>
         </td>
       `;
 
@@ -66,9 +64,9 @@ async function loadProducts() {
 }
 
 
-// -------------------------------
-// EDIT PRODUCT — load data to form
-// -------------------------------
+// ---------------------------------------------
+// EDIT PRODUCT — Load in form
+// ---------------------------------------------
 async function editProduct(id) {
   const res = await fetch(`${API_BASE}/products/${id}`);
   const p = await res.json();
@@ -77,7 +75,7 @@ async function editProduct(id) {
   document.getElementById("title").value = p.title;
   document.getElementById("price").value = p.price;
   document.getElementById("description").value = p.description;
-  document.getElementById("collection").value = p.category || "";
+  document.getElementById("category").value = p.category || "";
   document.getElementById("isBestDeal").checked = p.isBestDeal;
   document.getElementById("isSale").checked = p.isSale;
   document.getElementById("minMetres").value = p.minMetres;
@@ -88,37 +86,37 @@ async function editProduct(id) {
 }
 
 
-// -------------------------------
+// ---------------------------------------------
 // DELETE PRODUCT
-// -------------------------------
+// ---------------------------------------------
 async function deleteProduct(id) {
   if (!confirm("Delete this product?")) return;
 
-  const token = localStorage.getItem("token");
+  const user = JSON.parse(localStorage.getItem("sg_user"));
 
   await fetch(`${API_BASE}/products/${id}`, {
     method: "DELETE",
-    headers: { "auth-token": token }
+    headers: { "auth-token": user.token }
   });
 
   loadProducts();
 }
 
 
-// -------------------------------
+// ---------------------------------------------
 // CREATE / UPDATE PRODUCT
-// -------------------------------
+// ---------------------------------------------
 document.getElementById("productForm").addEventListener("submit", async (e) => {
   e.preventDefault();
 
   const id = document.getElementById("productId").value;
-  const token = localStorage.getItem("token");
+  const user = JSON.parse(localStorage.getItem("sg_user"));
 
   const formData = new FormData();
   formData.append("title", document.getElementById("title").value);
   formData.append("price", document.getElementById("price").value);
   formData.append("description", document.getElementById("description").value);
-  formData.append("category", document.getElementById("collection").value);
+  formData.append("category", document.getElementById("category").value);
   formData.append("isBestDeal", document.getElementById("isBestDeal").checked);
   formData.append("isSale", document.getElementById("isSale").checked);
   formData.append("minMetres", document.getElementById("minMetres").value);
@@ -148,7 +146,7 @@ document.getElementById("productForm").addEventListener("submit", async (e) => {
   const res = await fetch(url, {
     method,
     headers: {
-      "auth-token": token
+      "auth-token": user.token
     },
     body: formData
   });
