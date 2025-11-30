@@ -14,7 +14,7 @@ console.log("APP.JS LOADED");
 /******************************************************
  * GLOBALS
  ******************************************************/
-const ADMINS = ["sohabrar10@gmail.com", "suitsnglam01@gmail.com"];
+const ADMINS = ["sohabrar10@gmail.com"];
 const GOOGLE_CLIENT_ID = "653374521156-6retcia1fiu5dvmbjik9sq89ontrkmvt.apps.googleusercontent.com";
 
 let _gsiInitialized = false;
@@ -112,7 +112,7 @@ function initGSI() {
   if (!window.google || !google.accounts || !google.accounts.id) return;
 
   google.accounts.id.initialize({
-    client_id: 653374521156-6retcia1fiu5dvmbjik9sq89ontrkmvt.apps.googleusercontent.com,
+    client_id: "653374521156-6retcia1fiu5dvmbjik9sq89ontrkmvt.apps.googleusercontent.com",
     callback: handleCredentialResponse,
     ux_mode: "popup"
   });
