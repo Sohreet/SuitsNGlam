@@ -1,66 +1,42 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Sales - Suits N Glam</title>
 
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 
   <style>
-    body { background-color:#f8f9fa; }
+    body { background:#f8f9fa; }
     .navbar-brand { font-weight:bold; }
-
+    .category-hero { background:#ffd9d9; padding:18px; border-radius:10px; margin-bottom:18px; }
     .card-button { cursor:pointer; transition:.2s; border:none; }
     .card-button:hover { transform:translateY(-5px); box-shadow:0 8px 16px rgba(0,0,0,0.2); }
-
-    .btn-login {
-      background-color:rgb(255,63,51);
-      color:#fff;
-      padding:6px 14px;
-      border-radius:6px;
-      border:none;
-    }
-    .btn-login:hover { background-color:rgb(255,43,31); }
-
-    .social-area i {
-      font-size:1.7rem;
-      margin:0 12px;
-      color:#000;
-      cursor:pointer;
-    }
-    .social-area i:hover { opacity:0.7; }
-
-    #comingSoonMsg {
-      font-size:1.2rem;
-      text-align:center;
-      font-weight:500;
-      color:#777;
-      display:none;
-    }
+    .btn-login { background:rgb(255,63,51); color:white; padding:6px 14px; border-radius:6px; border:none; }
   </style>
-
 </head>
+
 <body>
 
+  <!-- NAVBAR -->
   <nav class="navbar navbar-expand-lg" style="background-color:#e3f2fd;">
     <div class="container">
 
       <a class="navbar-brand" href="index.html">Suits N Glam</a>
 
-      <button class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navLinks">
+      <button class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbarNav">
         <span class="navbar-toggler-icon"></span>
       </button>
 
-      <div class="collapse navbar-collapse" id="navLinks">
+      <div class="collapse navbar-collapse" id="navbarNav">
 
         <ul class="navbar-nav ms-auto me-2">
           <li class="nav-item"><a class="nav-link" href="allproducts.html">All Products</a></li>
           <li class="nav-item"><a class="nav-link" href="newarrivals.html">New Arrivals</a></li>
-
           <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown">Shop By Category</a>
+            <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown">Shop by Category</a>
             <ul class="dropdown-menu">
               <li><a class="dropdown-item" href="summer.html">Summer</a></li>
               <li><a class="dropdown-item" href="winter.html">Winter</a></li>
@@ -75,46 +51,42 @@
           <li class="nav-item"><a class="nav-link active" href="sales.html">Sales</a></li>
         </ul>
 
-        <a href="cart.html" class="d-flex align-items-center me-3" style="text-decoration:none;color:#000;">
+        <a href="cart.html" class="d-flex align-items-center me-3 gap-2" style="color:#000;text-decoration:none;">
           <i class="bi bi-bag-heart-fill" style="font-size:1.6rem;"></i>
           <span id="cartCount" class="badge bg-danger"></span>
         </a>
 
-        <button id="loginBtn" class="btn-login">Login</button>
+        <button id="loginButton" class="btn-login">Login</button>
+
+        <img id="accountIcon" src="" 
+             style="width:34px;height:34px;border-radius:50%;cursor:pointer;display:none;margin-left:10px;"
+             onclick="window.location.href='account.html'">
 
       </div>
     </div>
   </nav>
 
-
+  <!-- HERO -->
   <div class="container mt-4">
-    <h2 class="mb-3">Sales</h2>
+    <div class="category-hero">
+      <h2>Sales</h2>
+      <p class="mb-0">Exclusive discounts on selected fabrics.</p>
+    </div>
+  </div>
 
-    <p id="comingSoonMsg">Sales items coming soon…</p>
-
+  <div class="container mt-3">
     <div class="row g-4" id="productsContainer"></div>
   </div>
 
-
-  <div class="container text-center py-4 social-area">
-    <i onclick="window.open('https://www.instagram.com/suitsnglam/', '_blank')" class="bi bi-instagram"></i>
-    <i onclick="window.open('https://www.threads.net/@suitsnglam', '_blank')" class="bi bi-chat-dots"></i>
-    <i onclick="window.open('https://www.facebook.com/mannishan', '_blank')" class="bi bi-facebook"></i>
-    <i onclick="window.open('#', '_blank')" class="bi bi-youtube"></i>
-  </div>
-
-
+  <!-- SCRIPTS -->
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <script src="https://cdn.jsdelivr.net/npm/jwt-decode/build/jwt-decode.min.js"></script>
-
   <script src="js/google-auth.js"></script>
   <script src="js/navbar.js"></script>
-  <script src="js/products.js"></script>
+  <script src="js/products-common.js"></script>
   <script src="js/cart.js"></script>
 
-  <script>
-    loadProducts("sales");
-  </script>
+  <script> loadProducts("sales"); </script>
 
 </body>
 </html>
