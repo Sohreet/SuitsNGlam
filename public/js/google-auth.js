@@ -1,3 +1,6 @@
+console.log("GOOGLE AUTH LOADED");
+console.log("adminLoggedIn on load =", localStorage.getItem("adminLoggedIn"));
+
 // --------------------------------------------------
 // GOOGLE AUTH — FIXED ADMIN LOGIN VERSION
 // --------------------------------------------------
