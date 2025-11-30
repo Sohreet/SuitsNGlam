@@ -10,21 +10,34 @@
 
   <style>
     body { background:white !important; }
-    .nav-login-area { visibility:visible !important; }
-    .login-btn {
-      color:#c60000 !important;
-      border:2px solid #c60000;
-      padding:4px 12px;
+
+    /* Login button (same as index) */
+    .btn-login {
+      background:#ff3f33;
+      color:white !important;
+      padding:6px 14px;
+      border:none;
       border-radius:6px;
       font-weight:600;
     }
-    .login-btn:hover { background:#c60000; color:white !important; }
+    .btn-login:hover { background:#ff2b1f; }
+
+    /* Flicker Fix */
+    .nav-login-area { visibility:visible !important; }
+
+    /* Home icon */
+    .home-icon {
+      font-size:1.6rem; cursor:pointer; color:black; margin-right:15px;
+    }
+    .home-icon:hover { opacity:0.7; }
+
+    .product-card { cursor:pointer; }
   </style>
 </head>
 
 <body>
 
-<!-- FULL NAVBAR (Correct) -->
+<!-- NAVBAR -->
 <nav class="navbar navbar-expand-lg" style="background-color:#e3f2fd;">
   <div class="container">
 
@@ -36,12 +49,18 @@
 
     <div class="collapse navbar-collapse" id="navbarNav">
 
+      <!-- Home icon -->
+      <i class="bi bi-house-fill home-icon" onclick="window.location.href='index.html'"></i>
+
       <ul class="navbar-nav ms-auto me-2">
+
         <li class="nav-item"><a class="nav-link active" href="allproducts.html">All Products</a></li>
         <li class="nav-item"><a class="nav-link" href="newarrivals.html">New Arrivals</a></li>
 
         <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Shop By Category</a>
+          <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
+            Shop By Category
+          </a>
           <ul class="dropdown-menu">
             <li><a class="dropdown-item" href="summer.html">Summer</a></li>
             <li><a class="dropdown-item" href="winter.html">Winter</a></li>
@@ -64,11 +83,13 @@
 
       <!-- LOGIN / ACCOUNT -->
       <div class="nav-login-area d-flex align-items-center">
-        <button id="loginBtn" class="login-btn">Login</button>
+        <button id="loginBtn" class="btn-login">Login</button>
+
         <img id="accountIcon"
              style="width:34px;height:34px;border-radius:50%;display:none;cursor:pointer;margin-left:10px;">
-        <span id="adminBadgeNav" class="admin-badge"
-              style="background:#c60000;color:white;padding:4px 10px;border-radius:6px;font-weight:700;display:none;">
+
+        <span id="adminBadgeNav"
+              style="background:#c60000;color:white;padding:4px 10px;border-radius:6px;font-weight:700;display:none;margin-left:10px;">
           ADMIN
         </span>
       </div>
@@ -77,22 +98,40 @@
   </div>
 </nav>
 
+
 <!-- PAGE CONTENT -->
 <div class="container mt-4">
-  <h2>All Products</h2>
+  <h2 class="fw-bold">All Products</h2>
 
-  <p id="comingSoonMsg" class="text-muted" style="display:none;font-weight:600;">Coming soon...</p>
+  <p id="comingSoonMsg" class="text-muted" style="display:none;font-weight:600;">
+    Coming soon...
+  </p>
 
   <div id="productsContainer" class="row g-4 mt-3"></div>
 </div>
 
+<!-- LOAD PRODUCTS -->
 <script>
 document.addEventListener("DOMContentLoaded", () => {
+
+  // 👇 load all products (backend route)
   loadProducts("all");
+
+  setTimeout(() => {
+    const cards = document.querySelectorAll(".product-card");
+    if (cards.length === 0) {
+      document.getElementById("comingSoonMsg").style.display = "block";
+    }
+  }, 800);
+
 });
 </script>
 
+<!-- Scripts -->
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="https://cdn.jsdelivr.net/npm/jwt-decode/build/jwt-decode.min.js"></script>
 <script src="js/app.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+
 </body>
 </html>
