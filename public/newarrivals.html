@@ -104,8 +104,6 @@
 <div class="container mt-4">
   <h2 class="fw-bold">New Arrivals</h2>
 
-  <p id="comingSoonMsg" class="text-muted fw-bold" style="display:none;">Coming Soon...</p>
-
   <div id="productsContainer" class="row g-4 mt-3"></div>
 </div>
 
@@ -113,15 +111,7 @@
 <!-- LOAD PRODUCTS -->
 <script>
 document.addEventListener("DOMContentLoaded", () => {
-
   loadProducts("newarrivals");
-
-  setTimeout(() => {
-    if (document.querySelectorAll(".product-card").length === 0) {
-      document.getElementById("comingSoonMsg").style.display = "block";
-    }
-  }, 800);
-
 });
 </script>
 
