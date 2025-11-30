@@ -18,35 +18,36 @@
       border: none;
     }
     .card-button:hover {
-      transform: translateY(-5px);
+      transform: translateY(-6px);
       box-shadow: 0 8px 16px rgba(0,0,0,0.2);
     }
 
-    /* CATEGORY COLORS */
     .summer { background-color: rgb(255,253,143); }
     .winter { background-color: rgb(179,191,255); }
     .wedding { background-color: rgb(255,220,220); }
-    .dailywear { background-color: rgb(238,238,238); }
     .casuals { background-color: rgb(207,255,226); }
+    .dailywear { background-color: rgb(238,238,238); }
     .premium { background-color: rgb(231,208,245); }
 
-    /* Prevent flicker */
+    /* Flicker fix */
     .nav-login-area { visibility: hidden; }
 
     .btn-login {
       background-color: rgb(255,63,51);
-      color: #fff;
-      padding: 6px 14px;
+      color: white;
       border-radius: 6px;
       border: none;
+      padding: 6px 14px;
     }
-    .btn-login:hover { background-color: rgb(255,43,31); }
+    .btn-login:hover {
+      background-color: rgb(255,43,31);
+    }
   </style>
 </head>
 
 <body>
 
-<!-- ===================== NAVBAR ===================== -->
+<!-- NAVBAR -->
 <nav class="navbar navbar-expand-lg" style="background-color:#e3f2fd;">
   <div class="container">
     <a class="navbar-brand" href="index.html">Suits N Glam</a>
@@ -96,7 +97,76 @@
   </div>
 </nav>
 
-<!-- ===================== SCRIPTS ===================== -->
+<!-- CATEGORY CARDS RESTORED -->
+<div class="container mt-5">
+  <div class="row g-4">
+
+    <div class="col-md-4 col-sm-6">
+      <a href="summer.html" class="text-decoration-none">
+        <div class="card card-button summer p-4 text-center">
+          <h5>Summer</h5>
+          <p>Light and breezy outfits</p>
+        </div>
+      </a>
+    </div>
+
+    <div class="col-md-4 col-sm-6">
+      <a href="winter.html" class="text-decoration-none">
+        <div class="card card-button winter p-4 text-center">
+          <h5>Winter</h5>
+          <p>Warm & stylish</p>
+        </div>
+      </a>
+    </div>
+
+    <div class="col-md-4 col-sm-6">
+      <a href="wedding.html" class="text-decoration-none">
+        <div class="card card-button wedding p-4 text-center">
+          <h5>Wedding</h5>
+          <p>Elegant & glamorous</p>
+        </div>
+      </a>
+    </div>
+
+    <div class="col-md-4 col-sm-6">
+      <a href="casuals.html" class="text-decoration-none">
+        <div class="card card-button casuals p-4 text-center">
+          <h5>Casuals</h5>
+          <p>Comfortable everyday wear</p>
+        </div>
+      </a>
+    </div>
+
+    <div class="col-md-4 col-sm-6">
+      <a href="dailywear.html" class="text-decoration-none">
+        <div class="card card-button dailywear p-4 text-center">
+          <h5>Daily Wear</h5>
+          <p>Stylish for daily use</p>
+        </div>
+      </a>
+    </div>
+
+    <div class="col-md-4 col-sm-6">
+      <a href="premiumwear.html" class="text-decoration-none">
+        <div class="card card-button premium p-4 text-center">
+          <h5>Premium Wear</h5>
+          <p>Luxury & Exclusive</p>
+        </div>
+      </a>
+    </div>
+
+  </div>
+</div>
+
+<!-- SOCIAL -->
+<div class="container text-center py-4 social-area">
+  <i class="bi bi-instagram" onclick="window.open('https://www.instagram.com/suitsnglam/', '_blank')"></i>
+  <i class="bi bi-chat-dots" onclick="window.open('https://www.threads.net/@suitsnglam', '_blank')"></i>
+  <i class="bi bi-facebook" onclick="window.open('https://www.facebook.com/mannishan', '_blank')"></i>
+  <i class="bi bi-youtube"></i>
+</div>
+
+<!-- SCRIPTS -->
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <script src="https://cdn.jsdelivr.net/npm/jwt-decode/build/jwt-decode.min.js"></script>
 
