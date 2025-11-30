@@ -16,6 +16,16 @@
     .card-button:hover { transform:translateY(-5px); box-shadow:0 8px 16px rgba(0,0,0,0.2); }
 
     .btn-login { background:rgb(255,63,51); color:white; border:none; padding:6px 14px; border-radius:6px; }
+
+    /* Coming Soon */
+    #comingSoonMsg {
+      display:none;
+      text-align:center;
+      font-size:1.3rem;
+      font-weight:500;
+      padding:40px 0;
+      color:#444;
+    }
   </style>
 </head>
 
@@ -24,6 +34,9 @@
   <!-- NAVBAR -->
   <nav class="navbar navbar-expand-lg" style="background-color:#e3f2fd;">
     <div class="container">
+
+      <!-- BACK TO HOME BUTTON -->
+      <a href="index.html" class="btn btn-outline-primary me-3">← Home</a>
 
       <a class="navbar-brand" href="index.html">Suits N Glam</a>
 
@@ -71,18 +84,27 @@
 
   <div class="container mt-4">
     <h2 class="mb-4">All Products</h2>
+
+    <!-- COMING SOON MESSAGE -->
+    <div id="comingSoonMsg">🚧 Products Coming Soon 🚧</div>
+
     <div class="row g-4" id="productsContainer"></div>
   </div>
 
   <!-- SCRIPTS -->
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <script src="https://cdn.jsdelivr.net/npm/jwt-decode/build/jwt-decode.min.js"></script>
+
   <script src="js/google-auth.js"></script>
   <script src="js/navbar.js"></script>
   <script src="js/products-common.js"></script>
-  
 
-  <script> loadProducts("all"); </script>
+  <script>
+    loadProducts("all", "productsContainer", "comingSoonMsg");
+  </script>
+
+  <!-- FIX DROPDOWN NOT OPENING -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
 
 </body>
 </html>
