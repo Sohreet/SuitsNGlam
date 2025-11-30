@@ -11,7 +11,7 @@
   <style>
     body { background:white !important; }
 
-    /* Login button (same as index) */
+    /* Login button (same as index.html) */
     .btn-login {
       background:#ff3f33;
       color:white !important;
@@ -22,11 +22,15 @@
     }
     .btn-login:hover { background:#ff2b1f; }
 
+    /* Flicker Fix */
     .nav-login-area { visibility:visible !important; }
 
     /* Home icon */
     .home-icon {
-      font-size:1.6rem; cursor:pointer; color:black; margin-right:15px;
+      font-size:1.6rem;
+      cursor:pointer;
+      color:black;
+      margin-right:15px;
     }
     .home-icon:hover { opacity:0.7; }
 
@@ -48,6 +52,7 @@
 
     <div class="collapse navbar-collapse" id="navbarNav">
 
+      <!-- Home Icon -->
       <i class="bi bi-house-fill home-icon" onclick="window.location.href='index.html'"></i>
 
       <ul class="navbar-nav ms-auto me-2">
@@ -71,6 +76,7 @@
 
         <li class="nav-item"><a class="nav-link active" href="bestdeals.html">Best Deals</a></li>
         <li class="nav-item"><a class="nav-link" href="sales.html">Sales</a></li>
+
       </ul>
 
       <!-- CART -->
@@ -79,8 +85,9 @@
         <span id="cartCount" class="badge bg-danger"></span>
       </a>
 
-      <!-- LOGIN | ACCOUNT | ADMIN BADGE -->
+      <!-- LOGIN / ACCOUNT -->
       <div class="nav-login-area d-flex align-items-center">
+
         <button id="loginBtn" class="btn-login">Login</button>
 
         <img id="accountIcon"
@@ -90,17 +97,19 @@
               style="background:#c60000;color:white;padding:4px 10px;border-radius:6px;font-weight:700;display:none;margin-left:10px;">
           ADMIN
         </span>
+
       </div>
+
     </div>
   </div>
 </nav>
 
 
-<!-- PAGE CONTENT -->
+<!-- CONTENT -->
 <div class="container mt-4">
   <h2 class="fw-bold">Best Deals</h2>
 
-  <p id="comingSoonMsg" class="text-muted" style="display:none;font-weight:600;">
+  <p id="comingSoonMsg" class="text-muted fw-bold" style="display:none;">
     Coming Soon...
   </p>
 
@@ -108,16 +117,15 @@
 </div>
 
 
-<!-- LOAD PRODUCTS -->
+<!-- JS LOADER -->
 <script>
 document.addEventListener("DOMContentLoaded", () => {
 
+  // Load
   loadProducts("bestdeals");
 
-  // Show Coming Soon if no products
   setTimeout(() => {
-    const cards = document.querySelectorAll(".product-card");
-    if (cards.length === 0) {
+    if (document.querySelectorAll(".product-card").length === 0) {
       document.getElementById("comingSoonMsg").style.display = "block";
     }
   }, 800);
@@ -125,7 +133,7 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 </script>
 
-<!-- SCRIPTS -->
+<!-- GOOGLE + APP.JS -->
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <script src="https://cdn.jsdelivr.net/npm/jwt-decode/build/jwt-decode.min.js"></script>
 <script src="js/app.js"></script>
