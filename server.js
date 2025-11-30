@@ -10,19 +10,17 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Serve frontend (static files: index.html, css, js, images)
+// Serve static frontend
 app.use(express.static(path.join(__dirname, "public")));
 
-// Serve uploaded images & videos
+// Serve uploaded images/videos
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // API routes
 app.use("/api/products", productRoutes);
 
-// Catch-all route - send index.html for all unknown routes
-app.get("*", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "index.html"));
-});
+// ❌ REMOVE catch-all — NOT needed for HTML website
+// app.get("*", ...)
 
 // Connect DB + Start Server
 const PORT = process.env.PORT || 5000;
