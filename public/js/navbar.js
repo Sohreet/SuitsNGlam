@@ -1,9 +1,8 @@
 console.log("NAVBAR JS LOADED");
 
-// Read saved user
 function getUser() {
   const raw = localStorage.getItem("sg_user");
-  return raw ? JSON.parse(raw) : null;
+  try { return raw ? JSON.parse(raw) : null; } catch { return null; }
 }
 
 function setupLoginUI() {
@@ -12,14 +11,10 @@ function setupLoginUI() {
   const accountIcon = document.getElementById("accountIcon");
   const loginArea = document.querySelector(".nav-login-area");
 
-  if (!loginBtn || !accountIcon || !loginArea) {
-    console.error("Navbar elements missing");
-    return;
-  }
+  if (!loginBtn || !accountIcon || !loginArea) return;
 
   if (user) {
-    // show account picture
-    accountIcon.src = user.picture || "images/default-user.png";
+    accountIcon.src = user.picture || "/public/images/default-user.png";
     accountIcon.style.display = "inline-block";
     loginBtn.style.display = "none";
   } else {
@@ -27,10 +22,18 @@ function setupLoginUI() {
     loginBtn.style.display = "inline-block";
   }
 
-  // prevent flicker
+  // reveal UI (no flicker)
   loginArea.style.visibility = "visible";
+
+  // prevent redirect on admin page
+  if (!window.location.pathname.includes("admin.html")) {
+    accountIcon.onclick = () => {
+      window.location.href = "/account.html";
+    };
+  }
 }
 
 document.addEventListener("DOMContentLoaded", () => {
   setupLoginUI();
+  if (window.updateCartBadge) updateCartBadge();
 });
