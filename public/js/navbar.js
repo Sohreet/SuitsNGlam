@@ -1,7 +1,8 @@
 // =====================================================
-// GLOBAL NAVBAR LOGIN SYSTEM
+// GLOBAL NAVBAR LOGIN SYSTEM (FLICKER-FREE VERSION)
 // =====================================================
 
+// Elements (safe for all pages)
 const loginBtn =
   document.getElementById("loginButton") ||
   document.getElementById("loginBtn");
@@ -10,12 +11,14 @@ const accountIcon = document.getElementById("accountIcon");
 const cartBadge = document.getElementById("cartCount");
 
 // =====================================================
-// READ USER (supports both formats)
+// READ USER FROM LOCAL STORAGE (Unified Format)
 // =====================================================
 function getUser() {
+  // Full object format
   const obj = localStorage.getItem("sg_user");
   if (obj) return JSON.parse(obj);
 
+  // Old key fallback
   const email = localStorage.getItem("userEmail");
   if (email) {
     return {
@@ -30,27 +33,41 @@ function getUser() {
 }
 
 // =====================================================
-// LOGIN UI UPDATE
+// FLICKER-FREE NAVBAR UPDATE
 // =====================================================
 function setupLoginUI() {
   const user = getUser();
 
-  if (user) {
-    if (loginBtn) loginBtn.style.display = "none";
+  // Hide everything first to prevent DOM flicker
+  if (loginBtn) {
+    loginBtn.style.visibility = "hidden";
+    loginBtn.style.display = "none";
+  }
+  if (accountIcon) {
+    accountIcon.style.visibility = "hidden";
+    accountIcon.style.display = "none";
+  }
 
+  // If logged in → show profile icon
+  if (user) {
     if (accountIcon) {
       accountIcon.src = user.picture || "images/default-user.png";
       accountIcon.style.display = "inline-block";
+      accountIcon.style.visibility = "visible";
     }
-  } else {
-    if (loginBtn) loginBtn.style.display = "inline-block";
+  }
 
-    if (accountIcon) accountIcon.style.display = "none";
+  // If logged out → show login button
+  else {
+    if (loginBtn) {
+      loginBtn.style.display = "inline-block";
+      loginBtn.style.visibility = "visible";
+    }
   }
 }
 
 // =====================================================
-// LOGOUT FUNCTION
+// LOGOUT
 // =====================================================
 function logoutUser() {
   localStorage.removeItem("sg_user");
@@ -60,18 +77,19 @@ function logoutUser() {
   localStorage.removeItem("isAdmin");
   localStorage.removeItem("token");
 
+  if (google?.accounts?.id) {
+    google.accounts.id.disableAutoSelect();
+  }
+
   setupLoginUI();
   updateCartBadge();
-
-  if (google?.accounts?.id) google.accounts.id.disableAutoSelect();
-
   window.location.href = "index.html";
 }
 
 window.logoutUser = logoutUser;
 
 // =====================================================
-// CART BADGE
+// UPDATE CART BADGE
 // =====================================================
 async function updateCartBadge() {
   if (!cartBadge) return;
@@ -91,7 +109,6 @@ async function updateCartBadge() {
     if (data.items?.length > 0) {
       cartBadge.textContent = data.items.length;
     }
-
   } catch (err) {
     console.error("Cart badge error:", err);
   }
@@ -100,7 +117,7 @@ async function updateCartBadge() {
 window.updateCartBadge = updateCartBadge;
 
 // =====================================================
-// INIT
+// RUN ON PAGE LOAD
 // =====================================================
 document.addEventListener("DOMContentLoaded", () => {
   setupLoginUI();
