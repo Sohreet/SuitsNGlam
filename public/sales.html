@@ -11,6 +11,7 @@
   <style>
     body { background:white !important; }
 
+    /* Login button — same as index.html */
     .btn-login {
       background:#ff3f33;
       color:white !important;
@@ -21,8 +22,10 @@
     }
     .btn-login:hover { background:#ff2b1f; }
 
+    /* prevent flicker */
     .nav-login-area { visibility:visible !important; }
 
+    /* Home icon */
     .home-icon {
       font-size:1.6rem;
       cursor:pointer;
@@ -101,7 +104,7 @@
 <div class="container mt-4">
   <h2 class="fw-bold">Sales</h2>
 
-  <p id="comingSoonMsg" class="text-muted" style="display:none;font-weight:600;">Coming Soon...</p>
+  <p id="comingSoonMsg" class="text-muted fw-bold" style="display:none;">Coming Soon...</p>
 
   <div id="productsContainer" class="row g-4 mt-3"></div>
 </div>
@@ -114,15 +117,13 @@ document.addEventListener("DOMContentLoaded", () => {
   loadProducts("sales");
 
   setTimeout(() => {
-    const cards = document.querySelectorAll(".product-card");
-    if (!cards.length) {
+    if (document.querySelectorAll(".product-card").length === 0) {
       document.getElementById("comingSoonMsg").style.display = "block";
     }
   }, 800);
 
 });
 </script>
-
 
 <!-- SCRIPTS -->
 <script src="https://accounts.google.com/gsi/client" async defer></script>
