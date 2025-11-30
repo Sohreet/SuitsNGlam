@@ -76,8 +76,11 @@ function setupLoginUI() {
 }
 
 /******************************************************
- * GOOGLE LOGIN
+ * GOOGLE LOGIN — REDIRECT MODE (FAST & RELIABLE)
  ******************************************************/
+
+const GOOGLE_CLIENT_ID = "653374521156-6retcia1fiu5dvmbjik9sq89ontrkmvt.apps.googleusercontent.com";
+
 function saveUser(data, token) {
   const user = {
     email: data.email,
@@ -102,52 +105,32 @@ function handleCredentialResponse(response) {
     saveUser(data, response.credential);
     setupLoginUI();
     updateCartBadge();
+    window.location.reload();
   } catch (err) {
     console.error("Google Auth Error:", err);
   }
 }
 
-function initGSI() {
-  if (_gsiInitialized) return;
-  if (!window.google || !google.accounts || !google.accounts.id) return;
-
+// --- Initialize with redirect ---
+function initGoogleRedirect() {
   google.accounts.id.initialize({
-    client_id: "653374521156-6retcia1fiu5dvmbjik9sq89ontrkmvt.apps.googleusercontent.com",
+    client_id: GOOGLE_CLIENT_ID,
     callback: handleCredentialResponse,
-    ux_mode: "popup"
+    ux_mode: "redirect",
+    auto_select: false
   });
 
-  _gsiInitialized = true;
-}
-
-async function waitForGSI(timeout = 4000) {
-  return new Promise((resolve) => {
-    if (window.google) return resolve(true);
-    const start = Date.now();
-    const interval = setInterval(() => {
-      if (window.google) {
-        clearInterval(interval);
-        return resolve(true);
-      }
-      if (Date.now() - start > timeout) {
-        clearInterval(interval);
-        return resolve(false);
-      }
-    }, 100);
-  });
-}
-
-async function loginClickHandler() {
-  const ready = await waitForGSI();
-  if (!ready) return alert("Google login not loaded yet.");
-
-  initGSI();
   google.accounts.id.prompt();
 }
 
+// Attach click
 function attachLoginButton() {
-  const btn = document.getElementById("loginBtn");
-  if (btn) btn.onclick = loginClickHandler;
+  const loginBtn = document.getElementById("loginBtn");
+  if (loginBtn) {
+    loginBtn.onclick = () => {
+      initGoogleRedirect();
+    };
+  }
 }
 
 /******************************************************
