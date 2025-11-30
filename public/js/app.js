@@ -114,7 +114,7 @@ function handleCredentialResponse(response) {
 // --- Initialize with redirect ---
 function initGoogleRedirect() {
   google.accounts.id.initialize({
-    client_id: GOOGLE_CLIENT_ID,
+    client_id: "653374521156-6retcia1fiu5dvmbjik9sq89ontrkmvt.apps.googleusercontent.com",
     callback: handleCredentialResponse,
     ux_mode: "redirect",
     auto_select: false
