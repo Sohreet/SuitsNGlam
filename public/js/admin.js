@@ -1,11 +1,14 @@
 /* -------------------------------------------------------
-   ADMIN AUTH CHECK
+   ADMIN AUTH CHECK (FIXED)
 ------------------------------------------------------- */
 document.addEventListener("DOMContentLoaded", () => {
   const admin = localStorage.getItem("adminLoggedIn");
-  if (!admin) {
+
+  // MUST CHECK for "true", not just truthy value
+  if (admin !== "true") {
     alert("Admin access denied!");
     window.location.href = "index.html";
+    return;
   }
 
   loadProducts();
@@ -16,8 +19,8 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 
-// BACKEND IS ON THE SAME SERVER → NO NEED FOR URL
-const BASE_URL = "";  // automatically becomes https://suitsnglam.com
+// BACKEND IS ON SAME SERVER
+const BASE_URL = "";
 
 
 /* -------------------------------------------------------
@@ -49,9 +52,7 @@ form.addEventListener("submit", async (e) => {
 
   // Video
   const video = document.getElementById("video").files[0];
-  if (video) {
-    formData.append("video", video);
-  }
+  if (video) formData.append("video", video);
 
   const url = productId
     ? `/api/products/${productId}`
@@ -60,7 +61,7 @@ form.addEventListener("submit", async (e) => {
   const method = productId ? "PUT" : "POST";
 
   const response = await fetch(url, {
-    method: method,
+    method,
     body: formData,
   });
 
@@ -86,7 +87,7 @@ async function loadProducts() {
 
   data.forEach((p) => {
     const imageUrl = p.images?.[0]
-      ? `${p.images[0]}`          // already served from same host
+      ? `${p.images[0]}`
       : "img/noimg.png";
 
     tbody.innerHTML += `
