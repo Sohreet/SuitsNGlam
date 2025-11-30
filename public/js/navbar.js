@@ -22,14 +22,12 @@ function setupLoginUI() {
   const user = getUser();
 
   if (user) {
-    if (accountIcon) {
-      accountIcon.src = user.picture || "images/default-user.png";
-      accountIcon.style.display = "inline-block";
-    }
-
-    if (loginBtn) loginBtn.style.display = "none";
-
-  }
+  accountIcon.style.display = "inline-block";
+  loginBtn.style.display = "none";
+} else {
+  accountIcon.style.display = "none";
+  loginBtn.style.display = "inline-block";
+}
 
   if (loginArea) loginArea.style.visibility = "visible";
 }
