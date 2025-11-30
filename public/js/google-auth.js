@@ -1,11 +1,11 @@
 // ------------------------------------------------------
-// SIMPLE GOOGLE LOGIN SYSTEM (COMPATIBLE WITH ALL PAGES)
+// GOOGLE LOGIN (Unified Storage + Flicker Free)
 // ------------------------------------------------------
 
 const GOOGLE_CLIENT_ID =
   "653374521156-6retcia1fiu5dvmbjik9sq89ontrkmvt.apps.googleusercontent.com";
 
-/* Load Google SDK once */
+// Load Google SDK
 (function loadGoogleSDK() {
   if (document.getElementById("gsi-script")) return;
   const s = document.createElement("script");
@@ -16,16 +16,15 @@ const GOOGLE_CLIENT_ID =
   document.head.appendChild(s);
 })();
 
-/* Save user in both formats (object + old keys) */
 function applyUserToStorage(userObj) {
   localStorage.setItem("sg_user", JSON.stringify(userObj));
 
-  if (userObj.email) localStorage.setItem("userEmail", userObj.email);
-  if (userObj.name) localStorage.setItem("userName", userObj.name);
-  if (userObj.picture) localStorage.setItem("userPic", userObj.picture);
+  localStorage.setItem("userEmail", userObj.email);
+  localStorage.setItem("userName", userObj.name);
+  localStorage.setItem("userPic", userObj.picture);
+  localStorage.setItem("token", userObj.token);
 }
 
-/* Handle Google Login Response */
 function handleCredentialResponse(response) {
   try {
     const data = jwt_decode(response.credential);
@@ -39,21 +38,21 @@ function handleCredentialResponse(response) {
 
     applyUserToStorage(user);
 
-    const ADMIN_EMAILS = [
-      "sohabrar10@gmail.com",
-      "suitsnglam01@gmail.com"
-    ];
-    localStorage.setItem("isAdmin", ADMIN_EMAILS.includes(user.email) ? "true" : "false");
+    const ADMIN_EMAILS = ["sohabrar10@gmail.com", "suitsnglam01@gmail.com"];
+    if (ADMIN_EMAILS.includes(data.email)) {
+      localStorage.setItem("isAdmin", "true");
+    } else {
+      localStorage.removeItem("isAdmin");
+    }
 
-    // ❌ Remove UI update here — navbar.js handles UI
-    // ❌ Do NOT call setupLoginUI() or updateCartBadge()
+    if (window.setupLoginUI) setupLoginUI();
+    if (window.updateCartBadge) updateCartBadge();
 
   } catch (e) {
     console.error("Google Login Error →", e);
   }
 }
 
-/* Trigger login popup safely */
 function triggerGoogleLoginPopup() {
   if (typeof google === "undefined" || !google.accounts) {
     return setTimeout(triggerGoogleLoginPopup, 300);
@@ -67,11 +66,11 @@ function triggerGoogleLoginPopup() {
   google.accounts.id.prompt();
 }
 
-/* Attach login button */
 document.addEventListener("DOMContentLoaded", () => {
-  const btn =
-    document.getElementById("loginButton") ||
-    document.getElementById("loginBtn");
-
+  const btn = document.getElementById("loginBtn") || document.getElementById("loginButton");
   if (btn) btn.addEventListener("click", triggerGoogleLoginPopup);
+
+  if (localStorage.getItem("sg_user") && window.setupLoginUI) {
+    setupLoginUI();
+  }
 });
