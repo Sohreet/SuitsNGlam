@@ -12,7 +12,7 @@
     body { background-color: #f8f9fa; }
     .navbar-brand { font-weight: bold; }
 
-    /* Hover animation on cards */
+    /* Hover animation */
     .card-button {
       cursor: pointer;
       transition: transform 0.2s, box-shadow 0.2s;
@@ -24,47 +24,42 @@
     }
 
     /* Category colors */
-    .summer { background-color: rgb(255, 253, 143); }
-    .winter { background-color: rgb(179, 191, 255); }
-    .wedding { background-color: rgb(255, 220, 220); }
-    .dailywear { background-color: rgb(238, 238, 238); }
-    .casuals { background-color: rgb(207, 255, 226); }
+    .summer { background-color: rgb(255,253,143); }
+    .winter { background-color: rgb(179,191,255); }
+    .wedding { background-color: rgb(255,220,220); }
+    .dailywear { background-color: rgb(238,238,238); }
+    .casuals { background-color: rgb(207,255,226); }
     .premium { background-color: rgb(231,208,245); }
 
-/* FIX FLICKER: hide login area until JS sets correct UI */
-.nav-login-area {
-  visibility: hidden;
-}
-
-.btn-login {
-  background-color: rgb(255,63,51);
-  color: #fff;
-  padding: 6px 14px;
-  border-radius: 6px;
-  border: none;
-}
-    .btn-login:hover {
-      background-color: rgb(255, 43, 31);
-      color: #fff;
+    /* Flicker fix */
+    .nav-login-area {
+      visibility: hidden;
     }
+
+    .btn-login {
+      background-color: rgb(255,63,51);
+      color: #fff;
+      padding: 6px 14px;
+      border-radius: 6px;
+      border: none;
+      transition: 0.2s;
+    }
+    .btn-login:hover { background-color: rgb(255,43,31); }
 
     /* Social icons */
     .social-area i {
       font-size: 1.8rem;
       margin: 0 12px;
-      color: #000;
       cursor: pointer;
       transition: 0.2s;
     }
-    .social-area i:hover {
-      opacity: 0.6;
-    }
+    .social-area i:hover { opacity: 0.6; }
   </style>
 </head>
 
 <body>
 
-  <!-- NAVBAR -->
+<!-- ===================== NAVBAR (ONLY ONE) ====================== -->
 <nav class="navbar navbar-expand-lg" style="background-color:#e3f2fd;">
   <div class="container">
     <a class="navbar-brand" href="index.html">Suits N Glam</a>
@@ -80,9 +75,7 @@
         <li class="nav-item"><a class="nav-link" href="newarrivals.html">New Arrivals</a></li>
 
         <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-            Shop By Category
-          </a>
+          <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Shop By Category</a>
           <ul class="dropdown-menu">
             <li><a class="dropdown-item" href="summer.html">Summer</a></li>
             <li><a class="dropdown-item" href="winter.html">Winter</a></li>
@@ -98,12 +91,12 @@
       </ul>
 
       <!-- CART -->
-      <a href="cart.html" class="d-flex align-items-center gap-2 me-3" style="color:#000;text-decoration:none;">
+      <a href="cart.html" class="d-flex align-items-center gap-2 me-3" style="text-decoration:none;color:#000;">
         <i class="bi bi-bag-heart-fill" style="font-size:1.6rem;"></i>
         <span id="cartCount" class="badge bg-danger"></span>
       </a>
 
-      <!-- LOGIN / ACCOUNT WRAPPER (Flicker-Free) -->
+      <!-- LOGIN / ACCOUNT (flicker-free wrapper) -->
       <div class="nav-login-area d-flex align-items-center">
         <button id="loginBtn" class="btn-login">Login</button>
 
@@ -118,88 +111,84 @@
 </nav>
 
 
-      </div>
+<!-- ===================== CATEGORY CARDS ====================== -->
+<div class="container mt-5">
+  <div class="row g-4">
+
+    <div class="col-md-4 col-sm-6">
+      <a href="summer.html" class="text-decoration-none">
+        <div class="card card-button summer p-4 text-center">
+          <h5>Summer</h5>
+          <p>Light and breezy outfits</p>
+        </div>
+      </a>
     </div>
-  </nav>
 
-  <!-- CATEGORY CARDS -->
-  <div class="container mt-5">
-    <div class="row g-4">
-
-      <div class="col-md-4 col-sm-6">
-        <a href="summer.html" class="text-decoration-none">
-          <div class="card card-button summer p-4 text-center">
-            <h5>Summer</h5>
-            <p>Light and breezy outfits</p>
-          </div>
-        </a>
-      </div>
-
-      <div class="col-md-4 col-sm-6">
-        <a href="winter.html" class="text-decoration-none">
-          <div class="card card-button winter p-4 text-center">
-            <h5>Winter</h5>
-            <p>Warm & stylish</p>
-          </div>
-        </a>
-      </div>
-
-      <div class="col-md-4 col-sm-6">
-        <a href="wedding.html" class="text-decoration-none">
-          <div class="card card-button wedding p-4 text-center">
-            <h5>Wedding</h5>
-            <p>Elegant & glamorous</p>
-          </div>
-        </a>
-      </div>
-
-      <div class="col-md-4 col-sm-6">
-        <a href="casuals.html" class="text-decoration-none">
-          <div class="card card-button casuals p-4 text-center">
-            <h5>Casuals</h5>
-            <p>Comfortable everyday wear</p>
-          </div>
-        </a>
-      </div>
-
-      <div class="col-md-4 col-sm-6">
-        <a href="dailywear.html" class="text-decoration-none">
-          <div class="card card-button dailywear p-4 text-center">
-            <h5>Daily Wear</h5>
-            <p>Stylish for daily use</p>
-          </div>
-        </a>
-      </div>
-
-      <div class="col-md-4 col-sm-6">
-        <a href="premiumwear.html" class="text-decoration-none">
-          <div class="card card-button premium p-4 text-center">
-            <h5>Premium Wear</h5>
-            <p>Luxury & Exclusive</p>
-          </div>
-        </a>
-      </div>
-
+    <div class="col-md-4 col-sm-6">
+      <a href="winter.html" class="text-decoration-none">
+        <div class="card card-button winter p-4 text-center">
+          <h5>Winter</h5>
+          <p>Warm & stylish</p>
+        </div>
+      </a>
     </div>
+
+    <div class="col-md-4 col-sm-6">
+      <a href="wedding.html" class="text-decoration-none">
+        <div class="card card-button wedding p-4 text-center">
+          <h5>Wedding</h5>
+          <p>Elegant & glamorous</p>
+        </div>
+      </a>
+    </div>
+
+    <div class="col-md-4 col-sm-6">
+      <a href="casuals.html" class="text-decoration-none">
+        <div class="card card-button casuals p-4 text-center">
+          <h5>Casuals</h5>
+          <p>Comfortable everyday wear</p>
+        </div>
+      </a>
+    </div>
+
+    <div class="col-md-4 col-sm-6">
+      <a href="dailywear.html" class="text-decoration-none">
+        <div class="card card-button dailywear p-4 text-center">
+          <h5>Daily Wear</h5>
+          <p>Stylish for daily use</p>
+        </div>
+      </a>
+    </div>
+
+    <div class="col-md-4 col-sm-6">
+      <a href="premiumwear.html" class="text-decoration-none">
+        <div class="card card-button premium p-4 text-center">
+          <h5>Premium Wear</h5>
+          <p>Luxury & Exclusive</p>
+        </div>
+      </a>
+    </div>
+
   </div>
+</div>
 
-  <!-- SOCIAL ICONS -->
-  <div class="container text-center py-4 social-area">
-    <i class="bi bi-instagram" onclick="window.open('https://www.instagram.com/suitsnglam/', '_blank')"></i>
-    <i class="bi bi-chat-dots" onclick="window.open('https://www.threads.net/@suitsnglam', '_blank')"></i>
-    <i class="bi bi-facebook" onclick="window.open('https://www.facebook.com/mannishan', '_blank')"></i>
-    <i class="bi bi-youtube" onclick="window.open('#', '_blank')"></i>
-  </div>
 
-  <!-- SCRIPTS -->
-  <script src="https://accounts.google.com/gsi/client" async defer></script>
-  <script src="https://cdn.jsdelivr.net/npm/jwt-decode/build/jwt-decode.min.js"></script>
+<!-- ===================== SOCIAL ICONS ====================== -->
+<div class="container text-center py-4 social-area">
+  <i class="bi bi-instagram" onclick="window.open('https://www.instagram.com/suitsnglam/', '_blank')"></i>
+  <i class="bi bi-chat-dots" onclick="window.open('https://www.threads.net/@suitsnglam', '_blank')"></i>
+  <i class="bi bi-facebook" onclick="window.open('https://www.facebook.com/mannishan', '_blank')"></i>
+  <i class="bi bi-youtube"></i>
+</div>
 
-  <script src="js/google-auth.js"></script>
-  <script src="js/navbar.js"></script>
-  <script src="js/cart.js"></script>
+<!-- ===================== SCRIPTS ====================== -->
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="https://cdn.jsdelivr.net/npm/jwt-decode/build/jwt-decode.min.js"></script>
 
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+<script src="js/google-auth.js"></script>
+<script src="js/navbar.js"></script>
+<script src="js/cart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
 
 </body>
 </html>
