@@ -1,51 +1,104 @@
-// cart.js
-// Loads cart items + delete + total
+// -------------------------------
+// CART PAGE CONTROLLER (FINAL)
+// -------------------------------
 
 document.addEventListener("DOMContentLoaded", () => {
-  loadCartItems();
+  loadCartPage();
 });
 
-function loadCartItems() {
-  const cart = JSON.parse(localStorage.getItem("cart") || "[]");
-  const container = document.getElementById("productsContainer") || document.querySelector(".cart-items");
+// Get logged in user from sg_user
+function getUser() {
+  const raw = localStorage.getItem("sg_user");
+  return raw ? JSON.parse(raw) : null;
+}
+
+async function loadCartPage() {
+  const user = getUser();
+  const container = document.getElementById("cartItems");
   const totalEl = document.getElementById("cartTotal");
 
   if (!container) return;
 
-  container.innerHTML = "";
-
-  if (cart.length === 0) {
-    container.innerHTML = `<h4 class="text-center mt-4">Your cart is empty 🛒</h4>`;
+  // ------------------------------
+  // 1️⃣ USER NOT LOGGED IN
+  // ------------------------------
+  if (!user) {
+    container.innerHTML = `
+      <h4 class="text-center mt-5">Please login to view your cart.</h4>
+    `;
     if (totalEl) totalEl.textContent = "0";
     return;
   }
 
-  let total = 0;
+  // ------------------------------
+  // 2️⃣ USER LOGGED IN → FETCH CART
+  // ------------------------------
+  try {
+    const res = await fetch("https://api.suitsnglam.com/api/cart", {
+      headers: { "auth-token": user.token }
+    });
 
-  cart.forEach((p, index) => {
-    total += p.price;
+    const data = await res.json();
 
-    container.innerHTML += `
-      <div class="col-md-4">
-        <div class="card p-2">
-          <img src="${p.image}" class="card-img-top">
-          <div class="card-body">
-            <h5>${p.title}</h5>
-            <p>₹${p.price}</p>
-            <button class="btn btn-danger btn-sm" onclick="removeItem(${index})">Remove</button>
+    // No items
+    if (!data.items || data.items.length === 0) {
+      container.innerHTML = `
+        <h4 class="text-center mt-5">Your cart is empty 🛒</h4>
+      `;
+      if (totalEl) totalEl.textContent = "0";
+      return;
+    }
+
+    // Items exist → show items
+    container.innerHTML = "";
+    let total = 0;
+
+    data.items.forEach((item, index) => {
+      total += item.price * item.metres;
+
+      container.innerHTML += `
+        <div class="card mb-3 p-3 shadow-sm">
+          <div class="row">
+            <div class="col-4">
+              <img src="${item.image}" class="img-fluid rounded">
+            </div>
+            <div class="col-8">
+              <h5>${item.title}</h5>
+              <p>₹${item.price} × ${item.metres}m</p>
+              <button class="btn btn-danger btn-sm" onclick="removeCartItem('${item._id}')">Remove</button>
+            </div>
           </div>
         </div>
-      </div>
-    `;
-  });
+      `;
+    });
 
-  if (totalEl) totalEl.textContent = total;
+    if (totalEl) totalEl.textContent = total;
+
+  } catch (err) {
+    console.error("Cart load error:", err);
+    container.innerHTML = `
+      <h4 class="text-center mt-5 text-danger">Error loading cart.</h4>
+    `;
+  }
 }
 
-function removeItem(i) {
-  const cart = JSON.parse(localStorage.getItem("cart") || "[]");
-  cart.splice(i, 1);
-  localStorage.setItem("cart", JSON.stringify(cart));
-  loadCartItems();
-  updateCartBadge();
+// -------------------------------
+// REMOVE ITEM
+// -------------------------------
+async function removeCartItem(id) {
+  const user = getUser();
+  if (!user) return;
+
+  try {
+    await fetch(`https://api.suitsnglam.com/api/cart/${id}`, {
+      method: "DELETE",
+      headers: { "auth-token": user.token }
+    });
+
+    loadCartPage();
+    if (window.updateCartBadge) updateCartBadge();
+
+  } catch (err) {
+    console.error("Remove error", err);
+  }
 }
