@@ -1,3 +1,6 @@
+console.log("ADMIN JS RUNNING");
+console.log("adminLoggedIn =", localStorage.getItem("adminLoggedIn"));
+
 /* -------------------------------------------------------
    ADMIN AUTH CHECK — FINAL MATCHED VERSION
 ------------------------------------------------------- */
