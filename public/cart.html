@@ -1,20 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Your Cart - Suits N Glam</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Your Cart - Suits N Glam</title>
 
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 
-<style>
-  body { background:#f8f9fa; }
-  .navbar-brand{font-weight:bold;}
-  .nav-login-area{ visibility: hidden; } /* anti-flicker */
-  .empty-msg { text-align:center; padding:40px 0; color:#666; }
-  .cart-item img { width:100%; height:160px; object-fit:cover; border-radius:6px; }
-</style>
+  <style>
+    body{background:#f8f9fa;}
+    .nav-login-area { visibility:hidden; }
+  </style>
 </head>
 <body>
 
@@ -22,106 +19,48 @@
 <nav class="navbar navbar-expand-lg" style="background-color:#e3f2fd;">
   <div class="container">
     <a class="navbar-brand" href="index.html">Suits N Glam</a>
-    <button class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navLinks">
+
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
       <span class="navbar-toggler-icon"></span>
     </button>
 
-    <div class="collapse navbar-collapse" id="navLinks">
+    <div class="collapse navbar-collapse" id="navbarNav">
+
       <ul class="navbar-nav ms-auto me-2">
         <li class="nav-item"><a class="nav-link" href="allproducts.html">All Products</a></li>
-        <li class="nav-item"><a class="nav-link" href="newarrivals.html">New Arrivals</a></li>
-        <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown">Shop By Category</a>
-          <ul class="dropdown-menu">
-            <li><a class="dropdown-item" href="summer.html">Summer</a></li>
-            <li><a class="dropdown-item" href="winter.html">Winter</a></li>
-            <li><a class="dropdown-item" href="wedding.html">Wedding</a></li>
-            <li><a class="dropdown-item" href="casuals.html">Casuals</a></li>
-            <li><a class="dropdown-item" href="dailywear.html">Daily Wear</a></li>
-            <li><a class="dropdown-item" href="premiumwear.html">Premium Wear</a></li>
-          </ul>
-        </li>
-        <li class="nav-item"><a class="nav-link" href="bestdeals.html">Best Deals</a></li>
-        <li class="nav-item"><a class="nav-link" href="sales.html">Sales</a></li>
       </ul>
 
-      <a href="cart.html" class="d-flex align-items-center gap-2 me-3" style="text-decoration:none;color:#000;">
-        <i class="bi bi-bag-heart-fill" style="font-size:1.6rem"></i>
-        <span id="cartCount" class="badge bg-danger"></span>
-      </a>
-
       <div class="nav-login-area d-flex align-items-center">
-        <button id="loginBtn" class="btn btn-danger">Login</button>
-        <img id="accountIcon" src="" style="width:34px;height:34px;border-radius:50%;display:none;margin-left:10px;cursor:pointer;">
+        <button id="loginBtn" class="btn-login">Login</button>
+        <img id="accountIcon" style="width:34px;height:34px;border-radius:50%;display:none;">
       </div>
     </div>
   </div>
 </nav>
 
-<!-- PAGE -->
 <div class="container mt-4">
-  <h2>Your Cart</h2>
 
-  <div id="cartWrapper" class="mt-3">
-    <!-- cart items injected here -->
-    <div id="cartItems" class="row g-3"></div>
+  <h3>Your Cart</h3>
 
-    <div id="cartEmpty" class="empty-msg" style="display:none;">
-
-  <!-- Large empty cart icon -->
-  <div class="mb-4">
-    <i class="bi bi-cart-x" 
-       style="font-size: 5.5rem; color:#8b9bb0;"></i>
+  <div id="cartEmpty" class="text-center my-5" style="display:none;">
+    <i class="bi bi-cart-x" style="font-size:4rem;"></i>
+    <h4>Your cart is empty</h4>
+    <a href="index.html" class="btn btn-primary mt-3">Continue Shopping</a>
   </div>
 
-  <h3 class="fw-bold">Your Cart is Empty</h3>
+  <div class="row" id="cartItems"></div>
 
-  <p class="mt-2" style="font-size:1.1rem; color:#555;">
-    Looks like you haven't added anything yet.
-  </p>
-
-  <a href="index.html" class="btn btn-primary btn-lg mt-3 px-4 py-2">
-    Continue Shopping
-  </a>
+  <div id="cartSummary" class="card p-3 mt-4" style="display:none;">
+    <h5>Total: ₹<span id="cartTotal">0</span></h5>
+    <a href="checkout.html" class="btn btn-success mt-2">Proceed to Checkout</a>
+  </div>
 
 </div>
 
-
-    <div id="cartSummary" style="display:none;" class="mt-4 text-end">
-      <h4>Total: ₹<span id="cartTotal">0</span></h4>
-      <div class="mt-3 d-flex justify-content-between">
-        <a href="index.html" class="btn btn-primary">Continue Shopping</a>
-        <a href="checkout.html" id="checkoutBtn" class="btn btn-success">Proceed to Checkout</a>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- SCRIPTS -->
-<script src="https://accounts.google.com/gsi/client" async defer></script>
-<script src="https://cdn.jsdelivr.net/npm/jwt-decode/build/jwt-decode.min.js"></script>
-
-<!-- your auth + navbar handlers -->
 <script src="js/app.js"></script>
-
-<script>
-  // Protected page: require login
-  (function(){
-    if (!localStorage.getItem("sg_user")) {
-      alert("Please login first");
-      window.location.href = "index.html";
-      return;
-    }
-    // load cart page (function provided in js/cart.js)
-    if (typeof loadCartPage === "function") loadCartPage();
-  })();
-</script>
-
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>loadCartPage();</script>
+
 </body>
 </html>
-
-
-
-
-
