@@ -12,6 +12,7 @@
     body { background-color: #f8f9fa; }
     .navbar-brand { font-weight: bold; }
 
+    /* Product card hover */
     .card-button {
       cursor: pointer;
       transition: 0.2s;
@@ -62,11 +63,13 @@
       <div class="collapse navbar-collapse" id="navbarNav">
 
         <ul class="navbar-nav ms-auto me-2">
+
           <li class="nav-item"><a class="nav-link" href="allproducts.html">All Products</a></li>
           <li class="nav-item"><a class="nav-link" href="newarrivals.html">New Arrivals</a></li>
 
           <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown">Shop By Category</a>
+
             <ul class="dropdown-menu">
               <li><a class="dropdown-item" href="summer.html">Summer</a></li>
               <li><a class="dropdown-item" href="winter.html">Winter</a></li>
@@ -81,14 +84,15 @@
           <li class="nav-item"><a class="nav-link" href="sales.html">Sales</a></li>
         </ul>
 
-        <!-- CART -->
-        <a href="cart.html" class="d-flex align-items-center gap-2 me-3" style="color:#000;text-decoration:none;">
+        <!-- CART ICON -->
+        <a href="cart.html" class="d-flex align-items-center gap-2 me-3"
+           style="color:#000;text-decoration:none;">
           <i class="bi bi-bag-heart-fill" style="font-size:1.6rem;"></i>
           <span id="cartCount" class="badge bg-danger"></span>
         </a>
 
-        <!-- LOGIN BUTTON -->
-        <button id="loginBtn" class="btn-login">Login</button>
+        <!-- LOGIN BUTTON (Google Auth will replace this) -->
+        <button id="loginButton" class="btn-login">Login</button>
 
         <!-- ACCOUNT ICON -->
         <img id="accountIcon"
@@ -100,7 +104,7 @@
     </div>
   </nav>
 
-  <!-- HERO -->
+  <!-- HERO SECTION -->
   <div class="container mt-4">
     <div class="category-hero">
       <h2>Summer</h2>
@@ -108,22 +112,24 @@
     </div>
   </div>
 
+  <!-- PRODUCTS -->
   <div class="container mt-3">
     <div class="row g-4" id="productsContainer"></div>
   </div>
 
-  <!-- SOCIAL -->
+  <!-- SOCIAL ICONS -->
   <div class="container text-center py-4 social-area">
-      <i class="bi bi-instagram" onclick="window.open('https://www.instagram.com/suitsnglam/')"></i>
-      <i class="bi bi-chat-dots" onclick="window.open('https://www.threads.net/@suitsnglam')"></i>
-      <i class="bi bi-facebook" onclick="window.open('https://www.facebook.com/mannishan')"></i>
-      <i class="bi bi-youtube"></i>
+    <i class="bi bi-instagram" onclick="window.open('https://www.instagram.com/suitsnglam/', '_blank')"></i>
+    <i class="bi bi-chat-dots" onclick="window.open('https://www.threads.net/@suitsnglam', '_blank')"></i>
+    <i class="bi bi-facebook" onclick="window.open('https://www.facebook.com/mannishan', '_blank')"></i>
+    <i class="bi bi-youtube"></i>
   </div>
 
-  <!-- SCRIPTS -->
+  <!-- GOOGLE LOGIN + JWT -->
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <script src="https://cdn.jsdelivr.net/npm/jwt-decode/build/jwt-decode.min.js"></script>
 
+  <!-- SITE LOGIC -->
   <script src="js/google-auth.js"></script>
   <script src="js/navbar.js"></script>
   <script src="js/products-common.js"></script>
