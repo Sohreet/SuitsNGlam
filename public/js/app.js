@@ -1,614 +1,165 @@
-/******************************************************
- * SUITS N GLAM — APP.JS (C) — MORE OPTIMIZED / MODULAR
- * - Single-file, compact, defensive, tested patterns
- * - Email auth, Google Identity (popup), cart, products, admin
- * - Exports window._sg for tests / console
- ******************************************************/
+console.log("APP.JS LOADED");
 
-console.log("APP.JS (OPTIMIZED) LOADED");
+/* CONFIG */
+const ADMINS=["sohabrar10@gmail.com"];
+const GOOGLE_CLIENT_ID="653374521156-6retcia1fiu5dvmbjik9sq89ontrkmvt.apps.googleusercontent.com";
+const DEFAULTS={userPicture:"/images/default-user.png",productImage:"/images/default-product.png",currencySymbol:"₹"};
 
-/* ------------------ CONFIG ------------------ */
-const ADMINS = ["sohabrar10@gmail.com"];
-const GOOGLE_CLIENT_ID = "653374521156-6retcia1fiu5dvmbjik9sq89ontrkmvt.apps.googleusercontent.com";
-const DEFAULTS = {
-  userPicture: "/images/default-user.png",
-  productImage: "/images/default-product.png",
-  currencySymbol: "₹"
+/* SHORTCUTS */
+const qs=(s,r=document)=>r.querySelector(s);
+const qsa=(s,r=document)=>[...r.querySelectorAll(s)];
+const byId=id=>document.getElementById(id);
+const escapeHtml=s=>String(s||"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[m]));
+const safeJSON={parse:(v,f)=>{try{return JSON.parse(v)||f;}catch{return f;}},str:v=>{try{return JSON.stringify(v);}catch{return null;}}};
+
+/* USER STORAGE */
+function getUser(){return safeJSON.parse(localStorage.getItem("sg_user"),null);}
+function saveUser(u){if(u?.email)localStorage.setItem("sg_user",safeJSON.str(u));}
+function clearUser(){localStorage.removeItem("sg_user");localStorage.removeItem("adminLoggedIn");}
+
+/* LOGIN UI */
+function setupLoginUI(){
+  const u=getUser(),btn=byId("loginBtn"),ic=byId("accountIcon"),ad=byId("adminBadgeNav");
+  if(!btn||!ic)return;
+  if(!u){btn.style.display="inline-block";ic.style.display="none";if(ad)ad.style.display="none";return;}
+  btn.style.display="none";ic.src=u.picture||DEFAULTS.userPicture;ic.style.display="inline-block";
+  if(ADMINS.includes(u.email)){ad&& (ad.style.display="inline-block");ic.onclick=()=>location.href="admin.html";}
+  else{ad&&(ad.style.display="none");ic.onclick=()=>location.href="account.html";}
+}
+function attachLoginButton(){const b=byId("loginBtn");if(b)b.onclick=()=>location.href="login.html";}
+window.logout=()=>{clearUser();setupLoginUI();updateCartBadge();location.href="index.html";};
+
+/* GOOGLE LOGIN */
+async function waitGoogle(ms=8000){const t=Date.now();while(Date.now()-t<ms){if(window.google?.accounts?.id)return true;await new Promise(r=>setTimeout(r,100));}return false;}
+async function initGoogleLogin(){if(!(await waitGoogle()))return false;if(!window.__g_init){google.accounts.id.initialize({client_id:GOOGLE_CLIENT_ID,callback:handleCredentialResponse,ux_mode:"popup"});google.accounts.id.disableAutoSelect?.();window.__g_init=true;}return true;}
+window.handleCredentialResponse=r=>{if(!r?.credential)return alert("Google login failed");const d=jwt_decode(r.credential);const u={email:d.email,name:d.name||d.given_name||d.email,picture:d.picture||DEFAULTS.userPicture,token:r.credential};saveUser(u);ADMINS.includes(u.email)?localStorage.setItem("adminLoggedIn","true"):localStorage.removeItem("adminLoggedIn");setupLoginUI();updateCartBadge();location.reload();};
+
+/* CART */
+const getCart=()=>safeJSON.parse(localStorage.getItem("cart"),[]);
+function saveCart(c){localStorage.setItem("cart",safeJSON.str(c||[]));}
+function updateCartBadge(){const b=byId("cartCount");if(!b)return;const c=getCart();b.textContent=c.length?c.length:"";b.setAttribute("aria-label",c.length+" items");}
+function addToCart(p,m=1){if(!p?._id)return alert("Error");const c=getCart();c.push({id:p._id,name:p.name||"Product",price:+p.price||0,image:p.images?.[0]||DEFAULTS.productImage,metres:+m||1});saveCart(c);updateCartBadge();alert("Added to cart!");}
+window.addToCart=addToCart;
+window.removeItem=i=>{const c=getCart();c.splice(i,1);saveCart(c);loadCartPage();};
+
+function loadCartPage(){
+  const list=byId("cartItems"),empty=byId("cartEmpty"),sum=byId("cartSummary"),t=byId("cartTotal");
+  if(!list)return;const c=getCart();
+  if(!c.length){empty&&(empty.style.display="block");list.innerHTML="";sum&&(sum.style.display="none");t&&(t.textContent=0);updateCartBadge();return;}
+  empty&&(empty.style.display="none");sum&&(sum.style.display="block");
+  let tot=0;list.innerHTML=c.map((v,i)=>{const lt=v.price*v.metres;tot+=lt;
+    return `<div class="col-md-4 mb-3"><div class="card p-2 shadow-sm h-100">
+      <img src="${escapeHtml(v.image)}" style="height:150px;width:100%;object-fit:cover;">
+      <div class="card-body d-flex flex-column">
+        <h5>${escapeHtml(v.name)}</h5>
+        <p>${DEFAULTS.currencySymbol}${v.price} × ${v.metres} = ${DEFAULTS.currencySymbol}${lt}</p>
+        <div class="mt-auto"><button class="btn btn-danger btn-sm" onclick="removeItem(${i})">Remove</button></div>
+      </div></div></div>`;
+  }).join("");t&&(t.textContent=tot);updateCartBadge();
+}
+window.loadCartPage=loadCartPage;
+
+/* PRODUCTS */
+async function fetchJSON(u,o={}){const r=await fetch(u,o);if(!r.ok)throw Error(r.status);return await r.json();}
+window.openProduct=id=>location.href=`product.html?id=${id}`;
+async function loadProducts(cat="all",id="productsContainer"){
+  const box=byId(id);box&&(box.innerHTML="Loading...");
+  try{
+    const a=await fetchJSON(`/api/products/category/${encodeURIComponent(cat)}`);
+    if(!a.length)return box&&(box.innerHTML="<p class='text-muted fw-bold'>Coming Soon...</p>");
+    box.innerHTML=a.map(p=>`
+      <div class="col-md-4 product-card">
+        <div class="card shadow-sm" onclick="openProduct('${escapeHtml(p._id)}')" style="cursor:pointer;">
+        <img src="${escapeHtml(p.images?.[0]||DEFAULTS.productImage)}" style="height:250px;width:100%;object-fit:cover;">
+        <div class="card-body"><h5>${escapeHtml(p.name)}</h5><p class="fw-bold">${DEFAULTS.currencySymbol}${escapeHtml(p.price)}</p></div>
+      </div></div>`).join("");
+  }catch{box&&(box.innerHTML="<p class='text-muted'>Error loading products.</p>");}
+}
+window.loadProducts=loadProducts;
+
+async function loadSingleProduct(){
+  const id=new URLSearchParams(location.search).get("id");if(!id)return;
+  try{
+    const p=await fetchJSON(`/api/products/${encodeURIComponent(id)}`);window.currentProduct=p;
+    byId("p_name")&&(byId("p_name").textContent=p.name);
+    byId("p_price")&&(byId("p_price").textContent=p.price);
+    byId("p_desc")&&(byId("p_desc").textContent=p.description);
+    byId("p_category")&&(byId("p_category").textContent=p.category);
+    const m=byId("mainImage");m&&(m.src=p.images?.[0]||DEFAULTS.productImage);
+    const tr=byId("thumbRow");if(tr){tr.innerHTML=p.images?.map((img,i)=>`<img src="${escapeHtml(img)}" class="thumb-img ${i==0?'active':''}" style="height:60px;width:60px;object-fit:cover;margin-right:8px;cursor:pointer;" onclick="document.getElementById('mainImage').src='${escapeHtml(img)}'">`).join("");}
+  }catch{}
+}
+window.loadSingleProduct=loadSingleProduct;
+window.addToCartPage=()=>addToCart(window.currentProduct,byId("metreInput")?.value||1);
+
+/* ADMIN */
+window.adminDeleteProduct=async id=>{if(!confirm("Delete permanently?"))return;try{const r=await fetchJSON(`/api/admin/products/${id}`,{method:"DELETE"});r.success?(alert("Deleted"),renderAdminProducts()):alert("Failed");}catch{alert("Server error");}};
+async function renderAdminProducts(){
+  const o=byId("productsAdminList");if(!o)return;o.innerHTML="Loading...";
+  try{
+    const a=await fetchJSON("/api/products/category/all");
+    o.innerHTML=a.map(p=>`
+      <div class="card p-2 mb-2"><div class="d-flex align-items-center">
+      <img src="${escapeHtml(p.images?.[0]||DEFAULTS.productImage)}" style="width:70px;height:70px;border-radius:8px;object-fit:cover;">
+      <div class="ms-3"><strong>${escapeHtml(p.name)}</strong> — ${DEFAULTS.currencySymbol}${escapeHtml(p.price)}<br>${escapeHtml(p.category)}</div>
+      <button class="btn btn-danger btn-sm ms-auto" onclick="adminDeleteProduct('${escapeHtml(p._id)}')">Delete</button>
+      </div></div>`).join("");
+  }catch{o.innerHTML="<p class='text-muted'>Failed.</p>";}
+}
+window.renderAdminProducts=renderAdminProducts;
+
+/* EMAIL LOGIN */
+window.emailLogin=async()=>{
+  const e=byId("loginEmail")?.value.trim(),p=byId("loginPass")?.value;if(!e||!p)return alert("Enter credentials");
+  const r=await fetch("/api/auth/login",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email:e,password:p})}).then(r=>r.json());
+  if(!r.success)return alert(r.message||"Failed");
+  saveUser(r.user);ADMINS.includes(r.user.email)?localStorage.setItem("adminLoggedIn","true"):localStorage.removeItem("adminLoggedIn");
+  location.reload();
 };
-
-/* ------------------ UTILITIES ------------------ */
-const noop = () => {};
-const isObj = (x) => x && typeof x === "object" && !Array.isArray(x);
-
-function safeJSONParse(raw, fallback = null) {
-  try {
-    if (raw === undefined || raw === null) return fallback;
-    const parsed = JSON.parse(raw);
-    return parsed === null ? fallback : parsed;
-  } catch (e) {
-    console.error("safeJSONParse:", e);
-    return fallback;
-  }
-}
-
-function safeJSONSerialize(payload) {
-  try {
-    return JSON.stringify(payload);
-  } catch (e) {
-    console.error("safeJSONSerialize:", e);
-    return null;
-  }
-}
-
-function qs(sel, root = document) {
-  return root.querySelector(sel);
-}
-function qsa(sel, root = document) {
-  return Array.from(root.querySelectorAll(sel));
-}
-
-function escapeHtml(str) {
-  if (str === null || str === undefined) return "";
-  return String(str).replace(/[&<>"']/g, (m) =>
-    ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m])
-  );
-}
-
-function byId(id) { return document.getElementById(id); }
-
-/* ------------------ STORAGE / USER ------------------ */
-function getUser() {
-  return safeJSONParse(localStorage.getItem("sg_user"), null);
-}
-function saveUserToLocal(userObj) {
-  if (!userObj || !userObj.email) return;
-  try {
-    localStorage.setItem("sg_user", safeJSONSerialize(userObj));
-  } catch (e) { console.error("saveUserToLocal failed:", e); }
-}
-function clearUserLocal() {
-  try {
-    localStorage.removeItem("sg_user");
-    localStorage.removeItem("adminLoggedIn");
-  } catch (e) { console.error("clearUserLocal failed:", e); }
-}
-
-/* ------------------ UI: Login / Navbar ------------------ */
-function setupLoginUI() {
-  const loginBtn = byId("loginBtn");
-  const icon = byId("accountIcon");
-  const navArea = document.querySelector(".nav-login-area");
-  const adminBadge = byId("adminBadgeNav");
-
-  const user = getUser();
-
-  if (navArea) navArea.style.visibility = "visible";
-
-  if (!loginBtn || !icon) {
-    if (adminBadge) adminBadge.style.display = "none";
-    return;
-  }
-
-  if (!user) {
-    loginBtn.style.display = "inline-block";
-    icon.style.display = "none";
-    if (adminBadge) adminBadge.style.display = "none";
-    return;
-  }
-
-  loginBtn.style.display = "none";
-  icon.src = user.picture || DEFAULTS.userPicture;
-  icon.alt = escapeHtml(user.name || user.email || "Account");
-  icon.style.display = "inline-block";
-
-  if (ADMINS.includes(user.email)) {
-    if (adminBadge) adminBadge.style.display = "inline-block";
-    icon.onclick = () => (window.location.href = "admin.html");
-  } else {
-    if (adminBadge) adminBadge.style.display = "none";
-    icon.onclick = () => (window.location.href = "account.html");
-  }
-}
-
-function attachLoginButton() {
-  const btn = byId("loginBtn");
-  if (!btn) return;
-  btn.onclick = () => {
-    const modalEl = byId("emailLoginModal");
-    if (!modalEl) {
-      window.location.href = "login.html";
-      return;
-    }
-    try {
-      const m = new bootstrap.Modal(modalEl);
-      m.show();
-    } catch (e) {
-      console.warn("Bootstrap modal open failed:", e);
-      window.location.href = "login.html";
-    }
-  };
-}
-
-window.logout = function() {
-  clearUserLocal();
-  console.log("Logged out locally");
-  setupLoginUI();
-  updateCartBadge();
-  // gently redirect to home
-  try { window.location.href = "index.html"; } catch (e) { /* ignore */ }
+window.emailRegister=async()=>{
+  const n=byId("regName")?.value.trim(),e=byId("regEmail")?.value.trim(),p=byId("regPass")?.value;if(!e||!p)return alert("Enter details");
+  const r=await fetch("/api/auth/register",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({name:n,email:e,password:p})}).then(r=>r.json());
+  if(!r.success)return alert(r.message||"Failed");alert("Registered");location.href="login.html";
 };
+window.openRegister=()=>location.href="register.html";
 
-/* ------------------ GOOGLE IDENTITY (POPUP SAFE) ------------------ */
-/* Wait for the GSI library to appear */
-async function waitForGoogle(timeoutMs = 8000) {
-  const start = Date.now();
-  while (Date.now() - start < timeoutMs) {
-    if (window.google && google.accounts && google.accounts.id) return true;
-    await new Promise((r) => setTimeout(r, 100));
-  }
-  return false;
+/* ORDER HISTORY */
+async function loadOrderHistory(){
+  const u=getUser(),box=byId("ordersList");if(!box)return;
+  if(!u)return box.innerHTML=`<p class="text-danger mt-3">Please login to see your orders.</p>`;
+  try{
+    const a=await fetch(`/api/orders/${u.email}`).then(r=>r.json());
+    if(!a.length)return box.innerHTML=`
+      <div class="text-center mt-5">
+        <img src="https://cdn-icons-png.flaticon.com/512/4076/4076500.png" width="120" class="opacity-75 mb-3">
+        <h5 class="fw-bold text-secondary">No Orders Yet</h5>
+        <p class="text-muted">You haven't purchased anything.</p>
+        <a href="allproducts.html" class="btn btn-primary mt-2">Start Shopping</a>
+      </div>`;
+    box.innerHTML=a.map(o=>`
+      <div class="card p-3 mb-3">
+        <h5>Order #${o._id}</h5>
+        <p><b>Date:</b> ${new Date(o.date).toLocaleString()}</p>
+        <p><b>Total:</b> ₹${o.total}</p>
+        <hr><h6>Items:</h6>
+        ${o.items.map(i=>`<p>• ${i.name} (x${i.quantity})</p>`).join("")}
+      </div>`).join("");
+  }catch{box.innerHTML="<p>Error loading orders.</p>";}
 }
+window.loadOrderHistory=loadOrderHistory;
 
-/* Initialize Google Identity (non-blocking safe) */
-async function initGoogleLogin() {
-  const ready = await waitForGoogle(8000);
-  if (!ready) {
-    console.warn("Google Identity not available");
-    return false;
-  }
-  try {
-    if (!window.__sg_google_initialized) {
-      google.accounts.id.initialize({
-        client_id: "653374521156-6retcia1fiu5dvmbjik9sq89ontrkmvt.apps.googleusercontent.com",
-        callback: handleCredentialResponse,
-        ux_mode: "popup",
-        auto_select: false
-      });
-      if (google.accounts.id.disableAutoSelect) google.accounts.id.disableAutoSelect();
-      window.__sg_google_initialized = true;
-      console.log("Google Identity initialized");
-    }
-    return true;
-  } catch (e) {
-    console.error("initGoogleLogin error:", e);
-    return false;
-  }
-}
-
-/* Trigger the popup-based login flow (user gesture required) */
-async function triggerGoogleLogin() {
-  const ok = await initGoogleLogin();
-  if (!ok) {
-    alert("Google login not ready. Try again.");
-    return;
-  }
-  try {
-    google.accounts.id.prompt((notif) => {
-      console.log("google prompt:", notif);
-    });
-  } catch (e) {
-    console.warn("google.accounts.id.prompt failed:", e);
-    alert("Unable to open Google login. Try email login.");
-  }
-}
-
-/* Response handler called by GSI */
-window.handleCredentialResponse = function(response) {
-  console.log("handleCredentialResponse:", response && !!response.credential);
-  if (!response || !response.credential) {
-    alert("Google login failed.");
-    return;
-  }
-  try {
-    const data = jwt_decode(response.credential); // ensure jwt_decode is included in page
-    const user = {
-      email: data.email,
-      name: data.name || data.given_name || data.email,
-      picture: data.picture || DEFAULTS.userPicture,
-      token: response.credential,
-      joined: new Date().toLocaleDateString()
-    };
-    saveUserToLocal(user);
-    if (ADMINS.includes(user.email)) localStorage.setItem("adminLoggedIn", "true");
-    else localStorage.removeItem("adminLoggedIn");
-
-    // close modal if open
-    const loginModalEl = byId("emailLoginModal");
-    if (loginModalEl) {
-      try {
-        const inst = bootstrap.Modal.getInstance(loginModalEl);
-        if (inst) inst.hide();
-      } catch (e) { /* ignore */ }
-    }
-
-    setupLoginUI();
-    updateCartBadge();
-    alert(`Welcome ${user.name || user.email}`);
-    try { window.location.reload(); } catch (e) { console.log("reload failed:", e); }
-  } catch (err) {
-    console.error("Google auth parse error:", err);
-    alert("Google login failed. Check console.");
-  }
-};
-
-/* ------------------ CART (LOCALSTORAGE) ------------------ */
-function safeParseCart() {
-  return safeJSONParse(localStorage.getItem("cart"), []);
-}
-function saveCart(cart) {
-  try {
-    localStorage.setItem("cart", safeJSONSerialize(cart || []));
-  } catch (e) { console.error("saveCart failed:", e); }
-}
-
-function updateCartBadge() {
-  const badge = byId("cartCount");
-  if (!badge) return;
-  const cart = safeParseCart() || [];
-  badge.textContent = cart.length ? String(cart.length) : "";
-  badge.setAttribute("aria-label", `${cart.length} items in cart`);
-}
-window.updateCartBadge = updateCartBadge;
-
-function addToCart(product, metres = 1) {
-  if (!product || !product._id) {
-    console.warn("addToCart invalid product", product);
-    alert("Unable to add product to cart.");
-    return;
-  }
-  const cart = safeParseCart() || [];
-  const image = product.images && product.images[0] ? product.images[0] : DEFAULTS.productImage;
-  const price = Number(product.price) || 0;
-  const qty = Math.max(1, Number(metres) || 1);
-  cart.push({
-    id: product._id,
-    name: product.name || "Untitled product",
-    price,
-    image,
-    metres: qty
-  });
-  saveCart(cart);
-  updateCartBadge();
-  alert("Added to cart!");
-}
-window.addToCart = addToCart;
-
-function removeItem(index) {
-  const cart = safeParseCart() || [];
-  if (index < 0 || index >= cart.length) return;
-  cart.splice(index, 1);
-  saveCart(cart);
-  loadCartPage();
-}
-window.removeItem = removeItem;
-
-function loadCartPage() {
-  const cont = byId("cartItems");
-  const empty = byId("cartEmpty");
-  const summary = byId("cartSummary");
-  const tEl = byId("cartTotal");
-
-  if (!cont) { updateCartBadge(); return; }
-
-  const cart = safeParseCart() || [];
-
-  if (!cart.length) {
-    if (empty) empty.style.display = "block";
-    cont.innerHTML = "";
-    if (summary) summary.style.display = "none";
-    if (tEl) tEl.textContent = "0";
-    updateCartBadge();
-    return;
-  }
-
-  if (empty) empty.style.display = "none";
-  if (summary) summary.style.display = "block";
-
-  let total = 0;
-  const html = cart.map((item, idx) => {
-    const name = escapeHtml(item.name || "Product");
-    const image = escapeHtml(item.image || DEFAULTS.productImage);
-    const price = Number(item.price) || 0;
-    const metres = Number(item.metres) || 1;
-    const lineTotal = price * metres;
-    total += lineTotal;
-    return `
-      <div class="col-md-4 mb-3">
-        <div class="card p-2 shadow-sm h-100">
-          <img src="${image}" alt="${name}" style="height:150px;width:100%;object-fit:cover;">
-          <div class="card-body d-flex flex-column">
-            <h5 class="card-title mb-1">${name}</h5>
-            <p class="mb-2">${DEFAULTS.currencySymbol}${price} × ${metres}m = ${DEFAULTS.currencySymbol}${lineTotal}</p>
-            <div class="mt-auto">
-              <button class="btn btn-danger btn-sm" onclick="removeItem(${idx})">Remove</button>
-            </div>
-          </div>
-        </div>
-      </div>
-    `;
-  }).join("");
-
-  cont.innerHTML = html;
-  if (tEl) tEl.textContent = total;
-  updateCartBadge();
-}
-window.loadCartPage = loadCartPage;
-
-/* ------------------ PRODUCT LIST & SINGLE PRODUCT ------------------ */
-async function fetchJSON(url, opts = {}) {
-  try {
-    const res = await fetch(url, opts);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    return await res.json();
-  } catch (e) {
-    console.error("fetchJSON error:", e, url);
-    throw e;
-  }
-}
-
-function openProduct(id) {
-  window.location.href = `product.html?id=${encodeURIComponent(id)}`;
-}
-window.openProduct = openProduct;
-
-async function loadProducts(cat = "all", containerId = "productsContainer") {
-  const box = byId(containerId);
-  if (box) box.innerHTML = "Loading...";
-  try {
-    const res = await fetchJSON(`/api/products/category/${encodeURIComponent(cat)}`);
-    if (!res || !res.length) {
-      if (box) box.innerHTML = `<p class='text-muted fw-bold'>Coming Soon...</p>`;
-      return;
-    }
-    if (box) box.innerHTML = "";
-    res.forEach((p) => {
-      if (!box) return;
-      const img = escapeHtml((p.images && p.images[0]) ? p.images[0] : DEFAULTS.productImage);
-      box.innerHTML += `
-        <div class="col-md-4 product-card">
-          <div class="card shadow-sm" onclick="openProduct('${escapeHtml(p._id)}')" style="cursor:pointer;">
-            <img src="${img}" style="height:250px;width:100%;object-fit:cover;">
-            <div class="card-body">
-              <h5>${escapeHtml(p.name)}</h5>
-              <p class="fw-bold">${DEFAULTS.currencySymbol}${escapeHtml(p.price)}</p>
-            </div>
-          </div>
-        </div>
-      `;
-    });
-  } catch (e) {
-    if (box) box.innerHTML = `<p class='text-muted'>Error loading products.</p>`;
-  }
-}
-window.loadProducts = loadProducts;
-
-async function loadSingleProduct() {
-  const id = new URLSearchParams(window.location.search).get("id");
-  if (!id) return;
-  try {
-    const p = await fetchJSON(`/api/products/${encodeURIComponent(id)}`);
-    if (!p) return;
-    const elName = byId("p_name");
-    if (elName) elName.textContent = p.name || "";
-    const elPrice = byId("p_price");
-    if (elPrice) elPrice.textContent = p.price || "";
-    const elDesc = byId("p_desc");
-    if (elDesc) elDesc.textContent = p.description || "";
-    const elCat = byId("p_category");
-    if (elCat) elCat.textContent = p.category || "";
-    const mainImage = byId("mainImage");
-    if (mainImage) mainImage.src = (p.images && p.images[0]) ? p.images[0] : DEFAULTS.productImage;
-    const thumbRow = byId("thumbRow");
-    if (thumbRow) {
-      thumbRow.innerHTML = "";
-      (p.images || []).forEach((img, i) => {
-        const safe = escapeHtml(img || DEFAULTS.productImage);
-        thumbRow.innerHTML += `
-          <img src="${safe}" class="thumb-img ${i===0?'active':''}"
-               style="height:60px;width:60px;object-fit:cover;margin-right:8px;cursor:pointer;"
-               onclick="document.getElementById('mainImage').src='${safe}'">
-        `;
-      });
-    }
-    window.currentProduct = p;
-  } catch (e) { /* fail silently */ console.error("loadSingleProduct:", e); }
-}
-window.loadSingleProduct = loadSingleProduct;
-
-function addToCartPage() {
-  const mEl = byId("metreInput");
-  const metres = mEl ? Number(mEl.value) || 1 : 1;
-  if (!window.currentProduct) {
-    alert("Product not loaded.");
-    return;
-  }
-  addToCart(window.currentProduct, metres);
-}
-window.addToCartPage = addToCartPage;
-
-/* ------------------ ADMIN ------------------ */
-async function adminDeleteProduct(id) {
-  if (!confirm("Delete this product permanently?")) return;
-  try {
-    const res = await fetchJSON(`/api/admin/products/${encodeURIComponent(id)}`, { method: "DELETE" });
-    if (res && res.success) {
-      alert("Product deleted.");
-      renderAdminProducts();
-    } else alert("Delete failed.");
-  } catch (e) {
-    alert("Delete failed (server error).");
-  }
-}
-window.adminDeleteProduct = adminDeleteProduct;
-
-async function renderAdminProducts() {
-  const out = byId("productsAdminList");
-  if (!out) return;
-  out.innerHTML = "Loading...";
-  try {
-    const products = await fetchJSON("/api/products/category/all");
-    out.innerHTML = products
-      .map((p) => `
-        <div class="card p-2 mb-2">
-          <div class="d-flex align-items-center">
-            <img src="${escapeHtml((p.images && p.images[0]) ? p.images[0] : DEFAULTS.productImage)}"
-                 style="width:70px;height:70px;border-radius:8px;object-fit:cover;">
-            <div class="ms-3">
-              <strong>${escapeHtml(p.name)}</strong> — ${DEFAULTS.currencySymbol}${escapeHtml(p.price)}<br><span>${escapeHtml(p.category)}</span>
-            </div>
-            <button class="btn btn-danger btn-sm ms-auto" onclick="adminDeleteProduct('${escapeHtml(p._id)}')">Delete</button>
-          </div>
-        </div>
-      `).join("");
-  } catch (e) {
-    out.innerHTML = "<p class='text-muted'>Failed to load admin products.</p>";
-  }
-}
-window.renderAdminProducts = renderAdminProducts;
-
-/* ------------------ EMAIL AUTH (LOGIN / REGISTER) ------------------ */
-async function emailLogin() {
-  const email = byId("loginEmail")?.value.trim() || "";
-  const pass = byId("loginPass")?.value || "";
-  if (!email || !pass) return alert("Please enter email and password.");
-  try {
-    const res = await fetch("/api/auth/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: safeJSONSerialize({ email, password: pass })
-    });
-    const data = await res.json();
-    if (!data || !data.success) return alert(data && data.message ? data.message : "Login failed");
-    const user = data.user;
-    saveUserToLocal(user);
-    if (ADMINS.includes(user.email)) localStorage.setItem("adminLoggedIn", "true");
-    else localStorage.removeItem("adminLoggedIn");
-    const modalEl = byId("emailLoginModal");
-    if (modalEl) {
-      try {
-        const m = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
-        m.hide();
-      } catch (e) { /* ignore */ }
-    }
-    setupLoginUI();
-    updateCartBadge();
-    window.location.reload();
-  } catch (e) {
-    console.error("emailLogin error:", e);
-    alert("Login failed (server error).");
-  }
-}
-window.emailLogin = emailLogin;
-
-async function emailRegister() {
-  const name = byId("regName")?.value.trim() || "";
-  const email = byId("regEmail")?.value.trim() || "";
-  const pass = byId("regPass")?.value || "";
-  if (!email || !pass) return alert("Please enter email and password.");
-  try {
-    const res = await fetch("/api/auth/register", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: safeJSONSerialize({ name, email, password: pass })
-    });
-    const data = await res.json();
-    if (!data || !data.success) return alert(data && data.message ? data.message : "Register failed");
-    alert("Account created! Please login.");
-    try {
-      const rm = bootstrap.Modal.getInstance(byId("registerModal"));
-      if (rm) rm.hide();
-    } catch (e) { /* ignore */ }
-    try {
-      const lm = new bootstrap.Modal(byId("emailLoginModal"));
-      lm.show();
-    } catch (e) { /* ignore */ }
-  } catch (e) {
-    console.error("emailRegister error:", e);
-    alert("Register failed (server error).");
-  }
-}
-window.emailRegister = emailRegister;
-
-function openRegister() {
-  try {
-    const rm = new bootstrap.Modal(byId("registerModal"));
-    rm.show();
-  } catch (e) {
-    window.location.href = "register.html";
-  }
-}
-window.openRegister = openRegister;
-
-/* ------------------ ADMIN GUARD ------------------ */
-(function adminGuard() {
-  try {
-    if (window.location.pathname.includes("admin")) {
-      if (!localStorage.getItem("adminLoggedIn")) {
-        window.location.href = "index.html";
-      }
-    }
-  } catch (e) {
-    console.error("adminGuard error:", e);
-  }
-})();
-
-/* ------------------ PAGE INITIALIZATION ------------------ */
-document.addEventListener("DOMContentLoaded", async () => {
+/* INIT */
+document.addEventListener("DOMContentLoaded",async()=>{
   setupLoginUI();
   updateCartBadge();
   attachLoginButton();
+  initGoogleLogin();
 
-  // kick off non-blocking google init
-  initGoogleLogin().then(ok => { if (ok) console.log("Google ready"); }).catch(noop);
+  const p=location.pathname.toLowerCase();
+  if(p.includes("cart"))loadCartPage();
+  if(p.includes("product"))loadSingleProduct();
+  if(p.includes("admin"))renderAdminProducts();
+  if(p.includes("orderhistory"))loadOrderHistory();
 
-  // run page-specific logic
-  const path = (window.location.pathname || "").toLowerCase();
-
-  if (path.includes("cart") || byId("cartItems")) {
-    try { loadCartPage(); } catch (e) { console.error(e); }
-  }
-
-  if (path.includes("product") || byId("p_name")) {
-    try { loadSingleProduct(); } catch (e) { console.error(e); }
-  }
-
-  if (path.includes("admin") && byId("productsAdminList")) {
-    try { renderAdminProducts(); } catch (e) { console.error(e); }
-  }
-
-  // auto-load any containers that declare data-products-cat
-  const prodContainers = qsa("[data-products-cat]");
-  prodContainers.forEach((el) => {
-    const cat = el.getAttribute("data-products-cat") || "all";
-    loadProducts(cat, el.id);
-  });
+  qsa("[data-products-cat]").forEach(el=>loadProducts(el.getAttribute("data-products-cat")||"all",el.id));
 });
-
-/* ------------------ EXPORTS ------------------ */
-window._sg = {
-  // user / auth
-  getUser,
-  saveUserToLocal,
-  clearUserLocal,
-  // google
-  initGoogleLogin,
-  triggerGoogleLogin,
-  // cart
-  safeParseCart,
-  addToCart,
-  removeItem,
-  loadCartPage,
-  updateCartBadge,
-  // products
-  loadProducts,
-  loadSingleProduct,
-  openProduct,
-  addToCartPage,
-  // admin
-  renderAdminProducts,
-  adminDeleteProduct,
-  // email auth
-  emailLogin,
-  emailRegister,
-  openRegister
-};
