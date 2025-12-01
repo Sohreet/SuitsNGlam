@@ -9,6 +9,7 @@ const express = require("express");
 const path = require("path");
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
+const cors = require("cors");
 
 const app = express();
 
@@ -47,16 +48,7 @@ const ProductSchema = new mongoose.Schema({
 
 const OrderSchema = new mongoose.Schema({
   userEmail: String,
-  items: [
-    {
-      productId: String,
-      name: String,
-      price: Number,
-      quantity: Number,
-      metres: Number,
-      image: String,
-    },
-  ],
+  items: Array,
   total: Number,
   status: { type: String, default: "pending" },
   createdAt: { type: Date, default: () => new Date() },
@@ -70,46 +62,42 @@ const Order = mongoose.model("Order", OrderSchema);
 /* ------------------------------------------------------
    MIDDLEWARE
 ------------------------------------------------------ */
+app.use(cors());
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 
-/* Static files */
+/* Serve static frontend */
 app.use(express.static(path.join(__dirname, "public")));
 
 /* Google safe paths */
-const googleSafe = ["/.well-known", "/google", "/gsi", "/auth", "/oauth2"];
+const googleSafe = ["/.well-known", "/google", "/gsi", "/auth", "/oauth", "/oauth2", "/signin", "/_"];
 app.use((req, res, next) => {
   if (googleSafe.some((p) => req.path.startsWith(p))) return next();
   next();
 });
 
 /* ------------------------------------------------------
-   AUTH — EMAIL REGISTER
+   AUTH — REGISTER
 ------------------------------------------------------ */
 app.post("/api/auth/register", async (req, res) => {
   try {
     const { name, email, password } = req.body;
-
     if (!email || !password)
       return res.json({ success: false, message: "Missing fields" });
 
     const exists = await User.findOne({ email });
     if (exists)
-      return res.json({
-        success: false,
-        message: "Email already registered",
-      });
+      return res.json({ success: false, message: "Email already registered" });
 
     const hashed = await bcrypt.hash(password, 10);
 
-    const newUser = new User({
+    await new User({
       name: name || email.split("@")[0],
       email,
       password: hashed,
       picture: "/images/default-user.png",
-    });
+    }).save();
 
-    await newUser.save();
     res.json({ success: true });
   } catch (err) {
     console.error("Register error:", err);
@@ -118,11 +106,12 @@ app.post("/api/auth/register", async (req, res) => {
 });
 
 /* ------------------------------------------------------
-   AUTH — EMAIL LOGIN
+   AUTH — LOGIN
 ------------------------------------------------------ */
 app.post("/api/auth/login", async (req, res) => {
   try {
     const { email, password } = req.body;
+
     if (!email || !password)
       return res.json({ success: false, message: "Missing fields" });
 
@@ -134,7 +123,7 @@ app.post("/api/auth/login", async (req, res) => {
     if (!ok)
       return res.json({ success: false, message: "Incorrect password" });
 
-    return res.json({
+    res.json({
       success: true,
       user: {
         email: user.email,
@@ -149,27 +138,11 @@ app.post("/api/auth/login", async (req, res) => {
 });
 
 /* ------------------------------------------------------
-   PRODUCTS — ADMIN ADD PRODUCT
+   PRODUCTS — ADD PRODUCT (Admin)
 ------------------------------------------------------ */
 app.post("/api/admin/products", async (req, res) => {
   try {
-    const { name, price, category, description, stock, images, video, sale } =
-      req.body;
-
-    if (!name || !price || !category)
-      return res.json({ success: false, message: "Missing fields" });
-
-    const p = new Product({
-      name,
-      price,
-      category,
-      description,
-      stock,
-      images,
-      video,
-      sale,
-    });
-
+    const p = new Product(req.body);
     await p.save();
     res.json({ success: true, product: p });
   } catch (err) {
@@ -179,14 +152,13 @@ app.post("/api/admin/products", async (req, res) => {
 });
 
 /* ------------------------------------------------------
-   PRODUCTS — DELETE PRODUCT
+   PRODUCTS — DELETE
 ------------------------------------------------------ */
 app.delete("/api/admin/products/:id", async (req, res) => {
   try {
     await Product.findByIdAndDelete(req.params.id);
     res.json({ success: true });
   } catch (err) {
-    console.error("Delete product error:", err);
     res.json({ success: false, message: "Delete failed" });
   }
 });
@@ -195,45 +167,29 @@ app.delete("/api/admin/products/:id", async (req, res) => {
    PRODUCTS — LIST ALL
 ------------------------------------------------------ */
 app.get("/api/products/category/all", async (req, res) => {
-  const products = await Product.find().sort({ createdAt: -1 });
-  res.json(products);
+  res.json(await Product.find().sort({ createdAt: -1 }));
 });
 
 /* ------------------------------------------------------
    PRODUCTS — CATEGORY
 ------------------------------------------------------ */
 app.get("/api/products/category/:cat", async (req, res) => {
-  const products = await Product.find({ category: req.params.cat }).sort({
-    createdAt: -1,
-  });
-  res.json(products);
+  res.json(await Product.find({ category: req.params.cat }).sort({ createdAt: -1 }));
 });
 
 /* ------------------------------------------------------
    PRODUCTS — SINGLE
 ------------------------------------------------------ */
 app.get("/api/products/:id", async (req, res) => {
-  const product = await Product.findById(req.params.id);
-  res.json(product);
+  res.json(await Product.findById(req.params.id));
 });
 
 /* ------------------------------------------------------
-   ORDERS — CREATE ORDER
+   ORDERS — CREATE
 ------------------------------------------------------ */
 app.post("/api/orders", async (req, res) => {
   try {
-    const { email, items, total, meta } = req.body;
-
-    if (!email || !items || items.length === 0)
-      return res.json({ success: false, message: "Invalid order" });
-
-    const order = new Order({
-      userEmail: email,
-      items,
-      total,
-      meta,
-    });
-
+    const order = new Order(req.body);
     await order.save();
     res.json({ success: true, order });
   } catch (err) {
@@ -243,22 +199,14 @@ app.post("/api/orders", async (req, res) => {
 });
 
 /* ------------------------------------------------------
-   ORDERS — USER ORDER HISTORY
+   ORDERS — USER HISTORY
 ------------------------------------------------------ */
 app.get("/api/orders/history/:email", async (req, res) => {
-  try {
-    const orders = await Order.find({ userEmail: req.params.email }).sort({
-      createdAt: -1,
-    });
-    res.json(orders);
-  } catch (err) {
-    console.error("Order history error:", err);
-    res.json([]);
-  }
+  res.json(await Order.find({ userEmail: req.params.email }).sort({ createdAt: -1 }));
 });
 
 /* ------------------------------------------------------
-   STATIC FRONTEND (RENDER SAFE)
+   FRONTEND FALLBACK (Render)
 ------------------------------------------------------ */
 app.get("*", (req, res, next) => {
   if (req.path.startsWith("/api")) return next();
@@ -266,10 +214,7 @@ app.get("*", (req, res, next) => {
 });
 
 /* ------------------------------------------------------
-   START SERVER — NO FALLBACK PORT (REQUIRED BY RENDER)
+   START SERVER
 ------------------------------------------------------ */
 const PORT = process.env.PORT;
-
-app.listen(PORT, () => {
-  console.log(`🚀 Suits N Glam Backend Running on port ${PORT}`);
-});
+app.listen(PORT, () => console.log(`🚀 Running on port ${PORT}`));
