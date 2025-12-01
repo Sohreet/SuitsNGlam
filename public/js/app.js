@@ -1,251 +1,302 @@
+/******************************************************
+ * SUITS N GLAM — APP.JS (CLEAN + OPTIMIZED)
+ ******************************************************/
+
 console.log("APP.JS LOADED");
 
-/* CONFIG */
+/* ------------------ CONFIG ------------------ */
 const ADMINS = ["sohabrar10@gmail.com"];
-const GOOGLE_CLIENT_ID = "653374521156-6retcia1fiu5dvmbjik9sq89ontrkmvt.apps.googleusercontent.com";
+const GOOGLE_CLIENT_ID =
+  "653374521156-6retcia1fiu5dvmbjik9sq89ontrkmvt.apps.googleusercontent.com";
+
 const DEFAULTS = {
   userPicture: "/images/default-user.png",
   productImage: "/images/default-product.png",
-  currencySymbol: "₹"
+  currencySymbol: "₹",
 };
 
-/* SHORTCUTS */
-const qs = (s, r = document) => r.querySelector(s);
-const qsa = (s, r = document) => [...r.querySelectorAll(s)];
-const byId = id => document.getElementById(id);
-const escapeHtml = s => String(s || "").replace(/[&<>"']/g, m => ({
-  "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#039;"
-}[m]));
+/* ------------------ UTILITIES ------------------ */
+const noop = () => {};
+const qs = (sel, root = document) => root.querySelector(sel);
+const qsa = (sel, root = document) => Array.from(root.querySelectorAll(sel));
+const byId = (id) => document.getElementById(id);
 
-const safeJSON = {
-  parse: (v, f) => { try { return JSON.parse(v) || f; } catch { return f; } },
-  str: v => { try { return JSON.stringify(v); } catch { return null; } }
-};
+function escapeHtml(str) {
+  if (!str) return "";
+  return String(str).replace(/[&<>"']/g, (m) => {
+    return {
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#039;",
+    }[m];
+  });
+}
 
-/* USER STORAGE */
-function getUser() { return safeJSON.parse(localStorage.getItem("sg_user"), null); }
-function saveUser(u) { if (u?.email) localStorage.setItem("sg_user", safeJSON.str(u)); }
-function clearUser() {
+function safeJSONParse(v, f = null) {
+  try {
+    return JSON.parse(v) ?? f;
+  } catch {
+    return f;
+  }
+}
+
+function safeJSONSerialize(v) {
+  try {
+    return JSON.stringify(v);
+  } catch {
+    return null;
+  }
+}
+
+/* ------------------ USER STORAGE ------------------ */
+function getUser() {
+  return safeJSONParse(localStorage.getItem("sg_user"), null);
+}
+
+function saveUserToLocal(obj) {
+  if (!obj?.email) return;
+  localStorage.setItem("sg_user", safeJSONSerialize(obj));
+}
+
+function clearUserLocal() {
   localStorage.removeItem("sg_user");
   localStorage.removeItem("adminLoggedIn");
 }
 
-/* LOGIN UI */
+/* ------------------ LOGIN UI ------------------ */
 function setupLoginUI() {
-  const u = getUser(),
-    btn = byId("loginBtn"),
-    ic = byId("accountIcon"),
-    ad = byId("adminBadgeNav");
+  const btn = byId("loginBtn");
+  const icon = byId("accountIcon");
+  const adminBadge = byId("adminBadgeNav");
+  const user = getUser();
 
-  if (!btn || !ic) return;
+  if (!btn || !icon) return;
 
-  if (!u) {
+  if (!user) {
     btn.style.display = "inline-block";
-    ic.style.display = "none";
-    ad && (ad.style.display = "none");
+    icon.style.display = "none";
+    if (adminBadge) adminBadge.style.display = "none";
     return;
   }
 
   btn.style.display = "none";
-  ic.src = u.picture || DEFAULTS.userPicture;
-  ic.style.display = "inline-block";
+  icon.src = user.picture || DEFAULTS.userPicture;
+  icon.style.display = "inline-block";
 
-  if (ADMINS.includes(u.email)) {
-    ad && (ad.style.display = "inline-block");
-    ic.onclick = () => location.href = "admin.html";
+  if (ADMINS.includes(user.email)) {
+    if (adminBadge) adminBadge.style.display = "inline-block";
+    icon.onclick = () => (location.href = "admin.html");
   } else {
-    ad && (ad.style.display = "none");
-    ic.onclick = () => location.href = "account.html";
+    if (adminBadge) adminBadge.style.display = "none";
+    icon.onclick = () => (location.href = "account.html");
   }
 }
 
 function attachLoginButton() {
-  const b = byId("loginBtn");
-  b && (b.onclick = () => location.href = "login.html");
+  const btn = byId("loginBtn");
+  if (!btn) return;
+  btn.onclick = () => (location.href = "login.html");
 }
 
+/* ------------------ LOGOUT ------------------ */
 window.logout = () => {
-  clearUser();
+  clearUserLocal();
   setupLoginUI();
   updateCartBadge();
   location.href = "index.html";
 };
 
-/* GOOGLE LOGIN */
-async function waitGoogle(ms = 8000) {
-  const t = Date.now();
-  while (Date.now() - t < ms) {
+/* ------------------ GOOGLE LOGIN ------------------ */
+async function waitForGoogle(ms = 8000) {
+  const start = Date.now();
+  while (Date.now() - start < ms) {
     if (window.google?.accounts?.id) return true;
-    await new Promise(r => setTimeout(r, 100));
+    await new Promise((res) => setTimeout(res, 100));
   }
   return false;
 }
 
 async function initGoogleLogin() {
-  if (!(await waitGoogle())) return false;
+  const ready = await waitForGoogle();
+  if (!ready) return false;
 
-  if (!window.__g_init) {
+  if (!window.__sg_google_initialized) {
     google.accounts.id.initialize({
       client_id: GOOGLE_CLIENT_ID,
       callback: handleCredentialResponse,
-      ux_mode: "popup"
+      ux_mode: "popup",
     });
-
     google.accounts.id.disableAutoSelect?.();
-    window.__g_init = true;
+    window.__sg_google_initialized = true;
   }
   return true;
 }
 
-window.handleCredentialResponse = r => {
-  if (!r?.credential) return alert("Google login failed");
+window.handleCredentialResponse = (res) => {
+  if (!res?.credential) return alert("Google login failed");
 
-  if (typeof jwt_decode === "undefined") {
-    console.error("jwt_decode missing — Google login skipped.");
-    return alert("Google login error");
-  }
-
-  const d = jwt_decode(r.credential);
-  const u = {
-    email: d.email,
-    name: d.name || d.given_name || d.email,
-    picture: d.picture || DEFAULTS.userPicture,
-    token: r.credential
+  const data = jwt_decode(res.credential);
+  const user = {
+    email: data.email,
+    name: data.name || data.email,
+    picture: data.picture || DEFAULTS.userPicture,
+    token: res.credential,
   };
 
-  saveUser(u);
-  ADMINS.includes(u.email)
-    ? localStorage.setItem("adminLoggedIn", "true")
-    : localStorage.removeItem("adminLoggedIn");
+  saveUserToLocal(user);
+
+  if (ADMINS.includes(user.email))
+    localStorage.setItem("adminLoggedIn", "true");
+  else localStorage.removeItem("adminLoggedIn");
 
   setupLoginUI();
   updateCartBadge();
   location.reload();
 };
 
-/* CART */
-const getCart = () => safeJSON.parse(localStorage.getItem("cart"), []);
-function saveCart(c) { localStorage.setItem("cart", safeJSON.str(c || [])); }
-function updateCartBadge() {
-  const b = byId("cartCount");
-  if (!b) return;
-  const c = getCart();
-  b.textContent = c.length ? c.length : "";
-  b.setAttribute("aria-label", c.length + " items");
+/* ------------------ CART ------------------ */
+function safeParseCart() {
+  return safeJSONParse(localStorage.getItem("cart"), []);
 }
 
-function addToCart(p, m = 1) {
-  if (!p?._id) return alert("Error");
-  const c = getCart();
-  c.push({
+function saveCart(cart) {
+  localStorage.setItem("cart", safeJSONSerialize(cart));
+}
+
+function updateCartBadge() {
+  const badge = byId("cartCount");
+  if (!badge) return;
+  const cart = safeParseCart();
+  badge.textContent = cart.length ? cart.length : "";
+}
+
+window.updateCartBadge = updateCartBadge;
+
+window.addToCart = (p, m = 1) => {
+  if (!p?._id) return alert("Invalid product");
+
+  const cart = safeParseCart();
+  cart.push({
     id: p._id,
-    name: p.name || "Product",
+    name: p.name,
     price: +p.price || 0,
     image: p.images?.[0] || DEFAULTS.productImage,
-    metres: +m || 1
+    metres: +m || 1,
   });
-  saveCart(c);
+
+  saveCart(cart);
   updateCartBadge();
   alert("Added to cart!");
-}
+};
 
-window.addToCart = addToCart;
-
-window.removeItem = i => {
-  const c = getCart();
-  c.splice(i, 1);
-  saveCart(c);
+window.removeItem = (i) => {
+  const cart = safeParseCart();
+  cart.splice(i, 1);
+  saveCart(cart);
   loadCartPage();
 };
 
 function loadCartPage() {
-  const list = byId("cartItems"),
-    empty = byId("cartEmpty"),
-    sum = byId("cartSummary"),
-    t = byId("cartTotal");
+  const cont = byId("cartItems");
+  const empty = byId("cartEmpty");
+  const summary = byId("cartSummary");
+  const totalEl = byId("cartTotal");
 
-  if (!list) return;
+  if (!cont) return;
 
-  const c = getCart();
-  if (!c.length) {
-    empty && (empty.style.display = "block");
-    list.innerHTML = "";
-    sum && (sum.style.display = "none");
-    t && (t.textContent = 0);
-    updateCartBadge();
+  const cart = safeParseCart();
+  if (!cart.length) {
+    empty?.style && (empty.style.display = "block");
+    cont.innerHTML = "";
+    summary.style.display = "none";
+    totalEl.textContent = "0";
     return;
   }
 
-  empty && (empty.style.display = "none");
-  sum && (sum.style.display = "block");
+  empty.style.display = "none";
+  summary.style.display = "block";
 
-  let tot = 0;
-  list.innerHTML = c
-    .map((v, i) => {
-      const lt = v.price * v.metres;
-      tot += lt;
+  let total = 0;
+  cont.innerHTML = cart
+    .map((item, idx) => {
+      const line = item.price * item.metres;
+      total += line;
       return `
         <div class="col-md-4 mb-3">
           <div class="card p-2 shadow-sm h-100">
-            <img src="${escapeHtml(v.image)}" style="height:150px;width:100%;object-fit:cover;">
+            <img src="${escapeHtml(item.image)}" style="height:150px;width:100%;object-fit:cover;">
             <div class="card-body d-flex flex-column">
-              <h5>${escapeHtml(v.name)}</h5>
-              <p>${DEFAULTS.currencySymbol}${v.price} × ${v.metres} = ${DEFAULTS.currencySymbol}${lt}</p>
-              <div class="mt-auto">
-                <button class="btn btn-danger btn-sm" onclick="removeItem(${i})">Remove</button>
-              </div>
+              <h5>${escapeHtml(item.name)}</h5>
+              <p>${DEFAULTS.currencySymbol}${item.price} × ${
+        item.metres
+      } = ${DEFAULTS.currencySymbol}${line}</p>
+              <button class="btn btn-danger btn-sm mt-auto" onclick="removeItem(${idx})">Remove</button>
             </div>
           </div>
-        </div>`;
+        </div>
+      `;
     })
     .join("");
 
-  t && (t.textContent = tot);
-  updateCartBadge();
+  totalEl.textContent = total;
 }
-
 window.loadCartPage = loadCartPage;
-
-/* PRODUCTS */
-async function fetchJSON(u, o = {}) {
-  const r = await fetch(u, o);
-  if (!r.ok) throw Error(r.status);
-  return await r.json();
+/* ------------------ FETCH WRAPPER ------------------ */
+async function fetchJSON(url, opts = {}) {
+  const res = await fetch(url, opts);
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return await res.json();
 }
 
-window.openProduct = id => (location.href = `product.html?id=${id}`);
+/* ------------------ PRODUCTS LIST ------------------ */
+window.openProduct = (id) => {
+  location.href = `product.html?id=${encodeURIComponent(id)}`;
+};
 
-async function loadProducts(cat = "all", id = "productsContainer") {
-  const box = byId(id);
-  box && (box.innerHTML = "Loading...");
+async function loadProducts(cat = "all", containerId = "productsContainer") {
+  const box = byId(containerId);
+  if (box) box.innerHTML = "Loading...";
 
   try {
-    const a = await fetchJSON(`/api/products/category/${encodeURIComponent(cat)}`);
+    const products = await fetchJSON(
+      `/api/products/category/${encodeURIComponent(cat)}`
+    );
 
-    if (!a.length)
-      return box && (box.innerHTML = "<p class='text-muted fw-bold'>Coming Soon...</p>");
+    if (!products.length) {
+      box.innerHTML = `<p class="text-muted fw-bold">Coming Soon...</p>`;
+      return;
+    }
 
-    box.innerHTML = a
+    box.innerHTML = products
       .map(
-        p => `
+        (p) => `
       <div class="col-md-4 product-card">
-        <div class="card shadow-sm" onclick="openProduct('${escapeHtml(p._id)}')" style="cursor:pointer;">
-          <img src="${escapeHtml(p.images?.[0] || DEFAULTS.productImage)}" style="height:250px;width:100%;object-fit:cover;">
+        <div class="card shadow-sm" onclick="openProduct('${escapeHtml(
+          p._id
+        )}')" style="cursor:pointer;">
+          <img src="${escapeHtml(
+            p.images?.[0] || DEFAULTS.productImage
+          )}" style="height:250px;width:100%;object-fit:cover;">
           <div class="card-body">
             <h5>${escapeHtml(p.name)}</h5>
-            <p class="fw-bold">${DEFAULTS.currencySymbol}${escapeHtml(p.price)}</p>
+            <p class="fw-bold">${DEFAULTS.currencySymbol}${escapeHtml(
+          p.price
+        )}</p>
           </div>
         </div>
-      </div>`
+      </div>
+    `
       )
       .join("");
-  } catch {
-    box && (box.innerHTML = "<p class='text-muted'>Error loading products.</p>");
+  } catch (e) {
+    box.innerHTML = `<p class="text-muted">Error loading products.</p>`;
   }
 }
-
 window.loadProducts = loadProducts;
 
+/* ------------------ SINGLE PRODUCT PAGE ------------------ */
 async function loadSingleProduct() {
   const id = new URLSearchParams(location.search).get("id");
   if (!id) return;
@@ -259,168 +310,270 @@ async function loadSingleProduct() {
     byId("p_desc") && (byId("p_desc").textContent = p.description);
     byId("p_category") && (byId("p_category").textContent = p.category);
 
-    const m = byId("mainImage");
-    m && (m.src = p.images?.[0] || DEFAULTS.productImage);
+    const mainImg = byId("mainImage");
+    if (mainImg)
+      mainImg.src = p.images?.[0] || DEFAULTS.productImage;
 
-    const tr = byId("thumbRow");
-    if (tr) {
-      tr.innerHTML = p.images
-        ?.map(
-          (img, i) =>
-            `<img src="${escapeHtml(img)}" class="thumb-img ${i == 0 ? "active" : ""}" style="height:60px;width:60px;object-fit:cover;margin-right:8px;cursor:pointer;" onclick="document.getElementById('mainImage').src='${escapeHtml(img)}'">`
+    const thumbRow = byId("thumbRow");
+    if (thumbRow) {
+      thumbRow.innerHTML = (p.images || [])
+        .map(
+          (img, i) => `
+        <img src="${escapeHtml(
+          img
+        )}" class="thumb-img ${i === 0 ? "active" : ""}"
+          style="height:60px;width:60px;object-fit:cover;margin-right:8px;cursor:pointer;"
+          onclick="document.getElementById('mainImage').src='${escapeHtml(
+            img
+          )}'">
+      `
         )
         .join("");
     }
-  } catch {}
+  } catch (e) {
+    console.error("loadSingleProduct error:", e);
+  }
 }
-
 window.loadSingleProduct = loadSingleProduct;
-window.addToCartPage = () => addToCart(window.currentProduct, byId("metreInput")?.value || 1);
 
-/* ADMIN */
-window.adminDeleteProduct = async id => {
-  if (!confirm("Delete permanently?")) return;
+window.addToCartPage = () => {
+  if (!window.currentProduct) return alert("Product not loaded");
+  const m = Number(byId("metreInput")?.value || 1);
+  addToCart(window.currentProduct, m);
+};
 
+/* ------------------ ADMIN — DELETE PRODUCT ------------------ */
+window.adminDeleteProduct = async (id) => {
+  if (!confirm("Delete product permanently?")) return;
   try {
-    const r = await fetchJSON(`/api/admin/products/${id}`, { method: "DELETE" });
-    r.success ? (alert("Deleted"), renderAdminProducts()) : alert("Failed");
+    const res = await fetchJSON(
+      `/api/admin/products/${encodeURIComponent(id)}`,
+      { method: "DELETE" }
+    );
+    if (res.success) {
+      alert("Product deleted");
+      renderAdminProducts();
+    } else {
+      alert("Delete failed");
+    }
   } catch {
     alert("Server error");
   }
 };
 
+/* ------------------ ADMIN — RENDER PRODUCTS ------------------ */
 async function renderAdminProducts() {
-  const o = byId("productsAdminList");
-  if (!o) return;
+  const box = byId("productsAdminList");
+  if (!box) return;
 
-  o.innerHTML = "Loading...";
+  box.innerHTML = "Loading...";
 
   try {
-    const a = await fetchJSON("/api/products/category/all");
-
-    o.innerHTML = a
+    const products = await fetchJSON("/api/products/category/all");
+    box.innerHTML = products
       .map(
-        p => `
+        (p) => `
       <div class="card p-2 mb-2">
         <div class="d-flex align-items-center">
-          <img src="${escapeHtml(p.images?.[0] || DEFAULTS.productImage)}"
-               style="width:70px;height:70px;border-radius:8px;object-fit:cover;">
+          
+          <img src="${escapeHtml(
+            p.images?.[0] || DEFAULTS.productImage
+          )}" style="width:70px;height:70px;border-radius:8px;object-fit:cover;">
+
           <div class="ms-3">
-            <strong>${escapeHtml(p.name)}</strong>
-            — ${DEFAULTS.currencySymbol}${escapeHtml(p.price)}<br>${escapeHtml(p.category)}
+            <strong>${escapeHtml(p.name)}</strong> —
+            ${DEFAULTS.currencySymbol}${escapeHtml(p.price)}
+            <br>
+            <span>${escapeHtml(p.category)}</span>
           </div>
-          <button class="btn btn-danger btn-sm ms-auto" onclick="adminDeleteProduct('${escapeHtml(p._id)}')">Delete</button>
+
+          <button class="btn btn-danger btn-sm ms-auto"
+            onclick="adminDeleteProduct('${escapeHtml(p._id)}')">Delete</button>
+
         </div>
-      </div>`
+      </div>
+    `
       )
       .join("");
-  } catch {
-    o.innerHTML = "<p class='text-muted'>Failed.</p>";
+  } catch (e) {
+    box.innerHTML = `<p class="text-muted">Failed to load products.</p>`;
   }
 }
-
 window.renderAdminProducts = renderAdminProducts;
 
-/* EMAIL LOGIN */
+/* ------------------ EMAIL LOGIN ------------------ */
 window.emailLogin = async () => {
-  const e = byId("loginEmail")?.value.trim(),
-    p = byId("loginPass")?.value;
+  const email = byId("loginEmail")?.value.trim();
+  const pass = byId("loginPass")?.value;
 
-  if (!e || !p) return alert("Enter credentials");
+  if (!email || !pass) return alert("Enter email + password");
 
-  const r = await fetch("/api/auth/login", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email: e, password: p })
-  }).then(r => r.json());
+  try {
+    const res = await fetch("/api/auth/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password: pass }),
+    }).then((r) => r.json());
 
-  if (!r.success) return alert(r.message || "Failed");
+    if (!res.success) return alert(res.message || "Login failed");
 
-  saveUser(r.user);
+    saveUserToLocal(res.user);
 
-  ADMINS.includes(r.user.email)
-    ? localStorage.setItem("adminLoggedIn", "true")
-    : localStorage.removeItem("adminLoggedIn");
+    if (ADMINS.includes(res.user.email))
+      localStorage.setItem("adminLoggedIn", "true");
 
-  location.reload();
+    location.reload();
+  } catch (e) {
+    console.error(e);
+    alert("Server error");
+  }
 };
 
+/* ------------------ EMAIL REGISTER ------------------ */
 window.emailRegister = async () => {
-  const n = byId("regName")?.value.trim(),
-    e = byId("regEmail")?.value.trim(),
-    p = byId("regPass")?.value;
+  const name = byId("regName")?.value.trim();
+  const email = byId("regEmail")?.value.trim();
+  const pass = byId("regPass")?.value;
 
-  if (!e || !p) return alert("Enter details");
+  if (!email || !pass) return alert("Enter valid details");
 
-  const r = await fetch("/api/auth/register", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ name: n, email: e, password: p })
-  }).then(r => r.json());
+  try {
+    const res = await fetch("/api/auth/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, email, password: pass }),
+    }).then((r) => r.json());
 
-  if (!r.success) return alert(r.message || "Failed");
+    if (!res.success) return alert(res.message || "Registration failed");
 
-  alert("Registered");
-  location.href = "login.html";
+    alert("Account created! Please login.");
+    location.href = "login.html";
+  } catch (e) {
+    console.error(e);
+    alert("Server error");
+  }
 };
 
-window.openRegister = () => (location.href = "register.html");
-
-/* ORDER HISTORY */
+window.openRegister = () => {
+  location.href = "register.html";
+};
+/* ------------------ ORDER HISTORY ------------------ */
 async function loadOrderHistory() {
-  const u = getUser(),
-    box = byId("ordersList");
+  const user = getUser();
+  const box = byId("ordersList");
 
   if (!box) return;
 
-  if (!u)
-    return (box.innerHTML = `<p class="text-danger mt-3">Please login to see your orders.</p>`);
+  if (!user) {
+    box.innerHTML = `
+      <p class="text-danger mt-3">Please login to view your orders.</p>
+    `;
+    return;
+  }
 
   try {
-    const a = await fetch(`/api/orders/${u.email}`).then(r => r.json());
+    const orders = await fetch(`/api/orders/${user.email}`).then((r) =>
+      r.json()
+    );
 
-    if (!a.length)
-      return (box.innerHTML = `
-      <div class="text-center mt-5">
-        <img src="https://cdn-icons-png.flaticon.com/512/4076/4076500.png" width="120" class="opacity-75 mb-3">
-        <h5 class="fw-bold text-secondary">No Orders Yet</h5>
-        <p class="text-muted">You haven't purchased anything.</p>
-        <a href="allproducts.html" class="btn btn-primary mt-2">Start Shopping</a>
-      </div>`);
+    if (!orders.length) {
+      box.innerHTML = `
+        <div class="text-center mt-5">
+          <img src="https://cdn-icons-png.flaticon.com/512/4076/4076500.png"
+               width="110" class="opacity-75 mb-3">
+          <h5 class="fw-bold text-secondary">No Orders Yet</h5>
+          <p class="text-muted">When you purchase something, it will show here.</p>
+          <a href="allproducts.html" class="btn btn-primary mt-2">Start Shopping</a>
+        </div>
+      `;
+      return;
+    }
 
-    box.innerHTML = a
+    box.innerHTML = orders
       .map(
-        o => `
-      <div class="card p-3 mb-3">
-        <h5>Order #${o._id}</h5>
-        <p><b>Date:</b> ${new Date(o.date).toLocaleString()}</p>
-        <p><b>Total:</b> ₹${o.total}</p>
-        <hr><h6>Items:</h6>
-        ${o.items.map(i => `<p>• ${i.name} (x${i.quantity})</p>`).join("")}
-      </div>`
+        (o) => `
+      <div class="card p-3 mb-3 shadow-sm">
+        <h5 class="fw-bold">Order #${o._id}</h5>
+        <p><strong>Date:</strong> ${new Date(o.date).toLocaleString()}</p>
+        <p><strong>Total:</strong> ₹${o.total}</p>
+        <hr>
+        <h6 class="fw-bold">Items:</h6>
+        ${o.items
+          .map(
+            (i) =>
+              `<p class="mb-1">• ${escapeHtml(i.name)} (x${i.quantity})</p>`
+          )
+          .join("")}
+      </div>
+    `
       )
       .join("");
-  } catch {
-    box.innerHTML = "<p>Error loading orders.</p>";
+  } catch (e) {
+    console.error("Order history error:", e);
+    box.innerHTML = `<p class="text-muted">Error loading orders.</p>`;
   }
 }
 
 window.loadOrderHistory = loadOrderHistory;
 
-/* INIT */
-document.addEventListener("DOMContentLoaded", async () => {
+/* ------------------ ADMIN GUARD ------------------ */
+(function adminGuard() {
+  try {
+    if (location.pathname.includes("admin")) {
+      if (!localStorage.getItem("adminLoggedIn")) {
+        location.href = "index.html";
+      }
+    }
+  } catch (e) {
+    console.error("adminGuard error:", e);
+  }
+})();
+
+/* ------------------ PAGE INITIALIZATION ------------------ */
+document.addEventListener("DOMContentLoaded", () => {
   setupLoginUI();
   updateCartBadge();
   attachLoginButton();
   initGoogleLogin();
 
-  const p = location.pathname.toLowerCase();
-  if (p.includes("cart")) loadCartPage();
-  if (p.includes("product")) loadSingleProduct();
-  if (p.includes("admin")) renderAdminProducts();
-  if (p.includes("orderhistory")) loadOrderHistory();
+  const path = location.pathname.toLowerCase();
 
-  qsa("[data-products-cat]").forEach(el =>
+  if (path.includes("cart")) loadCartPage();
+  if (path.includes("product")) loadSingleProduct();
+  if (path.includes("admin")) renderAdminProducts();
+  if (path.includes("orderhistory")) loadOrderHistory();
+
+  qsa("[data-products-cat]").forEach((el) =>
     loadProducts(el.getAttribute("data-products-cat") || "all", el.id)
   );
 });
+
+/* ------------------ EXPORTS ------------------ */
+window._sg = {
+  getUser,
+  saveUserToLocal,
+  clearUserLocal,
+
+  initGoogleLogin,
+  triggerGoogleLogin,
+
+  safeParseCart,
+  addToCart,
+  removeItem,
+  loadCartPage,
+  updateCartBadge,
+
+  loadProducts,
+  loadSingleProduct,
+  openProduct,
+  addToCartPage,
+
+  renderAdminProducts,
+  adminDeleteProduct,
+
+  emailLogin,
+  emailRegister,
+  openRegister,
+
+  loadOrderHistory,
+};
