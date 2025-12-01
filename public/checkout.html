@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Checkout - Suits N Glam</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+
+  <style>
+    body { background:#f8f9fa; }
+
+    .btn-login {
+      background:#ff3f33 !important;
+      color:white !important;
+      padding:6px 14px;
+      border:none;
+      border-radius:6px;
+      font-weight:600;
+    }
+    .btn-login:hover { background:#ff2b1f !important; }
+  </style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar navbar-expand-lg" style="background-color:#e3f2fd;">
+  <div class="container">
+
+    <a class="navbar-brand fw-bold" href="index.html">Suits N Glam</a>
+
+    <button class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <div class="nav-login-area ms-auto d-flex align-items-center">
+        <button id="loginBtn" class="btn-login">Login</button>
+
+        <img id="accountIcon"
+             style="width:34px;height:34px;border-radius:50%;display:none;cursor:pointer;margin-left:10px;">
+        <span id="adminBadgeNav"
+              style="background:#c60000;color:white;padding:4px 10px;border-radius:6px;
+                     font-weight:700;display:none;margin-left:10px;">ADMIN</span>
+      </div>
+    </div>
+
+  </div>
+</nav>
+
+<!-- CHECKOUT BODY -->
+<div class="container mt-4">
+
+  <h3>Checkout</h3>
+
+  <div class="row">
+    <div class="col-md-6">
+
+      <div class="card p-3">
+        <h5>Your Items</h5>
+        <ul id="cartList"></ul>
+        <h5 class="mt-2">Grand Total: ₹<span id="grandTotal">0</span></h5>
+      </div>
+
+    </div>
+
+    <div class="col-md-6">
+
+      <div class="card p-3">
+        <h5>Shipping Information</h5>
+
+        <input id="fullName" class="form-control my-2" placeholder="Full Name">
+        <input id="phone" class="form-control my-2" placeholder="Phone Number">
+        <input id="address" class="form-control my-2" placeholder="Address">
+        <input id="city" class="form-control my-2" placeholder="City">
+        <input id="state" class="form-control my-2" placeholder="State">
+        <input id="pincode" class="form-control my-2" placeholder="Pincode">
+
+        <button class="btn btn-success mt-3 w-100" onclick="startPayment()">Pay Now</button>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<script src="js/app.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- LOGIN MODALS (Email + Google trigger) -->
+<div class="modal fade" id="emailLoginModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered"><div class="modal-content p-3">
+
+    <h5>Email Login</h5>
+    <input id="loginEmail" class="form-control my-2" placeholder="Email">
+    <input id="loginPass" class="form-control my-2" type="password" placeholder="Password">
+    <button class="btn btn-primary w-100" onclick="emailLogin()">Login</button>
+
+    <div class="text-center my-2"><small>or</small></div>
+
+    <button class="btn btn-outline-secondary w-100" onclick="triggerGoogleLogin()">Continue with Google</button>
+
+    <p class="text-center mt-3">Don't have an account?
+      <a href="#" onclick="openRegister()">Register</a>
+    </p>
+
+  </div></div>
+</div>
+
+<div class="modal fade" id="registerModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered"><div class="modal-content p-3">
+    <h5>Create Account</h5>
+
+    <input id="regName" class="form-control my-2" placeholder="Name">
+    <input id="regEmail" class="form-control my-2" placeholder="Email">
+    <input id="regPass" class="form-control my-2" type="password" placeholder="Password">
+
+    <button class="btn btn-success w-100" onclick="emailRegister()">Register</button>
+  </div></div>
+</div>
+
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="https://cdn.jsdelivr.net/npm/jwt-decode/build/jwt-decode.min.js"></script>
+
+</body>
+</html>

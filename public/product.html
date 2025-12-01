@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Product - Suits N Glam</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+
+  <style>
+    body { background:#f8f9fa; }
+
+    .btn-login{
+      background:#ff3f33;color:white !important;
+      padding:6px 14px;border:none;border-radius:6px;font-weight:600;
+    }
+    .btn-login:hover{ background:#ff2b1f; }
+
+    .main-img{
+      width:100%;height:380px;border-radius:12px;object-fit:cover;
+    }
+    .thumb-img{
+      width:70px;height:70px;border-radius:8px;
+      cursor:pointer;object-fit:cover;border:2px solid transparent;
+    }
+    .thumb-img.active{ border-color:#c60000; }
+
+    .video-box{
+      border-radius:12px;width:100%;margin-top:20px;
+    }
+  </style>
+</head>
+
+<body>
+
+<!-- NAVBAR FIXED -->
+<nav class="navbar navbar-expand-lg" style="background-color:#e3f2fd;">
+  <div class="container">
+
+    <a class="navbar-brand fw-bold d-flex align-items-center" href="index.html">
+      <i class="bi bi-house-fill me-2"></i> Suits N Glam
+    </a>
+
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarNav">
+
+      <ul class="navbar-nav ms-auto me-2">
+        <li class="nav-item"><a class="nav-link" href="allproducts.html">All Products</a></li>
+      </ul>
+
+      <div class="nav-login-area d-flex align-items-center">
+        <button id="loginBtn" class="btn-login">Login</button>
+        <img id="accountIcon"
+             style="width:34px;height:34px;border-radius:50%;margin-left:10px;display:none;cursor:pointer;">
+      </div>
+
+    </div>
+  </div>
+</nav>
+
+<!-- PAGE CONTENT -->
+<div class="container mt-4">
+
+  <div class="row">
+
+    <div class="col-md-6">
+
+      <img id="mainImage" class="main-img">
+
+      <div id="thumbRow" class="d-flex gap-2 mt-2"></div>
+
+      <div id="videoSection" style="display:none;">
+        <video id="productVideo" class="video-box" controls></video>
+      </div>
+
+    </div>
+
+    <div class="col-md-6">
+
+      <h2 id="p_name"></h2>
+      <h4 class="text-danger fw-bold">₹<span id="p_price"></span> / metre</h4>
+
+      <p class="text-muted">Category: <span id="p_category"></span></p>
+
+      <h6 class="fw-bold mt-3">Description</h6>
+      <p id="p_desc"></p>
+
+      <h6 class="fw-bold mt-3">Select Metres</h6>
+      <div class="d-flex gap-2 mt-2">
+        <button class="btn btn-outline-secondary" onclick="changeMetre(-1)">-</button>
+        <input id="metreInput" value="1" readonly class="form-control text-center" style="width:60px;">
+        <button class="btn btn-outline-secondary" onclick="changeMetre(1)">+</button>
+      </div>
+
+      <button class="btn btn-danger mt-4 w-100" onclick="addToCartFromPage()">Add to Cart</button>
+
+    </div>
+
+  </div>
+
+</div>
+
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="https://cdn.jsdelivr.net/npm/jwt-decode/build/jwt-decode.min.js"></script>
+<script src="js/app.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+
+const params = new URLSearchParams(location.search);
+const id = params.get("id");
+
+if(!id){ alert("Invalid product."); location.href="index.html"; }
+
+function changeMetre(n){
+  let v = parseInt(metreInput.value);
+  v = Math.max(1, Math.min(10, v+n));
+  metreInput.value = v;
+}
+
+async function loadProduct(){
+  const res = await fetch(`/api/products/${id}`);
+  const p = await res.json();
+
+  mainImage.src = p.images[0];
+  p_name.textContent = p.name;
+  p_price.textContent = p.price;
+  p_category.textContent = p.category;
+  p_desc.textContent = p.description;
+
+  window.currentProduct = p;
+
+  thumbRow.innerHTML = p.images.map((img,i)=>`
+    <img src="${img}" class="thumb-img ${i==0?"active":""}"
+      onclick="mainImage.src='${img}';
+               document.querySelectorAll('.thumb-img').forEach(t=>t.classList.remove('active'));
+               this.classList.add('active');">
+  `).join("");
+
+  if(p.video){
+    videoSection.style.display="block";
+    productVideo.src = p.video;
+  }
+}
+
+function addToCartFromPage(){
+  const m = Number(metreInput.value);
+  addToCart(window.currentProduct, m);
+}
+
+loadProduct();
+</script>
+
+</body>
+</html>
