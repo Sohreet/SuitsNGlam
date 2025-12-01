@@ -14,7 +14,9 @@ const app = express();
 // ------------------------------------------------------
 // DATABASE
 // ------------------------------------------------------
-const MONGO_URI = process.env.MONGO_URI || "mongodb://127.0.0.1:27017/suitsnglam";
+const MONGO_URI =
+  process.env.MONGO_URI || "mongodb://127.0.0.1:27017/suitsnglam";
+
 mongoose
   .connect(MONGO_URI, {
     useNewUrlParser: true,
@@ -54,30 +56,46 @@ const Product = mongoose.model("Product", ProductSchema);
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 
-// Serve static frontend files
+// serve static frontend
 app.use(express.static(path.join(__dirname, "public")));
 
 // ------------------------------------------------------
-// GOOGLE SAFE ROUTES (don't accidentally serve index.html for these)
+// GOOGLE-SAFE ROUTES (Prevent index.html override)
 // ------------------------------------------------------
-const googleSafe = ["/.well-known", "/_", "/gsi", "/google", "/oauth2", "/signin", "/auth"];
+const googleSafe = [
+  "/.well-known",
+  "/_",
+  "/gsi",
+  "/google",
+  "/oauth2",
+  "/signin",
+  "/auth",
+];
+
 app.use((req, res, next) => {
   if (googleSafe.some((p) => req.path.startsWith(p))) return next();
   next();
 });
 
 // ------------------------------------------------------
-// AUTH: Register (email+password)
+// EMAIL AUTH — REGISTER
 // ------------------------------------------------------
 app.post("/api/auth/register", async (req, res) => {
   try {
     const { name, email, password } = req.body;
-    if (!email || !password) return res.json({ success: false, message: "Missing fields" });
+
+    if (!email || !password)
+      return res.json({ success: false, message: "Missing fields" });
 
     const exists = await User.findOne({ email });
-    if (exists) return res.json({ success: false, message: "Email already registered" });
+    if (exists)
+      return res.json({
+        success: false,
+        message: "Email already registered",
+      });
 
     const hashed = await bcrypt.hash(password, 10);
+
     const newUser = new User({
       name: name || email.split("@")[0],
       email,
@@ -85,6 +103,7 @@ app.post("/api/auth/register", async (req, res) => {
       picture: "/images/default-user.png",
       createdAt: new Date(),
     });
+
     await newUser.save();
     return res.json({ success: true });
   } catch (err) {
@@ -94,18 +113,25 @@ app.post("/api/auth/register", async (req, res) => {
 });
 
 // ------------------------------------------------------
-// AUTH: Login (email+password)
+// EMAIL AUTH — LOGIN
 // ------------------------------------------------------
 app.post("/api/auth/login", async (req, res) => {
   try {
     const { email, password } = req.body;
-    if (!email || !password) return res.json({ success: false, message: "Missing fields" });
+
+    if (!email || !password)
+      return res.json({ success: false, message: "Missing fields" });
 
     const user = await User.findOne({ email });
-    if (!user) return res.json({ success: false, message: "User not found" });
+    if (!user)
+      return res.json({ success: false, message: "User not found" });
 
     const ok = await bcrypt.compare(password, user.password);
-    if (!ok) return res.json({ success: false, message: "Incorrect password" });
+    if (!ok)
+      return res.json({
+        success: false,
+        message: "Incorrect password",
+      });
 
     return res.json({
       success: true,
@@ -126,8 +152,11 @@ app.post("/api/auth/login", async (req, res) => {
 // ------------------------------------------------------
 app.post("/api/admin/products", async (req, res) => {
   try {
-    const { name, price, category, description, stock, images, video, sale } = req.body;
-    if (!name || !price || !category) return res.json({ success: false, message: "Missing fields" });
+    const { name, price, category, description, stock, images, video, sale } =
+      req.body;
+
+    if (!name || !price || !category)
+      return res.json({ success: false, message: "Missing fields" });
 
     const newProduct = new Product({
       name,
@@ -163,7 +192,7 @@ app.delete("/api/admin/products/:id", async (req, res) => {
 });
 
 // ------------------------------------------------------
-// PRODUCTS: GET ALL
+// PRODUCTS — ALL
 // ------------------------------------------------------
 app.get("/api/products/category/all", async (req, res) => {
   const products = await Product.find().sort({ createdAt: -1 });
@@ -171,15 +200,17 @@ app.get("/api/products/category/all", async (req, res) => {
 });
 
 // ------------------------------------------------------
-// PRODUCTS: BY CATEGORY
+// PRODUCTS — BY CATEGORY
 // ------------------------------------------------------
 app.get("/api/products/category/:cat", async (req, res) => {
-  const products = await Product.find({ category: req.params.cat }).sort({ createdAt: -1 });
+  const products = await Product.find({ category: req.params.cat }).sort({
+    createdAt: -1,
+  });
   res.json(products);
 });
 
 // ------------------------------------------------------
-// PRODUCTS: SINGLE
+// PRODUCTS — SINGLE
 // ------------------------------------------------------
 app.get("/api/products/:id", async (req, res) => {
   const p = await Product.findById(req.params.id);
@@ -187,12 +218,7 @@ app.get("/api/products/:id", async (req, res) => {
 });
 
 // ------------------------------------------------------
-// UPLOADS: Serve uploads folder if present (already served via static)
-// ------------------------------------------------------
-// public/uploads, public/images are available via express.static
-
-// ------------------------------------------------------
-// FRONTEND PAGES (explicit list — avoid catch-all that breaks GSI)
+// FRONTEND ROUTES
 // ------------------------------------------------------
 const pages = [
   "/",
@@ -215,14 +241,20 @@ const pages = [
   "/orderhistory.html",
   "/ordertracking.html",
   "/checkout.html",
-  "/success.html"
+  "/success.html",
 ];
-pages.forEach((r) => {
-  app.get(r, (req, res) => res.sendFile(path.join(__dirname, "public", "index.html")));
+
+pages.forEach((route) => {
+  app.get(route, (req, res) =>
+    res.sendFile(path.join(__dirname, "public", "index.html"))
+  );
 });
 
 // ------------------------------------------------------
-// START
+// START SERVER
 // ------------------------------------------------------
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`🚀 Suits N Glam Backend Running on port ${PORT}`));
+
+app.listen(PORT, () =>
+  console.log(`🚀 Suits N Glam Backend Running on port ${PORT}`)
+);
