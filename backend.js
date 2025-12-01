@@ -12,7 +12,7 @@ const cors = require("cors");
 const app = express();
 
 /* ------------------ CONFIG ------------------ */
-const PORT = Number(process.env.PORT || 10000);
+const PORT = process.env.PORT;
 const MONGO_URI = process.env.MONGO_URI || "mongodb://127.0.0.1:27017/suitsnglam";
 const JWT_SECRET = process.env.JWT_SECRET || "replace_this_with_a_strong_secret";
 const ADMIN_EMAILS = (process.env.ADMIN_EMAILS || "sohabrar10@gmail.com").split(",");
@@ -350,3 +350,4 @@ app.get("*", (req, res, next) => {
 app.listen(PORT, () => {
   console.log(`🚀 Suits N Glam Backend Running on port ${PORT}`);
 });
+
