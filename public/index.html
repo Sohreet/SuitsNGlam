@@ -9,7 +9,8 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 
   <style>
-    body { background-color:#f8f9fa; }
+    /* changed to white background as requested */
+    body { background-color: #ffffff; }
     .navbar-brand { font-weight: bold; }
 
     /* Login button style */
@@ -61,17 +62,33 @@
       transition:0.2s;
     }
     .social-area i:hover{ transform:scale(1.2); }
+
+    /* phone button: white background, black phone icon (keeps spacing / sizing consistent) */
     .phone-btn {
-  background: #000;
-  color: #fff;
-  padding: 8px 14px;
-  border-radius: 6px;
-  text-decoration: none;
-  display: inline-block;
-}
-.phone-btn i {
-  margin-right: 6px;
-}
+      background: #ffffff;
+      color: #000000;
+      padding: 10px;
+      border-radius: 8px;
+      text-decoration: none;
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 2rem;            /* matches other social icons' visual size */
+      line-height: 1;
+      margin-left: 6px;
+      border: 1px solid rgba(0,0,0,0.08);
+      box-shadow: none;
+    }
+    .phone-btn i {
+      margin: 0;
+      display: block;
+    }
+
+    /* keep hover behavior similar to other icons */
+    .phone-btn:hover {
+      transform: scale(1.05);
+      text-decoration: none;
+    }
   </style>
 </head>
 
@@ -183,10 +200,11 @@
   <i class="bi bi-instagram" onclick="window.open('https://www.instagram.com/suitsnglam/', '_blank')"></i>
   <i class="bi bi-chat-dots" onclick="window.open('https://www.threads.net/@suitsnglam', '_blank')"></i>
   <i class="bi bi-facebook" onclick="window.open('https://www.facebook.com/mannishan', '_blank')"></i>
-  <a href="tel:7814678204" class="phone-btn">
-  <i class="bi bi-telephone-fill"></i>
-</a>
-</a>
+
+  <!-- phone icon: black phone color on white background (clickable) -->
+  <a href="tel:7814678204" class="phone-btn" aria-label="Call us">
+    <i class="bi bi-telephone-fill"></i>
+  </a>
 </div>
 
 <!-- EMAIL LOGIN MODAL -->
