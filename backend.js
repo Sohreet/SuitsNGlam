@@ -1,6 +1,6 @@
 // ------------------------------------------------------
 // SUITS N GLAM — COMPLETE BACKEND (ONE FILE)
-// Auth + Google Login Safe + OTP Email + Admin Creation
+// Auth + Google Login Safe + OTP (nodemailer removed)
 // Products + Orders + Render Deployment Safe
 // ------------------------------------------------------
 
@@ -10,7 +10,7 @@ const path = require("path");
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 const cors = require("cors");
-const nodemailer = require("nodemailer");
+// nodemailer removed intentionally
 
 const app = express();
 
@@ -72,43 +72,19 @@ app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 app.use(express.static(path.join(__dirname, "public")));
 
 /* Google safe paths (Render fix) */
-const googleSafe = ["/.well-known", "/google", "/gsi", "/auth", "/oauth", "/oauth2", "/signin", "/_"];
+const googleSafe = ["/.well-known", "/google", "/gsi", "/auth", "/oauth", "/oauth2", "/signin", "_\"]; // keep safe prefixes
 app.use((req, res, next) => {
   if (googleSafe.some((p) => req.path.startsWith(p))) return next();
   next();
 });
 
 /* ------------------------------------------------------
-   OTP EMAIL FUNCTION
+   NOTE: nodemailer REMOVED
+   The OTP endpoint below generates OTPs and returns them in
+   the response (suitable for dev/local use). For production
+   email delivery, integrate a dedicated email provider SDK
+   (SendGrid, Mailgun, Resend, etc.) and send emails server-side.
 ------------------------------------------------------ */
-async function sendOtpEmail(to, otp) {
-  try {
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS, // Gmail app password
-      },
-    });
-
-    await transporter.sendMail({
-      from: `"Suits N Glam" <${process.env.EMAIL_USER}>`,
-      to,
-      subject: "Your OTP Code - Suits N Glam",
-      html: `
-        <h2>Your OTP Code</h2>
-        <p>Use the following OTP to continue:</p>
-        <h1>${otp}</h1>
-        <p>This code expires in <b>${process.env.OTP_EXPIRES_MINUTES} minutes</b>.</p>
-      `,
-    });
-
-    return true;
-  } catch (err) {
-    console.error("OTP Email Error:", err);
-    return false;
-  }
-}
 
 /* ------------------------------------------------------
    AUTH — REGISTER
@@ -171,16 +147,28 @@ app.post("/api/auth/login", async (req, res) => {
 });
 
 /* ------------------------------------------------------
-   OTP — SEND
+   OTP — SEND (nodemailer removed)
+   This endpoint generates an OTP and returns it in the
+   JSON response. For production use, replace body with
+   a call to your email provider to deliver the OTP.
 ------------------------------------------------------ */
 app.post("/api/auth/send-otp", async (req, res) => {
-  const { email } = req.body;
-  const otp = Math.floor(100000 + Math.random() * 900000);
+  try {
+    const { email } = req.body;
+    if (!email) return res.json({ success: false, message: "Missing email" });
 
-  const ok = await sendOtpEmail(email, otp);
-  if (!ok) return res.json({ success: false, message: "Email failed" });
+    const otp = Math.floor(100000 + Math.random() * 900000);
 
-  res.json({ success: true, otp });
+    // For dev/test: log OTP to server logs and return it in the response.
+    console.log(`OTP for ${email}: ${otp}`);
+
+    // NOTE: In production you should NOT return the OTP in the response.
+    // Instead send it to the user's email using a transactional email provider.
+    return res.json({ success: true, otp });
+  } catch (err) {
+    console.error("Send OTP error:", err);
+    return res.json({ success: false });
+  }
 });
 
 /* ------------------------------------------------------
