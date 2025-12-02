@@ -72,7 +72,7 @@ app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 app.use(express.static(path.join(__dirname, "public")));
 
 /* Google safe paths (Render fix) */
-const googleSafe = ["/.well-known", "/google", "/gsi", "/auth", "/oauth", "/oauth2", "/signin", "_\"]; // keep safe prefixes
+const googleSafe = ["/.well-known", "/google", "/gsi", "/auth", "/oauth", "/oauth2", "/signin", "/_"]; // keep safe prefixes
 app.use((req, res, next) => {
   if (googleSafe.some((p) => req.path.startsWith(p))) return next();
   next();
