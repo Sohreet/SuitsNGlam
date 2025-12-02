@@ -9,11 +9,9 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 
   <style>
-    /* changed to white background as requested */
     body { background-color: #ffffff; }
     .navbar-brand { font-weight: bold; }
 
-    /* Login button style */
     .btn-login{
       background-color:#ff3f33;
       color:white;
@@ -23,9 +21,7 @@
       font-weight:600;
       cursor:pointer;
     }
-    .btn-login:hover{
-      background-color:#ff2b1f;
-    }
+    .btn-login:hover{ background-color:#ff2b1f; }
 
     .nav-login-area { visibility: visible !important; }
 
@@ -55,15 +51,20 @@
     .dailywear{ background-color:rgb(238,238,238); }
     .premium{ background-color:rgb(231,208,245); }
 
-    .social-area i{
+    .social-area i,
+    .social-area img {
       font-size:2rem;
+      width:2rem;
+      height:2rem;
       margin:0 10px;
       cursor:pointer;
       transition:0.2s;
     }
-    .social-area i:hover{ transform:scale(1.2); }
+    .social-area i:hover,
+    .social-area img:hover {
+      transform:scale(1.2);
+    }
 
-    /* phone button: white background, black phone icon (keeps spacing / sizing consistent) */
     .phone-btn {
       background: #ffffff;
       color: #000000;
@@ -73,23 +74,15 @@
       display: inline-flex;
       justify-content: center;
       align-items: center;
-      font-size: 2rem;            /* matches other social icons' visual size */
+      font-size: 2rem;
       line-height: 1;
       margin-left: 6px;
       border: 1px solid rgba(0,0,0,0.08);
       box-shadow: none;
       border: none;
     }
-    .phone-btn i {
-      margin: 0;
-      display: block;
-    }
+    .phone-btn:hover { transform: scale(1.05); }
 
-    /* keep hover behavior similar to other icons */
-    .phone-btn:hover {
-      transform: scale(1.05);
-      text-decoration: none;
-    }
   </style>
 </head>
 
@@ -131,13 +124,11 @@
 
       </ul>
 
-      <!-- CART -->
       <a href="cart.html" class="d-flex align-items-center gap-2 me-3 text-dark text-decoration-none">
         <i class="bi bi-bag-heart-fill" style="font-size:1.6rem;"></i>
         <span id="cartCount" class="badge bg-danger"></span>
       </a>
 
-      <!-- LOGIN / ACCOUNT -->
       <div class="nav-login-area d-flex align-items-center">
         <button id="loginBtn" class="btn-login">Login</button>
 
@@ -198,17 +189,22 @@
 
 <!-- SOCIAL -->
 <div class="container text-center py-4 social-area">
+
   <i class="bi bi-instagram" onclick="window.open('https://www.instagram.com/suitsnglam/', '_blank')"></i>
-  <i class="bi bi-threads" onclick="window.open('https://www.threads.net/@suitsnglam', '_blank')"></i>
+
+  <!-- FIXED THREADS ICON (SVG IMAGE) -->
+  <img src="https://upload.wikimedia.org/wikipedia/commons/7/7a/Threads_%28app%29_logo.svg"
+       alt="Threads"
+       onclick="window.open('https://www.threads.net/@suitsnglam', '_blank')">
+
   <i class="bi bi-facebook" onclick="window.open('https://www.facebook.com/mannishan', '_blank')"></i>
 
-  <!-- phone icon: black phone color on white background (clickable) -->
   <a href="tel:7814678204" class="phone-btn" aria-label="Call us">
     <i class="bi bi-telephone-fill"></i>
   </a>
 </div>
 
-<!-- EMAIL LOGIN MODAL -->
+<!-- MODALS + JS -->
 <div class="modal fade" id="emailLoginModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content p-3">
@@ -216,9 +212,7 @@
       <input id="loginEmail" type="email" class="form-control my-2" placeholder="Email">
       <input id="loginPass" type="password" class="form-control my-2" placeholder="Password">
       <button class="btn btn-primary w-100 my-2" onclick="emailLogin()">Login</button>
-      <div class="text-center">
-        <small>or</small>
-      </div>
+      <div class="text-center"><small>or</small></div>
       <div class="d-grid gap-2 mt-2">
         <button class="btn btn-outline-secondary" onclick="triggerGoogleLogin()">Continue with Google</button>
       </div>
@@ -229,7 +223,6 @@
   </div>
 </div>
 
-<!-- REGISTER MODAL -->
 <div class="modal fade" id="registerModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content p-3">
@@ -242,7 +235,6 @@
   </div>
 </div>
 
-<!-- GOOGLE + APP.JS -->
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <script src="https://cdn.jsdelivr.net/npm/jwt-decode/build/jwt-decode.min.js"></script>
 <script src="js/app.js"></script>
