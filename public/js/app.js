@@ -1,31 +1,71 @@
 /******************************************************
- * SUITS N GLAM — APP.JS (FINAL: Google + Password)
+ * SUITS N GLAM — APP.JS (CLEAN + OPTIMIZED)
  ******************************************************/
+
 console.log("APP.JS LOADED");
 
-/* CONFIG ------------------------------------------------------ */
-const ADMINS = ["sohabrar10@gmail.com"]; // change as needed
+/* ------------------ CONFIG ------------------ */
+const ADMINS = ["sohabrar10@gmail.com"];
+const GOOGLE_CLIENT_ID =
+  "653374521156-6retcia1fiu5dvmbjik9sq89ontrkmvt.apps.googleusercontent.com";
+
 const DEFAULTS = {
   userPicture: "/images/default-user.png",
   productImage: "/images/default-product.png",
   currencySymbol: "₹",
 };
 
-/* UTILITIES ------------------------------------------------------ */
-const qs = (s, r = document) => r.querySelector(s);
+/* ------------------ UTILITIES ------------------ */
+const noop = () => {};
+const qs = (sel, root = document) => root.querySelector(sel);
+const qsa = (sel, root = document) => Array.from(root.querySelectorAll(sel));
 const byId = (id) => document.getElementById(id);
-const safeJSONParse = (v, f = null) => { try { return JSON.parse(v); } catch { return f; } };
-const safeJSONSerialize = (v) => JSON.stringify(v);
 
-/* USER STORAGE ------------------------------------------------------ */
-function getUser() { return safeJSONParse(localStorage.getItem("sg_user")); }
-function saveUser(o) { localStorage.setItem("sg_user", safeJSONSerialize(o)); }
-function clearUser() {
+function escapeHtml(str) {
+  if (!str) return "";
+  return String(str).replace(/[&<>"']/g, (m) => {
+    return {
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#039;",
+    }[m];
+  });
+}
+
+function safeJSONParse(v, f = null) {
+  try {
+    return JSON.parse(v) ?? f;
+  } catch {
+    return f;
+  }
+}
+
+function safeJSONSerialize(v) {
+  try {
+    return JSON.stringify(v);
+  } catch {
+    return null;
+  }
+}
+
+/* ------------------ USER STORAGE ------------------ */
+function getUser() {
+  return safeJSONParse(localStorage.getItem("sg_user"), null);
+}
+
+function saveUserToLocal(obj) {
+  if (!obj?.email) return;
+  localStorage.setItem("sg_user", safeJSONSerialize(obj));
+}
+
+function clearUserLocal() {
   localStorage.removeItem("sg_user");
   localStorage.removeItem("adminLoggedIn");
 }
 
-/* LOGIN UI ------------------------------------------------------ */
+/* ------------------ LOGIN UI ------------------ */
 function setupLoginUI() {
   const btn = byId("loginBtn");
   const icon = byId("accountIcon");
@@ -37,7 +77,7 @@ function setupLoginUI() {
   if (!user) {
     btn.style.display = "inline-block";
     icon.style.display = "none";
-    adminBadge.style.display = "none";
+    if (adminBadge) adminBadge.style.display = "none";
     return;
   }
 
@@ -45,326 +85,495 @@ function setupLoginUI() {
   icon.src = user.picture || DEFAULTS.userPicture;
   icon.style.display = "inline-block";
 
-  if (ADMINS.includes(user.email) || user.isAdmin) {
-    adminBadge.style.display = "inline-block";
+  if (ADMINS.includes(user.email)) {
+    if (adminBadge) adminBadge.style.display = "inline-block";
     icon.onclick = () => (location.href = "admin.html");
   } else {
-    adminBadge.style.display = "none";
+    if (adminBadge) adminBadge.style.display = "none";
     icon.onclick = () => (location.href = "account.html");
   }
 }
 
-/* LOGOUT ------------------------------------------------------ */
+function attachLoginButton() {
+  const btn = byId("loginBtn");
+  if (!btn) return;
+  btn.onclick = () => (location.href = "login.html");
+}
+
+/* ------------------ LOGOUT ------------------ */
 window.logout = () => {
-  clearUser();
-  // If you used Google credential storage, revoke here if necessary
+  clearUserLocal();
+  setupLoginUI();
+  updateCartBadge();
   location.href = "index.html";
 };
 
-/* GOOGLE LOGIN (callback used by google.accounts.id.initialize) --------------
-   The browser receives a credential (id_token). Send to backend to verify
-   and create/get user. Backend returns user object.
-*/
-window.handleGoogleResponse = async (res) => {
-  try {
-    if (!res || !res.credential) throw new Error("No credential");
-    const idToken = res.credential;
-
-    // send token to backend for verification + user creation
-    const resp = await fetch("/api/auth/google", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id_token: idToken }),
-    });
-
-    const data = await resp.json();
-    if (!data.success) throw new Error(data.message || "Google login failed");
-
-    // data.user { email, name, picture, isAdmin? }
-    saveUser(data.user);
-    if (data.user.isAdmin) localStorage.setItem("adminLoggedIn", "true");
-
-    setupLoginUI();
-    updateCartBadge();
-    // redirect to account or admin
-    if (data.user.isAdmin) location.href = "admin.html";
-    else location.href = "account.html";
-  } catch (err) {
-    console.error(err);
-    alert("Google login failed");
+/* ------------------ GOOGLE LOGIN ------------------ */
+async function waitForGoogle(ms = 8000) {
+  const start = Date.now();
+  while (Date.now() - start < ms) {
+    if (window.google?.accounts?.id) return true;
+    await new Promise((res) => setTimeout(res, 100));
   }
-};
-
-/* wireGoogleButton: optional fallback to trigger prompt */
-function wireGoogleButton() {
-  const btn = byId("loginBtn");
-  if (!btn) return;
-  btn.addEventListener("click", () => {
-    if (window.google && google.accounts && google.accounts.id) {
-      google.accounts.id.prompt();
-    } else {
-      alert("Google SDK not loaded. Try refreshing.");
-    }
-  });
+  return false;
 }
 
-/* PASSWORD LOGIN ------------------------------------------------------ */
-window.loginWithPassword = async (email, password) => {
-  try {
-    if (!email || !password) return alert("Enter details");
+async function initGoogleLogin() {
+  const ready = await waitForGoogle();
+  if (!ready) return false;
 
-    const resp = await fetch("/api/auth/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
+  if (!window.__sg_google_initialized) {
+    google.accounts.id.initialize({
+      client_id: GOOGLE_CLIENT_ID,
+      callback: handleCredentialResponse,
+      ux_mode: "popup",
     });
-
-    const data = await resp.json();
-    if (!data.success) return alert(data.message || "Login failed");
-
-    saveUser(data.user);
-    if (data.user.isAdmin) localStorage.setItem("adminLoggedIn", "true");
-
-    setupLoginUI();
-    updateCartBadge();
-    location.href = "account.html";
-  } catch (err) {
-    console.error(err);
-    alert("Login error");
+    google.accounts.id.disableAutoSelect?.();
+    window.__sg_google_initialized = true;
   }
+  return true;
+}
+
+window.handleCredentialResponse = (res) => {
+  if (!res?.credential) return alert("Google login failed");
+
+  const data = jwt_decode(res.credential);
+  const user = {
+    email: data.email,
+    name: data.name || data.email,
+    picture: data.picture || DEFAULTS.userPicture,
+    token: res.credential,
+  };
+
+  saveUserToLocal(user);
+
+  if (ADMINS.includes(user.email))
+    localStorage.setItem("adminLoggedIn", "true");
+  else localStorage.removeItem("adminLoggedIn");
+
+  setupLoginUI();
+  updateCartBadge();
+  location.reload();
 };
 
-/* REGISTER ------------------------------------------------------ */
-window.registerUser = async (name, email, password) => {
-  try {
-    if (!email || !password) return alert("Enter details");
+/* ------------------ CART ------------------ */
+function safeParseCart() {
+  return safeJSONParse(localStorage.getItem("cart"), []);
+}
 
-    const resp = await fetch("/api/auth/register", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, email, password }),
-    });
+function saveCart(cart) {
+  localStorage.setItem("cart", safeJSONSerialize(cart));
+}
 
-    const data = await resp.json();
-    if (!data.success) return alert(data.message || "Registration failed");
+function updateCartBadge() {
+  const badge = byId("cartCount");
+  if (!badge) return;
+  const cart = safeParseCart();
+  badge.textContent = cart.length ? cart.length : "";
+}
 
-    alert("Registered! Please login.");
-    location.href = "login.html";
-  } catch (err) {
-    console.error(err);
-    alert("Registration error");
-  }
-};
-
-/* CART ------------------------------------------------------ */
-const parseCart = () => safeJSONParse(localStorage.getItem("cart"), []);
-const saveCart = (c) => localStorage.setItem("cart", safeJSONSerialize(c));
+window.updateCartBadge = updateCartBadge;
 
 window.addToCart = (p, m = 1) => {
-  const cart = parseCart();
+  if (!p?._id) return alert("Invalid product");
+
+  const cart = safeParseCart();
   cart.push({
-    id: p._id || p.id,
+    id: p._id,
     name: p.name,
-    price: +p.price,
+    price: +p.price || 0,
     image: p.images?.[0] || DEFAULTS.productImage,
-    metres: +m,
+    metres: +m || 1,
   });
+
   saveCart(cart);
   updateCartBadge();
-  alert("Added!");
+  alert("Added to cart!");
 };
 
 window.removeItem = (i) => {
-  const cart = parseCart();
+  const cart = safeParseCart();
   cart.splice(i, 1);
   saveCart(cart);
   loadCartPage();
-  updateCartBadge();
 };
-
-function updateCartBadge() {
-  const b = byId("cartCount");
-  if (b) b.textContent = parseCart().length || "";
-}
-window.updateCartBadge = updateCartBadge;
 
 function loadCartPage() {
   const cont = byId("cartItems");
+  const empty = byId("cartEmpty");
+  const summary = byId("cartSummary");
+  const totalEl = byId("cartTotal");
+
   if (!cont) return;
 
-  const cart = parseCart();
-  const emptyEl = byId("cartEmpty");
-  const summaryEl = byId("cartSummary");
-
+  const cart = safeParseCart();
   if (!cart.length) {
-    if (emptyEl) emptyEl.style.display = "block";
-    if (summaryEl) summaryEl.style.display = "none";
+    empty?.style && (empty.style.display = "block");
     cont.innerHTML = "";
+    summary.style.display = "none";
+    totalEl.textContent = "0";
     return;
   }
 
-  if (emptyEl) emptyEl.style.display = "none";
-  if (summaryEl) summaryEl.style.display = "block";
+  empty.style.display = "none";
+  summary.style.display = "block";
 
   let total = 0;
   cont.innerHTML = cart
-    .map((c, i) => {
-      const line = c.price * c.metres;
+    .map((item, idx) => {
+      const line = item.price * item.metres;
       total += line;
       return `
-      <div class="col-md-4 mb-3">
-        <div class="card p-2 shadow-sm h-100">
-          <img src="${c.image}" style="height:150px;width:100%;object-fit:cover;">
-          <div class="card-body d-flex flex-column">
-            <h5>${c.name}</h5>
-            <p>${DEFAULTS.currencySymbol}${c.price} × ${c.metres} = ${DEFAULTS.currencySymbol}${line}</p>
-            <button class="btn btn-danger btn-sm mt-auto"
-                    onclick="removeItem(${i})">Remove</button>
-          </div>
-        </div>
-      </div>`;
-    }).join("");
-
-  const totalEl = byId("cartTotal");
-  if (totalEl) totalEl.textContent = total;
-}
-
-/* CATEGORY / PRODUCTS LOADER (supports 'all' and named categories) ------------- */
-window.loadCategory = async (cat = "all") => {
-  const grid = byId("productGrid");
-  const coming = byId("comingSoon");
-  if (!grid) return;
-
-  grid.innerHTML = `<p class="text-center mt-4">Loading...</p>`;
-  try {
-    const path = cat === "all" ? "/api/products/category/all" : `/api/products/category/${encodeURIComponent(cat)}`;
-    const res = await fetch(path);
-    const data = await res.json();
-
-    if (!Array.isArray(data) || data.length === 0) {
-      if (coming) coming.style.display = "block";
-      grid.innerHTML = "";
-      return;
-    }
-
-    if (coming) coming.style.display = "none";
-
-    grid.innerHTML = data.map(p => `
-      <div class="col-lg-3 col-md-4 col-sm-6">
-        <div class="card shadow-sm h-100 p-2 card-button">
-          <img src="${p.images?.[0] || DEFAULTS.productImage}" 
-               class="card-img-top" style="height:200px;object-fit:cover;">
-          <div class="card-body d-flex flex-column">
-            <h6 class="mb-1">${p.name}</h6>
-            <p class="mb-2"><strong>${DEFAULTS.currencySymbol}${p.price}</strong></p>
-            <div class="mt-auto">
-              <a href="product.html?id=${p._id}" class="btn btn-dark btn-sm w-100">View</a>
+        <div class="col-md-4 mb-3">
+          <div class="card p-2 shadow-sm h-100">
+            <img src="${escapeHtml(item.image)}" style="height:150px;width:100%;object-fit:cover;">
+            <div class="card-body d-flex flex-column">
+              <h5>${escapeHtml(item.name)}</h5>
+              <p>${DEFAULTS.currencySymbol}${item.price} × ${
+        item.metres
+      } = ${DEFAULTS.currencySymbol}${line}</p>
+              <button class="btn btn-danger btn-sm mt-auto" onclick="removeItem(${idx})">Remove</button>
             </div>
           </div>
         </div>
-      </div>
-    `).join("");
-  } catch (err) {
-    console.error(err);
-    if (coming) coming.style.display = "block";
-    grid.innerHTML = "";
-  }
+      `;
+    })
+    .join("");
+
+  totalEl.textContent = total;
+}
+window.loadCartPage = loadCartPage;
+/* ------------------ FETCH WRAPPER ------------------ */
+async function fetchJSON(url, opts = {}) {
+  const res = await fetch(url, opts);
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return await res.json();
+}
+
+/* ------------------ PRODUCTS LIST ------------------ */
+window.openProduct = (id) => {
+  location.href = `product.html?id=${encodeURIComponent(id)}`;
 };
 
-/* LOAD SINGLE PRODUCT (used on product.html) --------------------------- */
-window.loadProduct = async (id) => {
-  const cont = byId("productDetail");
-  if (!cont) return;
-  cont.innerHTML = `<p class="text-center">Loading...</p>`;
+async function loadProducts(cat = "all", containerId = "productsContainer") {
+  const box = byId(containerId);
+  if (box) box.innerHTML = "Loading...";
+
   try {
-    const res = await fetch(`/api/products/${id}`);
-    const p = await res.json();
-    if (!p || !p._id) {
-      cont.innerHTML = `<p class="text-center">Product not found</p>`;
+    const products = await fetchJSON(
+      `/api/products/category/${encodeURIComponent(cat)}`
+    );
+
+    if (!products.length) {
+      box.innerHTML = `<p class="text-muted fw-bold">Coming Soon...</p>`;
       return;
     }
 
-    cont.innerHTML = `
-      <div class="row">
-        <div class="col-md-6">
-          <img src="${p.images?.[0] || DEFAULTS.productImage}" class="img-fluid" style="max-height:500px;object-fit:cover;">
-        </div>
-        <div class="col-md-6">
-          <h3>${p.name}</h3>
-          <p><strong>${DEFAULTS.currencySymbol}${p.price}</strong></p>
-          <p>${p.description || ""}</p>
-          <div class="mb-2">
-            <label>Metres:</label>
-            <input id="buyMetres" type="number" min="1" value="1" class="form-control" style="max-width:120px;">
+    box.innerHTML = products
+      .map(
+        (p) => `
+      <div class="col-md-4 product-card">
+        <div class="card shadow-sm" onclick="openProduct('${escapeHtml(
+          p._id
+        )}')" style="cursor:pointer;">
+          <img src="${escapeHtml(
+            p.images?.[0] || DEFAULTS.productImage
+          )}" style="height:250px;width:100%;object-fit:cover;">
+          <div class="card-body">
+            <h5>${escapeHtml(p.name)}</h5>
+            <p class="fw-bold">${DEFAULTS.currencySymbol}${escapeHtml(
+          p.price
+        )}</p>
           </div>
-          <button class="btn btn-primary" onclick="addToCart(${JSON.stringify(p).replace(/'/g, "\\'")}, document.getElementById('buyMetres').value)">Add to cart</button>
         </div>
       </div>
-    `;
-  } catch (err) {
-    console.error(err);
-    cont.innerHTML = `<p class="text-center">Failed to load product</p>`;
+    `
+      )
+      .join("");
+  } catch (e) {
+    box.innerHTML = `<p class="text-muted">Error loading products.</p>`;
+  }
+}
+window.loadProducts = loadProducts;
+
+/* ------------------ SINGLE PRODUCT PAGE ------------------ */
+async function loadSingleProduct() {
+  const id = new URLSearchParams(location.search).get("id");
+  if (!id) return;
+
+  try {
+    const p = await fetchJSON(`/api/products/${encodeURIComponent(id)}`);
+    window.currentProduct = p;
+
+    byId("p_name") && (byId("p_name").textContent = p.name);
+    byId("p_price") && (byId("p_price").textContent = p.price);
+    byId("p_desc") && (byId("p_desc").textContent = p.description);
+    byId("p_category") && (byId("p_category").textContent = p.category);
+
+    const mainImg = byId("mainImage");
+    if (mainImg)
+      mainImg.src = p.images?.[0] || DEFAULTS.productImage;
+
+    const thumbRow = byId("thumbRow");
+    if (thumbRow) {
+      thumbRow.innerHTML = (p.images || [])
+        .map(
+          (img, i) => `
+        <img src="${escapeHtml(
+          img
+        )}" class="thumb-img ${i === 0 ? "active" : ""}"
+          style="height:60px;width:60px;object-fit:cover;margin-right:8px;cursor:pointer;"
+          onclick="document.getElementById('mainImage').src='${escapeHtml(
+            img
+          )}'">
+      `
+        )
+        .join("");
+    }
+  } catch (e) {
+    console.error("loadSingleProduct error:", e);
+  }
+}
+window.loadSingleProduct = loadSingleProduct;
+
+window.addToCartPage = () => {
+  if (!window.currentProduct) return alert("Product not loaded");
+  const m = Number(byId("metreInput")?.value || 1);
+  addToCart(window.currentProduct, m);
+};
+
+/* ------------------ ADMIN — DELETE PRODUCT ------------------ */
+window.adminDeleteProduct = async (id) => {
+  if (!confirm("Delete product permanently?")) return;
+  try {
+    const res = await fetchJSON(
+      `/api/admin/products/${encodeURIComponent(id)}`,
+      { method: "DELETE" }
+    );
+    if (res.success) {
+      alert("Product deleted");
+      renderAdminProducts();
+    } else {
+      alert("Delete failed");
+    }
+  } catch {
+    alert("Server error");
   }
 };
 
-/* ORDERS ------------------------------------------------------ */
-window.placeOrder = async (order) => {
+/* ------------------ ADMIN — RENDER PRODUCTS ------------------ */
+async function renderAdminProducts() {
+  const box = byId("productsAdminList");
+  if (!box) return;
+
+  box.innerHTML = "Loading...";
+
   try {
-    const resp = await fetch("/api/orders", {
+    const products = await fetchJSON("/api/products/category/all");
+    box.innerHTML = products
+      .map(
+        (p) => `
+      <div class="card p-2 mb-2">
+        <div class="d-flex align-items-center">
+          
+          <img src="${escapeHtml(
+            p.images?.[0] || DEFAULTS.productImage
+          )}" style="width:70px;height:70px;border-radius:8px;object-fit:cover;">
+
+          <div class="ms-3">
+            <strong>${escapeHtml(p.name)}</strong> —
+            ${DEFAULTS.currencySymbol}${escapeHtml(p.price)}
+            <br>
+            <span>${escapeHtml(p.category)}</span>
+          </div>
+
+          <button class="btn btn-danger btn-sm ms-auto"
+            onclick="adminDeleteProduct('${escapeHtml(p._id)}')">Delete</button>
+
+        </div>
+      </div>
+    `
+      )
+      .join("");
+  } catch (e) {
+    box.innerHTML = `<p class="text-muted">Failed to load products.</p>`;
+  }
+}
+window.renderAdminProducts = renderAdminProducts;
+
+/* ------------------ EMAIL LOGIN ------------------ */
+window.emailLogin = async () => {
+  const email = byId("loginEmail")?.value.trim();
+  const pass = byId("loginPass")?.value;
+
+  if (!email || !pass) return alert("Enter email + password");
+
+  try {
+    const res = await fetch("/api/auth/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(order),
-    });
-    const data = await resp.json();
-    if (!data.success) return alert("Order failed");
-    // clear cart
-    localStorage.removeItem("cart");
-    updateCartBadge();
-    alert("Order placed!");
-    location.href = "account.html";
-  } catch (err) {
-    console.error(err);
-    alert("Order error");
+      body: JSON.stringify({ email, password: pass }),
+    }).then((r) => r.json());
+
+    if (!res.success) return alert(res.message || "Login failed");
+
+    saveUserToLocal(res.user);
+
+    if (ADMINS.includes(res.user.email))
+      localStorage.setItem("adminLoggedIn", "true");
+
+    location.reload();
+  } catch (e) {
+    console.error(e);
+    alert("Server error");
   }
 };
 
-/* LOGIN FORM WIRING ------------------------------------------------------ */
-function wireLoginForm() {
-  const form = byId("loginForm");
-  if (!form) return;
-  form.addEventListener("submit", (e) => {
-    e.preventDefault();
-    const email = byId("loginEmail").value;
-    const password = byId("loginPassword").value;
-    loginWithPassword(email, password);
-  });
+/* ------------------ EMAIL REGISTER ------------------ */
+window.emailRegister = async () => {
+  const name = byId("regName")?.value.trim();
+  const email = byId("regEmail")?.value.trim();
+  const pass = byId("regPass")?.value;
+
+  if (!email || !pass) return alert("Enter valid details");
+
+  try {
+    const res = await fetch("/api/auth/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, email, password: pass }),
+    }).then((r) => r.json());
+
+    if (!res.success) return alert(res.message || "Registration failed");
+
+    alert("Account created! Please login.");
+    location.href = "login.html";
+  } catch (e) {
+    console.error(e);
+    alert("Server error");
+  }
+};
+
+window.openRegister = () => {
+  location.href = "register.html";
+};
+/* ------------------ ORDER HISTORY ------------------ */
+async function loadOrderHistory() {
+  const user = getUser();
+  const box = byId("ordersList");
+
+  if (!box) return;
+
+  if (!user) {
+    box.innerHTML = `
+      <p class="text-danger mt-3">Please login to view your orders.</p>
+    `;
+    return;
+  }
+
+  try {
+    const orders = await fetch(`/api/orders/${user.email}`).then((r) =>
+      r.json()
+    );
+
+    if (!orders.length) {
+      box.innerHTML = `
+        <div class="text-center mt-5">
+          <img src="https://cdn-icons-png.flaticon.com/512/4076/4076500.png"
+               width="110" class="opacity-75 mb-3">
+          <h5 class="fw-bold text-secondary">No Orders Yet</h5>
+          <p class="text-muted">When you purchase something, it will show here.</p>
+          <a href="allproducts.html" class="btn btn-primary mt-2">Start Shopping</a>
+        </div>
+      `;
+      return;
+    }
+
+    box.innerHTML = orders
+      .map(
+        (o) => `
+      <div class="card p-3 mb-3 shadow-sm">
+        <h5 class="fw-bold">Order #${o._id}</h5>
+        <p><strong>Date:</strong> ${new Date(o.date).toLocaleString()}</p>
+        <p><strong>Total:</strong> ₹${o.total}</p>
+        <hr>
+        <h6 class="fw-bold">Items:</h6>
+        ${o.items
+          .map(
+            (i) =>
+              `<p class="mb-1">• ${escapeHtml(i.name)} (x${i.quantity})</p>`
+          )
+          .join("")}
+      </div>
+    `
+      )
+      .join("");
+  } catch (e) {
+    console.error("Order history error:", e);
+    box.innerHTML = `<p class="text-muted">Error loading orders.</p>`;
+  }
 }
 
-function wireRegisterForm() {
-  const form = byId("registerForm");
-  if (!form) return;
-  form.addEventListener("submit", (e) => {
-    e.preventDefault();
-    const name = byId("registerName").value;
-    const email = byId("registerEmail").value;
-    const password = byId("registerPassword").value;
-    registerUser(name, email, password);
-  });
-}
+window.loadOrderHistory = loadOrderHistory;
 
-/* INIT ------------------------------------------------------ */
+/* ------------------ ADMIN GUARD ------------------ */
+(function adminGuard() {
+  try {
+    if (location.pathname.includes("admin")) {
+      if (!localStorage.getItem("adminLoggedIn")) {
+        location.href = "index.html";
+      }
+    }
+  } catch (e) {
+    console.error("adminGuard error:", e);
+  }
+})();
+
+/* ------------------ PAGE INITIALIZATION ------------------ */
 document.addEventListener("DOMContentLoaded", () => {
   setupLoginUI();
   updateCartBadge();
-  wireGoogleButton();
-  wireLoginForm();
-  wireRegisterForm();
+  attachLoginButton();
+  initGoogleLogin();
 
-  if (location.pathname.includes("cart")) loadCartPage();
-  // product page handler
-  if (location.pathname.includes("product.html")) {
-    const params = new URLSearchParams(location.search);
-    const id = params.get("id");
-    if (id) loadProduct(id);
-  }
+  const path = location.pathname.toLowerCase();
+
+  if (path.includes("cart")) loadCartPage();
+  if (path.includes("product")) loadSingleProduct();
+  if (path.includes("admin")) renderAdminProducts();
+  if (path.includes("orderhistory")) loadOrderHistory();
+
+  qsa("[data-products-cat]").forEach((el) =>
+    loadProducts(el.getAttribute("data-products-cat") || "all", el.id)
+  );
 });
+
+/* ------------------ EXPORTS ------------------ */
+window._sg = {
+  getUser,
+  saveUserToLocal,
+  clearUserLocal,
+
+  initGoogleLogin,
+  triggerGoogleLogin,
+
+  safeParseCart,
+  addToCart,
+  removeItem,
+  loadCartPage,
+  updateCartBadge,
+
+  loadProducts,
+  loadSingleProduct,
+  openProduct,
+  addToCartPage,
+
+  renderAdminProducts,
+  adminDeleteProduct,
+
+  emailLogin,
+  emailRegister,
+  openRegister,
+
+  loadOrderHistory,
+};
