@@ -1,10 +1,10 @@
 /******************************************************
- * SUITS N GLAM — APP.JS (DIRECT GOOGLE LOGIN VERSION)
+ * SUITS N GLAM — APP.JS (FINAL GOOGLE LOGIN VERSION)
  ******************************************************/
 
 console.log("APP.JS LOADED");
 
-/* ------------------ CONFIG ------------------ */
+/* CONFIG ------------------------------------------------------ */
 const ADMINS = ["sohabrar10@gmail.com"];
 const GOOGLE_CLIENT_ID =
   "653374521156-6retcia1fiu5dvmbjik9sq89ontrkmvt.apps.googleusercontent.com";
@@ -15,41 +15,21 @@ const DEFAULTS = {
   currencySymbol: "₹",
 };
 
-/* ------------------ UTILITIES ------------------ */
+/* UTILITIES ------------------------------------------------------ */
 const qs = (s, r = document) => r.querySelector(s);
 const byId = (id) => document.getElementById(id);
-
-function escapeHtml(str) {
-  if (!str) return "";
-  return str.replace(/[&<>"']/g, (m) => ({
-    "&": "&amp;",
-    "<": "&lt;",
-    ">": "&gt;",
-    '"': "&quot;",
-    "'": "&#039;"
-  })[m]);
-}
-
-function safeJSONParse(v, f = null) {
-  try { return JSON.parse(v) ?? f; } catch { return f; }
-}
+const safeJSONParse = (v, f = null) => { try { return JSON.parse(v); } catch { return f; } };
 const safeJSONSerialize = (v) => JSON.stringify(v);
 
-/* ------------------ USER STORAGE ------------------ */
-function getUser() {
-  return safeJSONParse(localStorage.getItem("sg_user"));
-}
-function saveUser(obj) {
-  if (!obj?.email) return;
-  localStorage.setItem("sg_user", safeJSONSerialize(obj));
-}
+/* USER STORAGE ------------------------------------------------------ */
+function getUser() { return safeJSONParse(localStorage.getItem("sg_user")); }
+function saveUser(o) { localStorage.setItem("sg_user", safeJSONSerialize(o)); }
 function clearUser() {
   localStorage.removeItem("sg_user");
   localStorage.removeItem("adminLoggedIn");
-  localStorage.removeItem("sg_token");
 }
 
-/* ------------------ LOGIN UI ------------------ */
+/* LOGIN UI ------------------------------------------------------ */
 function setupLoginUI() {
   const btn = byId("loginBtn");
   const icon = byId("accountIcon");
@@ -61,7 +41,7 @@ function setupLoginUI() {
   if (!user) {
     btn.style.display = "inline-block";
     icon.style.display = "none";
-    adminBadge && (adminBadge.style.display = "none");
+    adminBadge.style.display = "none";
     return;
   }
 
@@ -70,48 +50,25 @@ function setupLoginUI() {
   icon.style.display = "inline-block";
 
   if (ADMINS.includes(user.email)) {
-    adminBadge && (adminBadge.style.display = "inline-block");
-    icon.onclick = () => (location.href = "admin.html");
+    adminBadge.style.display = "inline-block";
+    icon.onclick = () => location.href = "admin.html";
   } else {
-    adminBadge && (adminBadge.style.display = "none");
-    icon.onclick = () => (location.href = "account.html");
+    adminBadge.style.display = "none";
+    icon.onclick = () => location.href = "account.html";
   }
 }
 
-/* ------------------ LOGOUT ------------------ */
+/* LOGOUT ------------------------------------------------------ */
 window.logout = () => {
   clearUser();
   location.href = "index.html";
 };
 
-/* ------------------ DIRECT GOOGLE LOGIN ------------------ */
-let googleReady = false;
-
-async function initGoogleLogin() {
-  // wait for Google script
-  const wait = async () => {
-    for (let i = 0; i < 80; i++) {
-      if (window.google?.accounts?.id) return true;
-      await new Promise((r) => setTimeout(r, 100));
-    }
-    return false;
-  };
-
-  if (!(await wait())) return;
-
-  googleReady = true;
-
-  google.accounts.id.initialize({
-    client_id: GOOGLE_CLIENT_ID,
-    callback: handleGoogleResponse,
-    ux_mode: "popup",
-  });
-}
-
-/* ---- Google Login Response ---- */
+/* GOOGLE LOGIN ------------------------------------------------------ */
 window.handleGoogleResponse = (res) => {
   try {
     const data = jwt_decode(res.credential);
+
     const user = {
       email: data.email,
       name: data.name,
@@ -122,80 +79,58 @@ window.handleGoogleResponse = (res) => {
 
     if (ADMINS.includes(user.email))
       localStorage.setItem("adminLoggedIn", "true");
-    else
-      localStorage.removeItem("adminLoggedIn");
 
     location.reload();
   } catch (err) {
-    console.error("Google login decode error:", err);
-    alert("Google login failed.");
+    alert("Google login failed");
   }
 };
 
-/* CLICK LOGIN BUTTON → GOOGLE POPUP */
-function wireDirectGoogleLogin() {
+function wireGoogleButton() {
   const btn = byId("loginBtn");
   if (!btn) return;
 
   btn.addEventListener("click", () => {
-    if (!googleReady) {
-      alert("Google login not ready. Please wait 1 second.");
-      return;
-    }
-    google.accounts.id.prompt();
+    google.accounts.id.prompt(); // popup
   });
 }
 
-/* ------------------ EMAIL PASSWORD LOGIN ------------------ */
+/* PASSWORD LOGIN ------------------------------------------------------ */
 window.loginWithPassword = async (email, password) => {
-  if (!email || !password) {
-    alert("Please provide email and password");
-    return;
-  }
+  if (!email || !password) return alert("Enter details");
 
-  try {
-    const resp = await fetch("/api/auth/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
-    });
+  const resp = await fetch("/api/auth/login", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, password }),
+  });
 
-    const data = await resp.json().catch(() => null);
-    if (!data?.success) return alert(data?.message || "Login failed");
+  const data = await resp.json();
 
-    if (data.token) localStorage.setItem("sg_token", data.token);
+  if (!data.success) return alert(data.message);
 
-    const user = data.user || data;
-    saveUser(user);
+  saveUser(data.user);
 
-    if (ADMINS.includes(user.email))
-      localStorage.setItem("adminLoggedIn", "true");
-    else
-      localStorage.removeItem("adminLoggedIn");
+  if (ADMINS.includes(data.user.email))
+    localStorage.setItem("adminLoggedIn", "true");
 
-    setupLoginUI();
-    updateCartBadge();
-    location.href = "account.html";
-  } catch (err) {
-    console.error("Login error:", err);
-    alert("Network error. Try again.");
-  }
+  setupLoginUI();
+  updateCartBadge();
+  location.href = "account.html";
 };
 
-/* ------------------ LOGIN FORM (IF EXISTS) ------------------ */
+/* LOGIN FORM ------------------------------------------------------ */
 function wireLoginForm() {
   const form = byId("loginForm");
   if (!form) return;
 
-  form.addEventListener("submit", async (ev) => {
-    ev.preventDefault();
-    const email = byId("loginEmail")?.value;
-    const password = byId("loginPassword")?.value;
-    loginWithPassword(email, password);
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    loginWithPassword(byId("loginEmail").value, byId("loginPassword").value);
   });
 }
 
-/* ------------------ CART / PRODUCTS / ORDERS (unchanged) ------------------ */
+/* CART ------------------------------------------------------ */
 const parseCart = () => safeJSONParse(localStorage.getItem("cart"), []);
 const saveCart = (c) => localStorage.setItem("cart", safeJSONSerialize(c));
 
@@ -204,13 +139,13 @@ window.addToCart = (p, m = 1) => {
   cart.push({
     id: p._id,
     name: p.name,
-    price: +p.price || 0,
+    price: +p.price,
     image: p.images?.[0] || DEFAULTS.productImage,
-    metres: +m || 1,
+    metres: +m,
   });
   saveCart(cart);
-  alert("Added!");
   updateCartBadge();
+  alert("Added!");
 };
 
 window.removeItem = (i) => {
@@ -222,20 +157,19 @@ window.removeItem = (i) => {
 };
 
 function updateCartBadge() {
-  const badge = byId("cartCount");
-  if (!badge) return;
-  badge.textContent = parseCart().length || "";
+  const b = byId("cartCount");
+  if (b) b.textContent = parseCart().length || "";
 }
 window.updateCartBadge = updateCartBadge;
 
 function loadCartPage() {
   const cont = byId("cartItems");
   if (!cont) return;
-  const cart = parseCart();
 
+  const cart = parseCart();
   if (!cart.length) {
-    byId("cartEmpty")?.style.display = "block";
-    byId("cartSummary")?.style.display = "none";
+    byId("cartEmpty").style.display = "block";
+    byId("cartSummary").style.display = "none";
     return;
   }
 
@@ -245,32 +179,30 @@ function loadCartPage() {
       const line = c.price * c.metres;
       total += line;
       return `
-        <div class="col-md-4 mb-3">
-          <div class="card p-2 shadow-sm h-100">
-            <img src="${c.image}" style="height:150px;width:100%;object-fit:cover;">
-            <div class="card-body d-flex flex-column">
-              <h5>${escapeHtml(c.name)}</h5>
-              <p>${DEFAULTS.currencySymbol}${c.price} × ${c.metres} = ${DEFAULTS.currencySymbol}${line}</p>
-              <button class="btn btn-danger btn-sm mt-auto" onclick="removeItem(${i})">Remove</button>
-            </div>
+      <div class="col-md-4 mb-3">
+        <div class="card p-2 shadow-sm h-100">
+          <img src="${c.image}" style="height:150px;width:100%;object-fit:cover;">
+          <div class="card-body d-flex flex-column">
+            <h5>${c.name}</h5>
+            <p>₹${c.price} × ${c.metres} = ₹${line}</p>
+            <button class="btn btn-danger btn-sm mt-auto"
+                    onclick="removeItem(${i})">Remove</button>
           </div>
-        </div>`;
-    })
-    .join("");
+        </div>
+      </div>`;
+    }).join("");
 
   byId("cartTotal").textContent = total;
 }
 window.loadCartPage = loadCartPage;
 
-/* ------------------ INIT ------------------ */
+/* INIT ------------------------------------------------------ */
 document.addEventListener("DOMContentLoaded", () => {
   setupLoginUI();
   updateCartBadge();
+  wireGoogleButton();
+  wireLoginForm();
 
-  initGoogleLogin();         // google setup
-  wireDirectGoogleLogin();   // click = google popup
-  wireLoginForm();           // email login form if exists
-
-  const p = location.pathname.toLowerCase();
-  if (p.includes("cart")) loadCartPage();
+  if (location.pathname.includes("cart"))
+    loadCartPage();
 });
