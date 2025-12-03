@@ -1,7 +1,7 @@
 // ------------------------------------------------------
-// SUITS N GLAM — COMPLETE BACKEND (ONE FILE)
-// Auth + Google Login Safe + OTP (nodemailer removed)
-// Products + Orders + Render Deployment Safe
+// SUITS N GLAM — COMPLETE BACKEND (FINAL FIXED VERSION)
+// Auth + Google Login Safe + OTP (dev) + Products + Orders
+// Render + Hostinger Compatible
 // ------------------------------------------------------
 
 require("dotenv").config();
@@ -10,7 +10,6 @@ const path = require("path");
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 const cors = require("cors");
-// nodemailer removed intentionally
 
 const app = express();
 
@@ -68,23 +67,8 @@ app.use(cors());
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 
-/* Serve static frontend */
+/* PUBLIC STATIC FILES */
 app.use(express.static(path.join(__dirname, "public")));
-
-/* Google safe paths (Render fix) */
-const googleSafe = ["/.well-known", "/google", "/gsi", "/auth", "/oauth", "/oauth2", "/signin", "/_"]; // keep safe prefixes
-app.use((req, res, next) => {
-  if (googleSafe.some((p) => req.path.startsWith(p))) return next();
-  next();
-});
-
-/* ------------------------------------------------------
-   NOTE: nodemailer REMOVED
-   The OTP endpoint below generates OTPs and returns them in
-   the response (suitable for dev/local use). For production
-   email delivery, integrate a dedicated email provider SDK
-   (SendGrid, Mailgun, Resend, etc.) and send emails server-side.
------------------------------------------------------- */
 
 /* ------------------------------------------------------
    AUTH — REGISTER
@@ -147,10 +131,7 @@ app.post("/api/auth/login", async (req, res) => {
 });
 
 /* ------------------------------------------------------
-   OTP — SEND (nodemailer removed)
-   This endpoint generates an OTP and returns it in the
-   JSON response. For production use, replace body with
-   a call to your email provider to deliver the OTP.
+   OTP — SEND (DEVELOPMENT MODE)
 ------------------------------------------------------ */
 app.post("/api/auth/send-otp", async (req, res) => {
   try {
@@ -159,11 +140,8 @@ app.post("/api/auth/send-otp", async (req, res) => {
 
     const otp = Math.floor(100000 + Math.random() * 900000);
 
-    // For dev/test: log OTP to server logs and return it in the response.
     console.log(`OTP for ${email}: ${otp}`);
 
-    // NOTE: In production you should NOT return the OTP in the response.
-    // Instead send it to the user's email using a transactional email provider.
     return res.json({ success: true, otp });
   } catch (err) {
     console.error("Send OTP error:", err);
@@ -172,13 +150,14 @@ app.post("/api/auth/send-otp", async (req, res) => {
 });
 
 /* ------------------------------------------------------
-   ADMIN — CREATE FROM SCRIPT (merged)
+   ADMIN — CREATE
 ------------------------------------------------------ */
 app.post("/api/admin/create-admin", async (req, res) => {
   const { email, password } = req.body;
 
   const exists = await User.findOne({ email });
-  if (exists) return res.json({ success: false, message: "Admin exists" });
+  if (exists)
+    return res.json({ success: false, message: "Admin exists" });
 
   const hashed = await bcrypt.hash(password, 10);
 
@@ -188,14 +167,15 @@ app.post("/api/admin/create-admin", async (req, res) => {
 });
 
 /* ------------------------------------------------------
-   PRODUCTS — ADD PRODUCT
+   PRODUCTS — ADD
 ------------------------------------------------------ */
 app.post("/api/admin/products", async (req, res) => {
   try {
     const p = new Product(req.body);
     await p.save();
     res.json({ success: true, product: p });
-  } catch (_) {
+  } catch (err) {
+    console.error("Product add error:", err);
     res.json({ success: false });
   }
 });
@@ -207,7 +187,8 @@ app.delete("/api/admin/products/:id", async (req, res) => {
   try {
     await Product.findByIdAndDelete(req.params.id);
     res.json({ success: true });
-  } catch (_) {
+  } catch (err) {
+    console.error("Product delete error:", err);
     res.json({ success: false });
   }
 });
@@ -223,7 +204,9 @@ app.get("/api/products/category/all", async (req, res) => {
    PRODUCTS — BY CATEGORY
 ------------------------------------------------------ */
 app.get("/api/products/category/:cat", async (req, res) => {
-  res.json(await Product.find({ category: req.params.cat }).sort({ createdAt: -1 }));
+  res.json(
+    await Product.find({ category: req.params.cat }).sort({ createdAt: -1 })
+  );
 });
 
 /* ------------------------------------------------------
@@ -241,7 +224,8 @@ app.post("/api/orders", async (req, res) => {
     const order = new Order(req.body);
     await order.save();
     res.json({ success: true, order });
-  } catch (_) {
+  } catch (err) {
+    console.error("Order create error:", err);
     res.json({ success: false });
   }
 });
@@ -250,14 +234,15 @@ app.post("/api/orders", async (req, res) => {
    ORDERS — USER HISTORY
 ------------------------------------------------------ */
 app.get("/api/orders/history/:email", async (req, res) => {
-  res.json(await Order.find({ userEmail: req.params.email }).sort({ createdAt: -1 }));
+  res.json(
+    await Order.find({ userEmail: req.params.email }).sort({ createdAt: -1 })
+  );
 });
 
 /* ------------------------------------------------------
-   FRONTEND (Render fallback)
+   FRONTEND FALLBACK (Google Safe)
 ------------------------------------------------------ */
-app.get("*", (req, res, next) => {
-  if (req.path.startsWith("/api")) return next();
+app.get(/^(?!\/api|\/gsi|\/google|\/oauth|\/oauth2|\/signin|\/_).*/, (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
