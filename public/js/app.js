@@ -101,7 +101,7 @@ async function initGoogleLogin() {
   if (!(await wait())) return;
 
   google.accounts.id.initialize({
-    client_id: GOOGLE_CLIENT_ID,
+    client_id: "653374521156-6retcia1fiu5dvmbjik9sq89ontrkmvt.apps.googleusercontent.com",
     callback: handleGoogleResponse,
     ux_mode: "popup",
   });
